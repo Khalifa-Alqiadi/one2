@@ -1,0 +1,10 @@
+/uploads
+.htaccess
+index.php
+
+/public/storage
+
+/core/storage
+/core/vendor
+/core/.env
+

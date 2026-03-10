@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class League extends Model
+{
+    use HasFactory;
+    protected $fillable = [
+        'id', // نفس sportmonks id
+        'sport_id',
+        'country_id',
+        'name_ar',
+        'name_en',
+        'short_code',
+        'image_path',
+        'current_season_id',
+    ];
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id', 'sport_id');
+    }
+
+    public function seasons()
+    {
+        return $this->hasMany(Season::class, 'league_id', 'id');
+    }
+
+    public function rounds()
+    {
+        return $this->hasMany(Round::class, 'league_id', 'id');
+    }
+}

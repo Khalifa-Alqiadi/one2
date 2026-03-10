@@ -1,0 +1,1293 @@
+.football .cardx {
+    background: transparent;
+}
+
+.football .league-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+}
+
+.football .logo {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.football .logo img {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+}
+
+/* ====== Pills Tabs ====== */
+.football .league-pills {
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.football .league-pills .nav-link {
+    background: #2a2d33;
+    color: #fff;
+    border-radius: 999px;
+    padding: 0.55rem 1.1rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-weight: 600;
+}
+
+.football .league-pills .nav-link.active {
+    background: #3a3d44;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ====== Fixtures Board (مثل الصورة) ====== */
+.football .fixtures-board {
+    background: #2a2d33;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 16px;
+    color: #fff;
+}
+
+.football .fixtures-head {
+    padding: 4px 2px 14px 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 14px;
+}
+
+.football .fixtures-title {
+    font-weight: 700;
+}
+
+.football .fixtures-title .muted {
+    font-weight: 500;
+    opacity: 0.75;
+    margin-inline-start: 8px;
+}
+
+.football .nav-arrow {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #24262b;
+    color: #fff;
+    line-height: 32px;
+}
+
+.football .fixtures-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+/* Card */
+.football .fixture-card {
+    background: #24262b;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    display: flex;
+    align-items: stretch;
+    min-height: 92px;
+    overflow: hidden;
+}
+
+.football .fixture-meta {
+    width: 140px;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.football .meta-time {
+    font-weight: 800;
+}
+
+.football .meta-state {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.football .meta-score {
+    margin-top: 2px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.football .meta-score .sc {
+    min-width: 18px;
+    text-align: center;
+}
+
+.football .meta-score .dash {
+    opacity: 0.6;
+}
+
+.football .fixture-divider {
+    width: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.football .fixture-teams {
+    flex: 1;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.football .team-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.football .team-badge {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
+}
+
+.football .team-name {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.football .team-name:hover {
+    text-decoration: underline;
+}
+
+.football .btn-viewall {
+    background: #f59e0b;
+    border: 0;
+    color: #0b1220;
+    border-radius: 999px;
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+}
+
+.football .muted {
+    opacity: 0.75;
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 992px) {
+    .football .fixtures-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .football .fixture-meta {
+        width: 130px;
+    }
+}
+
+@media (max-width: 480px) {
+    .football .fixture-card {
+        flex-direction: column;
+    }
+
+    .football .fixture-meta {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .football .fixture-divider {
+        width: 100%;
+        height: 1px;
+    }
+
+    .football .fixture-teams {
+        padding-top: 10px;
+    }
+}
+
+/* ===== Standings Dark (مثل الصورة) ===== */
+.football .standings-wrap {
+    background: #2a2d33;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+    padding: 14px;
+    color: #fff;
+}
+
+.football .standings-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 10px;
+}
+
+.football .standings-title {
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.football .season-pill {
+    background: #24262b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 8px 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.football .season-pill .muted {
+    opacity: 0.75;
+    font-size: 12px;
+}
+
+.football .standings-table-scroll {
+    overflow: auto;
+}
+
+.football .standings-table {
+    width: 100%;
+    min-width: 860px;
+    /* عشان يطلع مثل الصورة */
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.football .standings-table thead th {
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0.85;
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.football .standings-table thead th.col-rank {
+    text-align: left;
+}
+
+.football .standings-table tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.football .standing-row {
+    position: relative;
+    background: #24262b;
+}
+
+.football .standing-row:hover {
+    background: #1f2126;
+}
+
+/* الشريط الجانبي الملون مثل الصورة */
+.football .standing-row::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    border-radius: 0 8px 8px 0;
+}
+
+.football .stripe-green::before {
+    background: #22c55e;
+}
+
+.football .stripe-orange::before {
+    background: #f59e0b;
+}
+
+.football .stripe-red::before {
+    background: #ef4444;
+}
+
+.football .stripe-none::before {
+    background: transparent;
+}
+
+.football .club-cell {
+    display: flex;
+    align-items: center;
+    /* justify-content: ; */
+    /* gap: 14px; */
+}
+
+.football .rank-box {
+    width: 26px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    opacity: 0.9;
+    font-weight: 800;
+}
+
+.football .club-info {
+    display: flex;
+    align-items: center;
+    /* gap: 10px; */
+    min-width: 260px;
+    /* justify-content: flex-end; */
+}
+
+.football .club-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.football .club-name {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.football .club-name:hover {
+    text-decoration: underline;
+}
+
+.football .col-pts strong {
+    font-weight: 900;
+}
+
+/* Form dots */
+.football .form-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.football .dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+}
+
+.football .dot.W {
+    background: #22c55e;
+}
+
+.football .dot.D {
+    background: #f59e0b;
+    color: #111;
+}
+
+.football .dot.L {
+    background: #ef4444;
+}
+
+.football .dot.none {
+    background: #6b7280;
+}
+
+.football .empty-row {
+    text-align: center;
+    padding: 18px;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* Start Matches */
+.matches h4 {
+    font-size: 16px;
+}
+
+.fixtures-wrap .fixture-top {
+    width: 70%;
+}
+
+.fixtures-wrap .fixture-body {
+    width: 30%;
+}
+
+.gx-fixtures-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* شكل القائمة مثل صورتك */
+    gap: 12px;
+}
+
+.gx-fixtures-grid .gx-fixture-card {
+    background: #2b2f34;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 14px 14px;
+    margin-bottom: 10px;
+    min-height: 78px;
+    position: relative;
+    display: block;
+}
+.gx-fixtures-grid .gx-fixture-card p.league {
+    color: #dbb41c;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.gx-fixtures-grid .gx-fixture-card .match {
+    display: grid;
+    grid-template-columns: 160px 1fr 1fr;
+    /* left / score / teams */
+    align-items: center;
+    position: relative;
+}
+
+/* LEFT */
+.gx-fixtures-grid .gx-left {
+    text-align: right;
+}
+
+.gx-fixtures-grid .gx-status {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.gx-fixtures-grid .gx-status .js-live-badge {
+    font-weight: 700;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.gx-fixtures-grid .gx-fixture-card[data-live="1"] .js-live-badge {
+    color: #37d67a;
+}
+
+.gx-fixtures-grid .gx-status .js-minute {
+    color: #37d67a;
+    font-weight: 700;
+    font-size: 13px;
+    min-height: 16px;
+}
+
+.gx-fixtures-grid .gx-datetime {
+    margin-top: 6px;
+    display: block;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 12px;
+}
+
+/* SCORE */
+.gx-fixtures-grid .gx-score {
+    text-align: center;
+    font-weight: 800;
+    font-size: 22px;
+    color: #fff;
+}
+
+.gx-fixtures-grid .gx-score .gx-dash {
+    display: inline-block;
+    margin: 0 10px;
+    opacity: 0.6;
+}
+
+/* TEAMS */
+.gx-fixtures-grid .gx-teams {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+}
+
+.gx-fixtures-grid .gx-team-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+.gx-fixtures-grid .gx-team-name {
+    color: #e9edf2;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+
+.gx-fixtures-grid .gx-team-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px;
+}
+
+/* divider (منتصف الكرت) */
+.gx-fixtures-grid .gx-fixture-card .match::after {
+    content: "";
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 50%;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.gx-fixtures-grid .page-link {
+    background-color: #2b2f34;
+}
+
+.gx-fixtures-grid .page-link:hover {
+    background-color: var(--color-primary-gold);
+    color: #fff !important;
+}
+
+.gx-fixtures-grid .disabled>.page-link,
+.page-link.disabled {
+    background-color: var(--color-primary-gold);
+    border-color: var(--color-primary-gold);
+    color: #fff !important;
+}
+
+.football-match .gx-stats-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.football-match .gx-stats-title {
+    font-weight: 700;
+    color: #cfd6df;
+    font-size: 14px;
+}
+
+.football-match .gx-team-ic {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    padding: 3px;
+    object-fit: contain;
+}
+
+.football-match .gx-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.football-match .gx-stat-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 110px;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+}
+
+.football-match .gx-stat-row:last-child {
+    border-bottom: 0;
+}
+
+.football-match .gx-label {
+    text-align: center;
+    color: #b7c1cc;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.football-match .gx-val {
+    display: flex;
+}
+
+.football-match .gx-left {
+    justify-content: flex-start;
+}
+
+.football-match .gx-right {
+    justify-content: flex-end;
+}
+
+.football-match .gx-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 12px;
+    color: #fff;
+}
+
+.football-match .gx-pill-home {
+    background: #d32f2f;
+}
+
+.football-match .gx-pill-away {
+    background: #1e5eff;
+}
+
+
+.football-match .gx-sub-card {
+    background: #262a2f;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 12px;
+    padding: 12px;
+    margin: 12px 0;
+}
+
+.football-match .gx-sub-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.football-match .gx-sub-minute {
+    color: #cfd6df;
+    font-weight: 800;
+    font-size: 12px;
+    opacity: .9;
+}
+
+.football-match .gx-sub-title {
+    color: #e8eef7;
+    font-weight: 800;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.football-match .gx-sub-body {
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, .06);
+}
+
+.football-match .gx-sub-row {
+    display: grid;
+    grid-template-columns: 64px 1fr 46px;
+    align-items: center;
+    gap: 12px;
+}
+
+.football-match .gx-sub-tag {
+    font-weight: 900;
+    font-size: 12px;
+    text-align: right;
+}
+
+.football-match .gx-in {
+    color: #2ecc71;
+}
+
+.football-match .gx-out {
+    color: #e74c3c;
+}
+
+.football-match .gx-sub-player {
+    min-width: 0;
+}
+
+.football-match .gx-sub-name {
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.football-match .gx-sub-meta {
+    margin-top: 2px;
+    color: rgba(255, 255, 255, .65);
+    font-size: 11px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.football-match .gx-sub-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.football-match .gx-sub-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.football-match .gx-in-ring {
+    outline: 2px solid rgba(46, 204, 113, .55);
+}
+
+.football-match .gx-out-ring {
+    outline: 2px solid rgba(231, 76, 60, .55);
+}
+
+.football-match .gx-sub-fallback {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .18);
+}
+
+/* ===== Timeline Container ===== */
+.football-match .gx-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 10px 0;
+}
+
+/* ===== Media Grid (صور فوق الحدث) ===== */
+.football-match .gx-event-media {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .03);
+}
+
+.football-match .gx-media-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.football-match .gx-media-main img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    display: block;
+}
+
+.football-match .gx-media-thumbs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 6px;
+    background: rgba(0, 0, 0, .20);
+}
+
+.football-match .gx-media-thumb {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.football-match .gx-media-thumb img {
+    width: 100%;
+    height: 96px;
+    object-fit: cover;
+    display: block;
+}
+
+/* ===== Card Base ===== */
+.football-match .gx-card {
+    border-radius: 16px;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .08);
+    overflow: hidden;
+}
+
+/* ===== Card Header ===== */
+.football-match .gx-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, .03);
+}
+
+.football-match .gx-minute {
+    font-size: 13px;
+    opacity: .9;
+}
+
+.football-match .gx-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.football-match .gx-icon {
+    font-size: 14px;
+}
+
+/* ===== Card Body ===== */
+.football-match .gx-card-body {
+    padding: 12px 14px;
+}
+
+.football-match .gx-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.football-match .gx-row.mt {
+    margin-top: 10px;
+}
+
+.football-match .gx-tag {
+    min-width: 52px;
+    text-align: center;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.football-match .gx-in {
+    background: rgba(34, 197, 94, .18);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, .28);
+}
+
+.football-match .gx-out {
+    background: rgba(239, 68, 68, .16);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, .26);
+}
+
+.football-match .gx-player {
+    flex: 1;
+    min-width: 0;
+}
+
+.football-match .gx-name {
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.football-match .gx-meta {
+    margin-top: 2px;
+    font-size: 12px;
+    opacity: .75;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ===== Avatar ===== */
+.football-match .gx-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+    flex: 0 0 44px;
+    background: rgba(255, 255, 255, .06);
+    display: grid;
+    place-items: center;
+}
+
+.football-match .gx-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.football-match .gx-fallback {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    opacity: .9;
+}
+
+.football-match .gx-in-ring {
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, .55) inset;
+}
+
+.football-match .gx-out-ring {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, .55) inset;
+}
+
+/* ===== Goal Card (بنفس فكرة البنفسجي) ===== */
+.football-match .gx-goal-card {
+    border: 1px solid rgba(236, 72, 153, .25);
+}
+
+.football-match .gx-goal-top {
+    padding: 10px 12px;
+    background: linear-gradient(90deg, rgba(236, 72, 153, .40), rgba(147, 51, 234, .30));
+}
+
+.football-match .gx-goal-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 900;
+}
+
+.football-match .gx-goal-minute {
+    font-weight: 800;
+    opacity: .95;
+}
+
+.football-match .gx-goal-scoreline {
+    padding: 8px 14px;
+    text-align: center;
+    font-size: 13px;
+    background: rgba(236, 72, 153, .18);
+    border-top: 1px solid rgba(255, 255, 255, .06);
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+}
+
+.football-match .gx-goal-body {
+    padding: 12px 14px;
+}
+
+.football-match .gx-goal-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.football-match .gx-goal-ring {
+    box-shadow: 0 0 0 2px rgba(236, 72, 153, .55) inset;
+}
+
+.football-match .gx-goal-info {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ===== Empty ===== */
+.football-match .gx-empty {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px dashed rgba(255, 255, 255, .12);
+    opacity: .8;
+}
+
+.football-match .gx-field-wrapper {
+    background: #1b5e20;
+    padding: 20px;
+    border-radius: 18px;
+}
+
+.football-match .gx-field {
+    background: #2e7d32;
+    padding: 30px 10px;
+    border-radius: 18px;
+    position: relative;
+}
+
+.football-match .gx-midline {
+    border-top: 2px solid rgba(255, 255, 255, .4);
+    margin: 25px 0;
+}
+
+.football-match .gx-line {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin: 15px 0;
+}
+
+.football-match .gx-player {
+    text-align: center;
+    color: white;
+}
+
+.football-match .gx-shirt {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #c2185b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin: auto;
+}
+
+.football-match .gx-player-name {
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.football-match .gx-bench-row {
+    background: rgba(255, 255, 255, .05);
+    padding: 6px 10px;
+    margin-bottom: 5px;
+    border-radius: 8px;
+}
+
+.football-match .gx-wrap {
+    border-radius: 14px;
+}
+
+.football-match .gx-topline,
+.football-match .gx-bottomline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.football-match .gx-team {
+    font-size: 14px;
+}
+
+.football-match .gx-formation {
+    font-size: 13px;
+    opacity: .9;
+}
+
+.football-match .gx-field {
+    background: #1f6a2a;
+    border-radius: 18px;
+    padding: 18px 10px;
+    border: 1px solid rgba(255, 255, 255, .10);
+    overflow: hidden;
+}
+
+.football-match .gx-mid {
+    height: 2px;
+    background: rgba(255, 255, 255, .35);
+    margin: 18px 0;
+}
+
+.football-match .gx-line {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    margin: 10px 0;
+}
+
+.football-match .gx-player {
+    width: 80px;
+    text-align: center;
+    color: #fff;
+}
+
+.football-match .gx-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-weight: 900;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .18) inset;
+}
+
+.football-match .gx-home {
+    background: #b01257;
+}
+
+/* لون صاحب الأرض */
+.football-match .gx-away {
+    background: #0f4aa5;
+}
+
+/* لون الضيف */
+
+.football-match .gx-num {
+    font-size: 13px;
+}
+
+.football-match .gx-name {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: .95;
+}
+
+.football-match .gx-ns-wrap {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, .10)
+}
+
+.football-match .gx-ns-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-bottom: 14px
+}
+
+.football-match .gx-ns-tab {
+    background: transparent;
+    border: 0;
+    color: #cfd3d8;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 8px 0;
+    position: relative
+}
+
+.football-match .gx-ns-tab.active {
+    color: #fff
+}
+
+.football-match .gx-ns-tab.active:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px
+}
+
+.football-match .gx-ns-title {
+    text-align: center;
+    font-weight: 800;
+    font-size: 13px;
+    margin-bottom: 12px;
+    color: #fff
+}
+
+.football-match .gx-ns-perc {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 10px
+}
+
+.football-match .gx-ns-perc-item {
+    width: 33.33%;
+    text-align: center
+}
+
+.football-match .gx-ns-perc-item.mid {
+    opacity: .9
+}
+
+.football-match .gx-ns-perc-val {
+    font-weight: 900;
+    font-size: 14px
+}
+
+.football-match .gx-ns-perc-label {
+    font-size: 12px;
+    opacity: .75;
+    margin-top: 3px
+}
+
+.football-match .gx-ns-bar {
+    height: 6px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .10);
+    display: flex
+}
+
+.football-match .gx-ns-bar-away {
+    background: #7dd3fc
+}
+
+.football-match .gx-ns-bar-draw {
+    background: #e5e7eb
+}
+
+.football-match .gx-ns-bar-home {
+    background: #fb7185
+}
+
+/* End Matches */
+.gx-fixtures-grid .gx-fixture-card{
+    margin-bottom: 10px;
+}
+
+.gx-fixtures-grid .gx-score span{
+    display: block;
+}
+.gx-fixtures-grid .gx-score span:nth-last-of-type(2){
+    display: none;
+}
+
+
+/* ===== Responsive: على الشاشات الصغيرة نخلي سكرول ===== */
+@media (max-width: 992px) {
+    .football .standings-table {
+        min-width: 760px;
+    }
+
+    .football .club-info {
+        min-width: 220px;
+    }
+
+    .gx-fixtures-grid{
+        display: block;
+    }
+}
+
+
+
+
+@media (max-width: 575px) {
+    .gx-fixtures-grid .gx-fixture-card .match {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .gx-fixtures-grid .gx-score span{
+        font-size: 16px;
+        display: block;
+    }
+    .gx-fixtures-grid .gx-score span:nth-last-of-type(2){
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .football .standings-wrap {
+        padding: 12px;
+    }
+
+    .football .standings-title {
+        font-size: 16px;
+    }
+
+    .football .standings-table {
+        min-width: 720px;
+    }
+}
