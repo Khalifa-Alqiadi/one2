@@ -41,20 +41,50 @@
             @include('dashboard.leagues.tabs')
         </div>
         <div class="b-t">
-            @if ($rounds->total() == 0)
+            @if ($paginatedPages->total() == 0)
                 <div class="row p-a">
                     <div class="col-sm-12">
-                        <div class=" p-a text-center ">
-                            <div class="text-muted m-b"><i class="fa fa-futbol-o fa-4x"></i></div>
+                        <div class="p-a text-center">
+                            <div class="text-muted m-b">
+                                <i class="fa fa-futbol-o fa-4x"></i>
+                            </div>
                             <h6>{{ __('backend.noData') }}</h6>
                         </div>
                     </div>
                 </div>
-            @endif
+            @else
+                @php
+                    $pageItem = $paginatedPages->first();
+                    $pageTitle = $pageItem['title'] ?? '-';
+                    $fixtures = $pageItem['fixtures'] ?? collect();
+                    $pageType = $pageItem['type'] ?? 'round';
+                    $stage = $pageItem['stage'] ?? null;
+                    $round = $pageItem['round'] ?? null;
+                @endphp
 
-            @if ($rounds->total() > 0)
+                <div class="p-a">
+                    <h4 class="m-b-md">
+                        {{ $pageTitle }}
+                    </h4>
+
+                    @if ($stage)
+                        <div class="text-muted m-b-sm">
+                            {{ __('backend.stage') }}:
+                            <strong>{{ $stage->$name_var ?? '-' }}</strong>
+                        </div>
+                    @endif
+
+                    @if ($round)
+                        <div class="text-muted m-b-md">
+                            {{ __('backend.round') }}:
+                            <strong>{{ $round->name ?? '-' }}</strong>
+                        </div>
+                    @endif
+                </div>
+
                 <form method="POST" action="{{ route('roundsUpdateAll') }}" class="dashboard-form">
                     @csrf
+
                     <div class="table-responsive">
                         <table class="table table-bordered m-a-0">
                             <thead class="dker">
@@ -66,151 +96,121 @@
                                     </th>
                                     <th class="text-center w-64">ID</th>
                                     <th>{{ __('backend.matche') }}</th>
-
                                     <th class="text-center" style="width:200px;">{{ __('backend.starting_at') }}</th>
                                     <th class="text-center" style="width:200px;">{{ __('backend.status') }}</th>
                                     <th class="text-center" style="width:100px;">{{ __('backend.bulkAction') }}</th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                                @foreach ($rounds as $round)
-                                    @if ($round->fixtures->count() > 0)
-                                        @foreach ($round->fixtures as $match)
-                                            <tr>
-                                                <td class="dker"><label class="ui-check m-a-0">
-                                                        <input type="checkbox" name="ids[]"
-                                                            value="{{ $match->id }}"><i class="dark-white"></i>
-                                                        <input type="hidden" name="row_ids[]" value="{{ $match->id }}"
-                                                            class="form-control row_no">
-                                                    </label>
-                                                </td>
-                                                <td class="text-center">{{ $match->id }}</td>
-                                                <td class="h6 nowrap">
-                                                    <div class="d-flex content-justify-between">
-                                                        <a href="{{route('matcheRoundsEdit', ['id' => $match->id])}}" class="d-flex justify-content-between"
-                                                            style="justify-content: space-between; display:flex">
-                                                            <div>
-                                                                @if ($match->homeTeam)
-                                                                    @if ($match->homeTeam->image_path)
-                                                                        <img src="{{ $match->homeTeam->image_path }}"
-                                                                            style="height:30px" alt="">
-                                                                    @endif
-                                                                    <span>{{ $match->homeTeam->$name_var }}</span>
-                                                                @endif
-                                                            </div>
-                                                            <span class="m-x-sm">vs</span>
-                                                            <div>
-                                                                @if ($match->awayTeam)
-                                                                    @if ($match->awayTeam->image_path)
-                                                                        <img src="{{ $match->awayTeam->image_path }}"
-                                                                            style="height:30px" alt="">
-                                                                    @endif
-                                                                    <span>{{ $match->awayTeam->$name_var }}</span>
-                                                                @endif
-                                                            </div>
-                                                        </a>
+                                @forelse($fixtures as $match)
+                                    <tr>
+                                        <td class="dker">
+                                            <label class="ui-check m-a-0">
+                                                <input type="checkbox" name="ids[]" value="{{ $match->id }}">
+                                                <i class="dark-white"></i>
+                                                <input type="hidden" name="row_ids[]" value="{{ $match->id }}"
+                                                    class="form-control row_no">
+                                            </label>
+                                        </td>
 
-                                                    </div>
+                                        <td class="text-center">{{ $match->id }}</td>
 
-                                                </td>
-                                                <td class="text-center">
-                                                    {{ $match->starting_at->format('Y-m-d H:i') }}
-                                                </td>
-
-                                                <td class="text-center">
-                                                    @if ($match->starting_at > now())
-                                                        <span
-                                                            class=" text-success">{{ __('backend.not_started_yet') }}</span>
-                                                    @else
-                                                        <span class=" text-info">{{ __('backend.finished') }}</span>
-                                                    @endif
-
-                                                </td>
-                                                <td class="text-center">
-                                                    <div class="dropdown {{ $x + 1 >= count($rounds) ? 'dropup' : '' }}">
-                                                        <button type="button" class="btn btn-sm light dk dropdown-toggle"
-                                                            data-toggle="dropdown"><i class="material-icons">&#xe5d4;</i>
-                                                            {{ __('backend.options') }}
-                                                        </button>
-                                                        <div class="dropdown-menu pull-right">
-                                                            @if (@Auth::user()->permissionsGroup->edit_status)
-                                                                <a class="dropdown-item"
-                                                                    href="{{ route('matcheRoundsEdit', ['id' => $round->id]) }}"><i
-                                                                        class="material-icons">&#xe3c9;</i>
-                                                                    {{ __('backend.edit') }}
-                                                                </a>
+                                        <td class="h6 nowrap">
+                                            <div class="d-flex content-justify-between">
+                                                <a href="{{ route('matcheRoundsEdit', ['id' => $match->id]) }}"
+                                                    class="d-flex justify-content-between"
+                                                    style="justify-content: space-between; display:flex">
+                                                    <div>
+                                                        @if ($match->homeTeam)
+                                                            @if ($match->homeTeam->image_path)
+                                                                <img src="{{ $match->homeTeam->image_path }}"
+                                                                    style="height:30px" alt="">
                                                             @endif
-                                                        </div>
+                                                            <span>{{ $match->homeTeam->$name_var }}</span>
+                                                        @endif
                                                     </div>
-                                                </td>
-                                                {{-- <td class="text-center">{{ $League->sport_id }}</td> --}}
-                                            </tr>
-                                        @endforeach
-                                    @endif
-                                @endforeach
+                                                    <span class="m-x-sm">vs</span>
+                                                    <div>
+                                                        @if ($match->awayTeam)
+                                                            @if ($match->awayTeam->image_path)
+                                                                <img src="{{ $match->awayTeam->image_path }}"
+                                                                    style="height:30px" alt="">
+                                                            @endif
+                                                            <span>{{ $match->awayTeam->$name_var }}</span>
+                                                        @endif
+                                                    </div>
+                                                </a>
+
+                                            </div>
+                                        </td>
+
+                                        <td class="text-center">
+                                            {{ $match->starting_at ? $match->starting_at->format('Y-m-d H:i') : '-' }}
+                                        </td>
+
+                                        <td class="text-center">
+                                            @if ($match->is_finished)
+                                                <span class="text-info">{{ __('backend.finished') }}</span>
+                                            @elseif ($match->starting_at && $match->starting_at > now())
+                                                <span class="text-success">{{ __('backend.not_started_yet') }}</span>
+                                            @else
+                                                <span class="text-warning">{{ __('backend.live_now') ?? 'Live' }}</span>
+                                            @endif
+                                        </td>
+
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button type="button" class="btn btn-sm light dk dropdown-toggle"
+                                                    data-toggle="dropdown">
+                                                    <i class="material-icons">&#xe5d4;</i>
+                                                    {{ __('backend.options') }}
+                                                </button>
+                                                <div class="dropdown-menu pull-right">
+                                                    @if (@Auth::user()->permissionsGroup->edit_status)
+                                                        <a class="dropdown-item"
+                                                            href="{{ route('matcheRoundsEdit', ['id' => $match->id]) }}">
+                                                            <i class="material-icons">&#xe3c9;</i>
+                                                            {{ __('backend.edit') }}
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            {{ __('backend.noData') }}
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
+
                     <footer class="dker p-a">
                         <div class="row">
-                            <div class="col-sm-3 hidden-xs">
-                                <!-- .modal -->
-                                <div id="m-all" class="modal fade" data-backdrop="true">
-                                    <div class="modal-dialog" id="animate">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">{{ __('backend.confirmation') }}</h5>
-                                            </div>
-                                            <div class="modal-body text-center p-lg">
-                                                <h5 class="m-b-0">
-                                                    {{ __('backend.confirmationDeleteMsg') }}
-                                                </h5>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn dark-white p-x-md"
-                                                    data-dismiss="modal">{{ __('backend.no') }}</button>
-                                                <button type="submit"
-                                                    class="btn danger p-x-md">{{ __('backend.yes') }}</button>
-                                            </div>
-                                        </div><!-- /.modal-content -->
-                                    </div>
-                                </div>
-                                <!-- / .modal -->
-
-                                @if (@Auth::user()->permissionsGroup->edit_status)
-                                    <select name="action" id="action"
-                                        class="form-control c-select w-sm inline v-middle" required>
-                                        <option value="">{{ __('backend.bulkAction') }}</option>
-                                        <option value="order">{{ __('backend.saveOrder') }}</option>
-
-                                        <optgroup label="{{ __('backend.active') }}/{{ __('backend.notActive') }}">
-                                            <option value="activate">- {{ __('backend.activeSelected') }}</option>
-                                            <option value="block">- {{ __('backend.blockSelected') }}</option>
-                                        </optgroup>
-                                    </select>
-                                    <button type="submit" id="submit_all"
-                                        class="btn white">{{ __('backend.apply') }}</button>
-                                    <button id="submit_show_msg" class="btn white" data-toggle="modal"
-                                        style="display: none" data-target="#m-all" ui-toggle-class="bounce"
-                                        ui-target="#animate">{{ __('backend.apply') }}
-                                    </button>
-                                @endif
-                            </div>
                             <div class="col-sm-3 text-center">
-                                <small class="text-muted inline m-t-sm m-b-sm">{{ __('backend.showing') }}
-                                    {{ $rounds->firstItem() }}
-                                    -{{ $rounds->lastItem() }} {{ __('backend.of') }}
-                                    <strong>{{ $rounds->total() }}</strong> {{ __('backend.records') }}</small>
+                                <small class="text-muted inline m-t-sm m-b-sm">
+                                    {{ __('backend.showing') }}
+                                    {{ $paginatedPages->firstItem() }}
+                                    - {{ $paginatedPages->lastItem() }}
+                                    {{ __('backend.of') }}
+                                    <strong>{{ $paginatedPages->total() }}</strong>
+                                    {{ __('backend.records') }}
+                                </small>
                             </div>
-                            <div class="col-sm-6 text-right text-center-xs">
-                                {!! $rounds->links() !!}
+
+                            <div class="col-sm-9 text-right text-center-xs">
+                                {!! $paginatedPages->appends(request()->query())->links() !!}
                             </div>
                         </div>
                     </footer>
                 </form>
             @endif
-
         </div>
+
     </div>
     <div id="updateRoundModal" class="modal fade" data-backdrop="true">
         <div class="modal-dialog" id="animate">

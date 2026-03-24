@@ -53,6 +53,7 @@
                 if (!json || !json.ok) return;
 
                 (json.fixtures || []).forEach((fx) => {
+                    console.log(fx);
                     const el = document.getElementById("fixture-" + fx.id);
                     if (!el) return;
 
@@ -77,7 +78,8 @@
                     }
 
                     // ✅ إذا انتهت المباراة: فقط هنا نطفي live ونمسح الدقيقة
-                    if (fx.is_finished) {
+                    if (fx.is_finished && fx.state_code == "FT") {
+
                         el.dataset.live = "0";
                         setText(
                             el,
@@ -91,22 +93,40 @@
                     }
 
                     // منتصف المباراة
-                    if (fx.is_half) {
-                        el.dataset.live = "1";
-                        lb.textContent = "منتصف المباراة";
-                        mn.textContent = "";
-                        return;
-                    }
+
 
                     // ✅ ما دام مش منتهية: لا تطفي live حتى لو fx.is_live رجع false لحظة
                     // فقط حدّث النص والدقيقة إذا متاحة
                     el.dataset.live = "1";
-                    setText(
-                        el,
-                        ".js-live-badge",
-                        "{{ $locale == 'ar' ? 'مباشر' : 'LIVE' }}",
-                        true,
-                    );
+                    if(fx.state_code == "NS"){
+                        setText(
+                            el,
+                            ".js-live-badge",
+                            "{{ $locale == 'ar' ? 'لم يبدأ بعد' : 'LIVE' }}",
+                            false,
+                        );
+                    }else{
+                        if (fx.state_code === 'HT') {
+                            // el.dataset.live = "1";
+                            // lb.textContent = "منتصف المباراة";
+                            // mn.textContent = "";
+                            // return;
+                            setText(
+                                el,
+                                ".js-live-badge",
+                                "{{ $locale == 'ar' ? 'منتصف المباراة' : 'LIVE' }}",
+                                false,
+                            );
+                        }else{
+                            setText(
+                                el,
+                                ".js-live-badge",
+                                "{{ $locale == 'ar' ? 'مباشر' : 'LIVE' }}",
+                                true,
+                            );
+                        }
+
+                    }
 
                     if (fx.minute !== null && fx.minute !== undefined && fx.minute !== "") {
                         const m = fmtMinute(fx.minute);

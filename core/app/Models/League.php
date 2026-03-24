@@ -34,4 +34,9 @@ class League extends Model
     {
         return $this->hasMany(Round::class, 'league_id', 'id');
     }
+
+    public function stages()
+    {
+        return $this->hasMany(Stage::class, 'league_id');
+    }
 }

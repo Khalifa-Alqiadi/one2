@@ -1384,9 +1384,7 @@
 #content{
     overflow: hidden;
 }
-.pagination{
-    overflow: scroll;
-}
+
 .mobile-menu {
     position: fixed;
     bottom: 0;
@@ -1718,5 +1716,9 @@
 
     .card .badge {
         display: none;
+    }
+
+    .pagination{
+        overflow: scroll;
     }
 }

@@ -15,6 +15,7 @@ class Fixture extends Model
         'away_team_id',
         'starting_at',
         'state_id',
+        'stage_id',
         'state_name',
         'home_score',
         'away_score',
@@ -51,4 +52,6 @@ class Fixture extends Model
     {
         return $this->belongsTo(Team::class, 'away_team_id', 'id');
     }
+
+
 }

@@ -35,4 +35,10 @@ class Round extends Model
     {
         return $this->hasMany(Fixture::class, 'round_id', 'id');
     }
+
+    public function stage()
+    {
+        return $this->belongsTo(Stage::class, 'stage_id');
+    }
+
 }

@@ -48,8 +48,8 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
             <div class="tab-content cardx border-0 p-3 px-0">
                 {{-- Fixtures --}}
                 <div class="tab-pane fade show active" id="t-fixtures" role="tabpanel">
-                    
-                    @include('frontEnd.custom.tabs.fixtures', [
+
+                    @include('frontEnd.custom.league-matches.tabs.matches', [
                         'fixtures' => $fixtures ?? [],
                         'locale' => $locale,
                     ])
@@ -61,7 +61,7 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
                 ]) --}}
 
                 {{-- Standings --}}
-                @include('frontEnd.custom.tabs.standings', [
+                @include('frontEnd.custom.league-matches.tabs.standings', [
                     'standings' => $standings
                 ])
 

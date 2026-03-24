@@ -908,4 +908,6 @@ return array(
     'finished' => 'Finished',
     'is_home' => 'Pin to Home',
     'is_slider' => 'Pin to Slider',
+    'Stage' => 'Stage',
+    'round' => 'Round',
 );

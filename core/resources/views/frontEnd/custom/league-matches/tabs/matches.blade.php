@@ -53,12 +53,12 @@
             @forelse($fixtures as $fx)
                 @php
                     $isFinished = (bool) $fx->is_finished;
-
+                    $timezone = env('TIMEZONE', 'UTC');
                     $isTimeLive = false;
                     if (!$isFinished && $fx->starting_at) {
                         try {
-                            $start = \Carbon\Carbon::parse($fx->starting_at);
-                            $isTimeLive = now()->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
+                            $start = \Carbon\Carbon::parse($fx->starting_at)->timezone($timezone);
+                            $isTimeLive = now()->between($start->copy()->subMinutes(15), $start->copy()->addHours(2));
                         } catch (\Throwable $e) {
                         }
                     }
@@ -69,7 +69,7 @@
                     $homeName = $locale == 'ar' ? $home->name_ar ?? $home->name_en : $home->name_en ?? $home->name_ar;
                     $awayName = $locale == 'ar' ? $away->name_ar ?? $away->name_en : $away->name_en ?? $away->name_ar;
 
-                    $timezone = env('TIMEZONE', 'UTC');
+
 
                     $dt = $fx->starting_at ? \Carbon\Carbon::parse($fx->starting_at)->timezone($timezone) : null;
                     $dateLabel = $dt ? $dt->translatedFormat('m/d') : '';
