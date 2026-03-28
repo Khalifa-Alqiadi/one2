@@ -120,7 +120,7 @@
                                 <div class="offset-sm-2 col-sm-10">
                                     <button type="submit"
                                         class="btn btn-lg btn-primary m-t">{{ __('backend.update') }}</button>
-                                    <a href="{{ route('leaguesRounds', ['id' => $match->league->id]) }}"
+                                    <a href="{{ route('leaguesRounds', ['league_id' => $match->league->id, 'season_id' => $match->season_id]) }}"
                                         class="btn btn-lg btn-default m-t">{{ __('backend.cancel') }}</a>
                                 </div>
                             </div>

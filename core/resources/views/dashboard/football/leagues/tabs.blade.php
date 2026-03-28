@@ -6,9 +6,9 @@
         </a>
     </li>
     <li class="nav-item inline">
-        <a class="nav-link {{ $tab == 'rounds' ? 'active' : '' }}" href="{{ route('leaguesRounds', ['id' => $League->id, 'tab' => 'rounds']) }}">
+        <a class="nav-link {{ $tab == 'seasons' ? 'active' : '' }}" href="{{ route('seasons', ['league_id' => $League->id, 'tab' => 'seasons']) }}">
             <span class="text-md"><i class="material-icons">
-                    &#xe8ed;</i> {{ __('backend.rounds') }}</span>
+                    &#xe8ed;</i> {{ __('backend.seasons') }}</span>
         </a>
     </li>
 </ul>

@@ -1323,17 +1323,7 @@ class HomeController extends Controller
         }
     }
 
-    public function website_status()
-    {
-        // Check the website Status
-        if (!Auth::check()) {
-            $site_status = Helper::GeneralSiteSettings("site_status");
-            if ($site_status == 0) {
-                echo view("frontEnd.closed", ["close_message" => Helper::GeneralSiteSettings("close_msg")])->render();
-                exit();
-            }
-        }
-    }
+
 
     public function page_404($lang = "")
     {
@@ -1517,7 +1507,7 @@ class HomeController extends Controller
 
         curl_close($curl);
         return $response;
-        
+
     }
     public function liveScores(array $includes = [])
     {

@@ -113,8 +113,7 @@ class LeaguesController extends Controller
 
 
 
-    public function rounds(Request $request, $id)
-    {
+    public function rounds(Request $request, $id){
         $GeneralWebmasterSections = WebmasterSection::where('status', '1')
             ->orderBy('row_no', 'asc')
             ->get();
@@ -144,10 +143,10 @@ class LeaguesController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | 1) جلب stages + rounds + fixtures
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 1) جلب stages + rounds + fixtures
+        |--------------------------------------------------------------------------
+        */
         $stages = $League->stages()
             ->with([
                 'rounds' => function ($q) use ($seasonId) {
@@ -166,12 +165,12 @@ class LeaguesController extends Controller
             ->get();
 
         /*
-    |--------------------------------------------------------------------------
-    | 2) بناء قائمة صفحات العرض
-    |    - جولات league phase أولاً (1 → 8)
-    |    - ثم بقية المراحل
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 2) بناء قائمة صفحات العرض
+        |    - جولات league phase أولاً (1 → 8)
+        |    - ثم بقية المراحل
+        |--------------------------------------------------------------------------
+        */
         $pages = collect();
         $name_var = 'name_' . @Helper::currentLanguage()->code;
         foreach ($stages as $stage) {
@@ -224,10 +223,10 @@ class LeaguesController extends Controller
         }
 
         /*
-    |--------------------------------------------------------------------------
-    | 3) pagination يدوي
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 3) pagination يدوي
+        |--------------------------------------------------------------------------
+        */
         $perPage = 1;
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $currentItems = $pages->slice(($currentPage - 1) * $perPage, $perPage)->values();
@@ -244,10 +243,10 @@ class LeaguesController extends Controller
         );
 
         /*
-    |--------------------------------------------------------------------------
-    | 4) انتقال تلقائي للجولة الحالية
-    |--------------------------------------------------------------------------
-    */
+        |--------------------------------------------------------------------------
+        | 4) انتقال تلقائي للجولة الحالية
+        |--------------------------------------------------------------------------
+        */
         if (!$request->has('page')) {
             $targetIndex = 0;
 
@@ -281,57 +280,6 @@ class LeaguesController extends Controller
             'stages',
             'paginatedPages'
         ));
-    }
-
-
-
-
-    public function roundsOld(Request $request, $id)
-    {
-        $GeneralWebmasterSections = WebmasterSection::where('status', '=', '1')->orderby('row_no', 'asc')->get();
-        $League = League::find($id);
-        $Seasons = $League->seasons()->orderby('starting_at', 'desc')->get();
-        $perPage = 1;
-
-        // $rounds = $League->rounds()
-        //     ->with('season', 'fixtures', 'fixtures.homeTeam', 'fixtures.awayTeam')
-        //     ->orderby('starting_at', 'desc')
-        //     ->paginate(1);
-
-        $baseQuery = $League->rounds()->orderBy('starting_at', 'asc');
-
-        // ✅ دور على الجولة الحالية
-        $currentRound = (clone $baseQuery)->where('is_current', 1)->first();
-
-        // ✅ إذا المستخدم ما مرر page، حوّله تلقائيًا لصفحة الجولة الحالية
-        if (!$request->has('page') && $currentRound) {
-            $countBefore = (clone $baseQuery)
-                ->where('starting_at', '<', $currentRound->starting_at) // لأن desc
-                ->count();
-
-            $page = (int) floor($countBefore / $perPage) + 1;
-
-            return redirect()->route('leaguesRounds', [
-                'id' => $id,
-                'page'     => $page,
-            ]);
-        }
-
-        // ✅ pagination الطبيعي
-        $rounds = $League->rounds()
-            ->with('season', 'fixtures', 'fixtures.homeTeam', 'fixtures.awayTeam')
-            ->whereHas('season', function ($q) {
-                $q->where('is_current', 1);
-            })
-            ->orderBy('starting_at', 'asc') // عكس الترتيب عشان الجولة الحالية تكون في الأسفل
-            ->paginate($perPage);
-
-        $tab = request()->input("tab", "rounds");
-        if (!empty($League)) {
-            return view('dashboard.leagues.rounds', compact('League', 'GeneralWebmasterSections', 'tab', 'Seasons', 'rounds'));
-        } else {
-            return redirect()->action([LeaguesController::class, 'index'])->with('doneMessage', __('backend.saveDone'));
-        }
     }
 
 

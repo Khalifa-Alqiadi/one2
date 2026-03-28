@@ -30,5 +30,13 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         Paginator::useBootstrap();
+        $this->registerCommands();
+    }
+
+    protected function registerCommands(): void
+    {
+        $this->commands([
+            \App\Console\Commands\SyncLiveFixtures::class,
+        ]);
     }
 }

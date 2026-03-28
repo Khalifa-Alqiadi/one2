@@ -17,7 +17,7 @@
         </div>
 
         <div class="box nav-active-border b-info">
-            @include('dashboard.leagues.tabs')
+            @include('dashboard.football.leagues.tabs')
             <div class="tab-content clear b-t">
                 <div class="tab-pane active" id="tab_details">
                     <div class="box-body p-a-2">

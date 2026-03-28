@@ -350,14 +350,14 @@ $mnu_title_var2 = 'title_' . config('smartend.default_language');
                     $currentFolder = 'seasons';
                     $PathCurrentFolder = substr($urlAfterRoot, 0, strlen($currentFolder));
                     ?>
-                    <li {{ $PathCurrentFolder == $currentFolder ? 'class=active' : '' }}>
+                    {{-- <li {{ $PathCurrentFolder == $currentFolder ? 'class=active' : '' }}>
                         <a href="{{ route('seasons') }}">
                             <span class="nav-icon">
                                 <i class="material-icons">&#xe53b;</i>
                             </span>
                             <span class="nav-text">{{ __('backend.seasons') }}</span>
                         </a>
-                    </li>
+                    </li> --}}
                     <?php
                     $currentFolder = 'teams';
                     $PathCurrentFolder = substr($urlAfterRoot, 0, strlen($currentFolder));

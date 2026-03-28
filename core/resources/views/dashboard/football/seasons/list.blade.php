@@ -1,4 +1,7 @@
 
+<?php
+$name_var = 'name_' . @Helper::currentLanguage()->code;
+?>
 @extends('dashboard.layouts.master')
 
 @section('content')
@@ -10,6 +13,8 @@
                         <h3>{{ __('backend.seasons') }} </h3>
                         <small>
                             <a href="{{ route('adminHome') }}">{{ __('backend.home') }}</a> /
+                            <a href="{{ route('leaguesEdit', ['id' => $League->id]) }}">{{ $League->$name_var }}</a> /
+
                             <a>{{ __('backend.seasons') }} </a>
                         </small>
                     </div>
@@ -31,7 +36,7 @@
                             <div class="col-sm-5">
                                 @if (@Auth::user()->permissionsGroup->add_status)
                                     <a class="btn btn-fw info w-100" style="overflow: hidden"
-                                        href="{{ route('seasonsUpdate') }}">
+                                        href="{{ route('seasonsUpdate', ['league_id' => $League->id]) }}">
                                         <i class="material-icons">&#xe02e;</i>
                                         &nbsp; {{ __('backend.update_refrech') }}</a>
                                 @endif
@@ -39,7 +44,11 @@
                         </div>
                     </div>
                 </div>
+                <div class="box nav-active-border b-primary">
+                    @include('dashboard.football.leagues.tabs')
+                </div>
             </div>
+
             <div class="b-t">
                 @if ($Seasons->total() == 0)
                     <div class="row p-a">
@@ -59,9 +68,10 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>{{ __('backend.season') }}</th>
-                                    <th>{{ __('backend.starting_at') ?? 'Starting At' }}</th>
-                                    <th>{{ __('backend.ending_at') ?? 'Ending At' }}</th>
-                                    <th>{{ __('backend.is_current') ?? 'Current' }}</th>
+                                    <th class="text-center">{{ __('backend.starting_at') ?? 'Starting At' }}</th>
+                                    <th class="text-center">{{ __('backend.ending_at') ?? 'Ending At' }}</th>
+                                    <th class="text-center">{{ __('backend.is_current') ?? 'Current' }}</th>
+                                    <th class="text-center" style="width:100px;">{{ __('backend.bulkAction') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -79,6 +89,13 @@
                                         </td>
                                         <td class="text-center">
                                             {{ $Season->is_current ? 'Yes' : 'No' }}
+                                        </td>
+                                        <td class="text-center">
+                                            <a class=""
+                                                href="{{route('leaguesRounds', ['league_id' => $League->id, 'season_id' => $Season->id])}}"
+                                                ><i
+                                                    class="material-icons">&#xe8f4;</i>
+                                            </a>
                                         </td>
                                         {{-- <td class="text-center">{{ $League->sport_id }}</td> --}}
                                     </tr>

@@ -74,7 +74,7 @@ $x = 0;
                                         <th class="text-center w-64">ID</th>
                                         <th>{{ __('backend.name') }}</th>
                                         <th class="text-center" style="width:300px;">{{ __('backend.country') }}</th>
-                                        <th class="text-center" style="width:100px;">{{ __('backend.actions') }}</th>
+                                        <th class="text-center" style="width:100px;">{{ __('backend.bulkAction') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
