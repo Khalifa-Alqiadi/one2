@@ -117,8 +117,8 @@
                 if (!res.ok) return;
                 const json = await res.json();
                 if (!json?.ok || !json.data) return;
-
                 const fx = json.data;
+
 
                 setHeader(fx);
                 if (fx.probabilities) updateProbabilities(fx.probabilities);

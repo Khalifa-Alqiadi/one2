@@ -428,7 +428,7 @@ class MatchesController extends Controller
     {
         $url = "https://api.sportmonks.com/v3/football/fixtures/{$fixtureId}"
             . "?api_token={$token}&locale={$locale}"
-            . "&include=state;participants;scores;events;events.player;events.type;lineups;lineups.player;lineups.position;statistics.type;metadata;odds";
+            . "&include=state;participants;scores;events;events.player;events.type;lineups;lineups.player;lineups.position;statistics.type;metadata;odds;periods";
 
         $res = $this->apiClient->curlGet($url);
         if (!data_get($res, 'ok')) return null;
@@ -469,6 +469,23 @@ class MatchesController extends Controller
         elseif ($isHalf) $status = 'HT';
         elseif ($isLive) $status = 'LIVE';
         elseif ($stateCode === "INPLAY_2ND") $status = 'LIVE';
+        elseif ($stateCode === "INPLAY_1ST") $status = 'LIVE';
+
+        $minute =
+            data_get($match, 'time.minute')
+            ?? data_get($match, 'time.current_minute')
+            ?? data_get($match, 'time.added_time')
+            ?? null;
+
+        if (!is_numeric($minute)) {
+            $minute = $this->handleMatchesService->extractMinuteFromPeriods((array) data_get($match, 'periods', []));
+        }
+
+        if (!is_numeric($minute)) {
+            $minute = $this->handleMatchesService->extractMinuteFromEvents((array) data_get($match, 'events', []));
+        }
+
+        $minute = is_numeric($minute) ? (int) $minute : null;
 
         $eventsRaw = (array) data_get($match, 'events', []);
         $events = $this->handleMatchesService->normalizeEvents($eventsRaw, $homeId, $awayId);
@@ -477,8 +494,8 @@ class MatchesController extends Controller
         // $minute = is_numeric($minute) ? (int)$minute : null;
 
         // if ($minute === null) {
-            $minute = collect($eventsRaw)->pluck('minute')->filter()->max();
-            $minute = is_numeric($minute) ? (int)$minute : null;
+            // $minute = collect($eventsRaw)->pluck('minute')->filter()->max();
+            // $minute = is_numeric($minute) ? (int)$minute : null;
         // }
 
         $lineups = collect(data_get($match, 'lineups', []))->values()->all();
@@ -514,7 +531,7 @@ class MatchesController extends Controller
             'status' => $status,
             'state_code' => $stateCode,
             'state_name' => $stateName,
-            'minute' => in_array($status, ['LIVE','HT'], true) ? $minute : null,
+            'minute' =>  $minute,
 
             'home' => [
                 'id' => $homeId,
