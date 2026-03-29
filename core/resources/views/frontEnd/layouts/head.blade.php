@@ -18,8 +18,8 @@
 <link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.theme.default.min.css') }}?v={{ Helper::system_version() }}">
 
 <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v={{ Helper::system_version() }}" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=70" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=1" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=71" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=2" rel="stylesheet"/>
 
 
 @if( @Helper::currentLanguage()->direction=="rtl")
