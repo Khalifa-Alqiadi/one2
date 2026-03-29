@@ -382,9 +382,9 @@ class MatchesController extends Controller
         $cached = Cache::get($cacheKey);
         $ttlSeconds = (data_get($cached, 'status') === 'LIVE') ? 1 : 1;
         $fixture = Fixture::with(['league', 'homeTeam', 'awayTeam'])->find($id);
-        $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($id, $token, $locale) {
-            return $this->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-        });
+        // $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($id, $token, $locale) {
+            $data = $this->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+        // });
 
         if (!$data) {
             return view('frontEnd.custom.league-matches.show', [
