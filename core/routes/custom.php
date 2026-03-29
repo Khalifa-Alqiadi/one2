@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\Custom\CustomController;
-use App\Http\Controllers\Custom\LeagueController;
+use App\Http\Controllers\Football\LeaguesController;
 use App\Http\Controllers\Custom\LeagueTabsController;
-use App\Http\Controllers\Custom\FixturesController;
+use App\Http\Controllers\Football\FixturesController;
 use App\Http\Controllers\Custom\MatchesController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,14 +16,14 @@ Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['aut
 
 // public route example
 // Route::get('/custom-page', [CustomController::class, 'custom_page']);
-Route::get('/ucl', [LeagueController::class, 'index'])->name('ucl');
-Route::get('/leagues', [LeagueController::class, 'index'])->name('leagues');
-Route::get('/leagues/{id?}/details', [MatchesController::class, 'show'])->name('league.show');
-Route::get('/round-odds/{roundId}', [LeagueController::class, 'round'])
-    ->name('round.odds');
-Route::get('/standings/{standingsID}', [LeagueController::class, 'standings']);
-Route::get('/league/{leagueId}/tabs', [LeagueTabsController::class, 'index'])
-    ->name('league.tabs');
+// Route::get('/ucl', [LeagueController::class, 'index'])->name('ucl');
+Route::get('/leagues', [LeaguesController::class, 'index'])->name('leagues');
+Route::get('/leagues/{id?}/rounds', [LeaguesController::class, 'rounds'])->name('league.rounds');
+// Route::get('/round-odds/{roundId}', [LeagueController::class, 'round'])
+    // ->name('round.odds');
+// Route::get('/standings/{standingsID}', [LeagueController::class, 'standings']);
+// Route::get('/league/{leagueId}/tabs', [LeagueTabsController::class, 'index'])
+    // ->name('league.tabs');
 //
 Route::get('/club/{teamId}', [LeagueTabsController::class, 'show'])
     ->name('club.show');
@@ -40,7 +40,7 @@ Route::get('/matches/today-json', [FixturesController::class, 'todayJson'])
 Route::get('/fixtures/live-proxy', [MatchesController::class, 'liveProxy'])
     ->name('fixtures.live.proxy');
 
-Route::get('/live/league/{leagueId}', [LeagueController::class, 'liveLeague'])->name('live.league');
+Route::get('/live/league/{leagueId}', [LeaguesController::class, 'liveLeague'])->name('live.league');
 
 Route::get('/fixtures/{id}/live', [MatchesController::class, 'fixtureLiveDetails'])
     ->name('fixture.live.details');

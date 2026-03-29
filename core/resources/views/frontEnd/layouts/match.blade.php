@@ -20,7 +20,7 @@
             m = parseInt(m, 10);
             if (Number.isNaN(m)) return "";
             if (m > 90) return `90+${m - 90}'`;
-            if (m > 45 && stateCode === "INPLAY_1ST_FT") return `45+${m - 45}'`;
+            if (m > 45 && stateCode === "INPLAY_1ST") return `45+${m - 45}'`;
             return `${m}'`;
         }
 
@@ -54,8 +54,7 @@
                 if (!json || !json.ok) return;
 
                 (json.fixtures || []).forEach((fx) => {
-                    console.log(fx);
-                    const el = document.getElementById("fixture-" + fx.id);
+                    const el    = document.getElementById("fixture-" + fx.id);
                     if (!el) return;
 
                     // ✅ خزّن آخر قيم معروفة داخل dataset (عشان ما تنمسح)

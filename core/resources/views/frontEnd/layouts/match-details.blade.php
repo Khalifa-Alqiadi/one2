@@ -1,7 +1,7 @@
 <script>
     (function() {
         const URL = "{{ route('fixture.live.details', ['id' => $fixtureId]) }}";
-        const intervalMs = 10000;
+        const intervalMs = 1000; // كل 8 ثواني (يمكنك تعديلها حسب الحاجة)
         let timer = null;
         let inflight = false;
 
@@ -19,6 +19,7 @@
 
         function setHeader(fx) {
             const status = fx.status ?? 'NS';
+            const state_code = fx.state_code ?? 'NS';
 
             showBlock($('.js-scorebox'), status !== 'NS');
             showBlock($('.js-kickoffbox'), status === 'NS');
@@ -32,8 +33,8 @@
 
             show($('.js-status'), status === 'LIVE');
             show($('.js-ns'), status === 'NS');
-            show($('.js-ht'), status === 'HT');
-            show($('.js-ft'), status === 'FT');
+            show($('.js-ht'), state_code === 'HT');
+            show($('.js-ft'), state_code === 'FT');
 
             setText('.js-minute', status === 'LIVE' && fx.minute ? (fx.minute + "'") : '');
 
@@ -112,6 +113,7 @@
                 const res = await fetch(URL, {
                     cache: 'no-store'
                 });
+
                 if (!res.ok) return;
                 const json = await res.json();
                 if (!json?.ok || !json.data) return;
@@ -129,6 +131,7 @@
                     clearInterval(timer);
                     timer = null;
                 }
+
             } finally {
                 inflight = false;
             }
@@ -139,6 +142,7 @@
     })();
     function setHeader(fx) {
   const status = fx.status ?? 'NS';
+  const state_code = fx.state_code ?? 'NS';
 
   // Score vs kickoff
   showBlock(document.querySelector('.js-scorebox'), status !== 'NS');
@@ -155,8 +159,8 @@
 
   // badges
   show(document.querySelector('.js-status'), status === 'LIVE');
-  show(document.querySelector('.js-ht'), status === 'HT');
-  show(document.querySelector('.js-ft'), status === 'FT');
+  show(document.querySelector('.js-ht'), state_code === 'HT');
+  show(document.querySelector('.js-ft'), status === 'FT' && state_code === 'FT');
   show(document.querySelector('.js-ns'), status === 'NS');
 
   // minute: يظهر في LIVE فقط

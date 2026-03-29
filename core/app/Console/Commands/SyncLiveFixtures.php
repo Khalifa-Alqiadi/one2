@@ -19,68 +19,104 @@ class SyncLiveFixtures extends Command
         $token    = config('services.SPORTMONKS_TOKEN');
         $locale   = app()->getLocale() ?: 'ar';
 
-        $query = Fixture::query()
+        $updated = 0;
+
+        Fixture::query()
             ->when($leagueId, fn($q) => $q->where('league_id', $leagueId))
             ->when($seasonId, fn($q) => $q->where('season_id', $seasonId))
             ->where(function ($q) {
                 $q->where('is_finished', 0)
-                  ->orWhere(function ($q2) {
-                      $q2->whereNotNull('starting_at')
-                         ->whereBetween('starting_at', [now()->subHours(4), now()->addHours(1)]);
-                  });
+                    ->whereNotNull('starting_at')
+                    ->where('starting_at', '<=', now());
             })
             ->select([
-                'id', 'league_id', 'season_id', 'round_id', 'stage_id',
-                'starting_at', 'is_finished', 'home_score', 'away_score',
-                'state_code', 'state_name', 'minute',
-            ]);
+                'id',
+                'league_id',
+                'season_id',
+                'round_id',
+                'stage_id',
+                'starting_at',
+                'is_finished',
+                'home_score',
+                'away_score',
+                'ft_home_score',
+                'ft_away_score',
+                'state_code',
+                'state_name',
+                'minute',
+            ])
+            ->chunkById(100, function ($fixtures) use ($token, $locale, &$updated) {
+                foreach ($fixtures as $fx) {
+                    $data = app(LiveMatchesService::class)
+                        ->fetchFixtureLiveFromSportmonks($fx->id, $token, $locale);
 
-        $fixtures = $query->get();
+                    if (!$data) {
+                        continue;
+                    }
 
-        $updated = 0;
+                    $stateCode = $data['state_code'] ?? $fx->state_code;
+                    $stateName = $data['state_name'] ?? $fx->state_name;
+                    $status    = $data['status'] ?? null;
+                    $homeScore = $data['home_score'] ?? $fx->home_score;
+                    $awayScore = $data['away_score'] ?? $fx->away_score;
+                    $minute    = $data['minute'] ?? null;
 
-        foreach ($fixtures as $fx) {
-            $data = app(LiveMatchesService::class)
-                ->fetchFixtureLiveFromSportmonks($fx->id, $token, $locale);
+                    $isFinalState = in_array($stateCode, ['FT', 'AET', 'PEN', 'CANC', 'POSTP'], true);
 
-            if (!$data) {
-                continue;
-            }
+                    if ($isFinalState) {
+                        $payload = [
+                            'home_score'    => $homeScore,
+                            'away_score'    => $awayScore,
+                            'ft_home_score' => $homeScore,
+                            'ft_away_score' => $awayScore,
+                            'is_finished'   => 1,
+                            'state_code'    => $stateCode,
+                            'state_name'    => $stateName,
+                            'minute'        => null,
+                        ];
 
-            // لا تحدث منتهية إلا إذا API أكد FT
-            if (($data['status'] ?? '') === 'FT') {
-                $fx->update([
-                    'home_score'    => $data['home_score'],
-                    'away_score'    => $data['away_score'],
-                    'ft_home_score' => $data['home_score'],
-                    'ft_away_score' => $data['away_score'],
-                    'is_finished'   => 1,
-                    'state_code'    => $data['state_code'] ?? 'FT',
-                    'state_name'    => $data['state_name'] ?? 'Finished',
-                    'minute'        => null,
-                ]);
+                        if ($this->hasChanges($fx, $payload)) {
+                            $fx->update($payload);
+                            Cache::forget("sportmonks:fixture_live:{$fx->id}:{$locale}");
+                            $updated++;
+                        }
 
-                Cache::forget("sportmonks:fixture_live:{$fx->id}:{$locale}");
-                $updated++;
-                continue;
-            }
+                        continue;
+                    }
 
-            // LIVE / HT / NS
-            $fx->update([
-                'home_score'  => $data['home_score'],
-                'away_score'  => $data['away_score'],
-                'state_code'  => $data['state_code'] ?? $fx->state_code,
-                'state_name'  => $data['state_name'] ?? $fx->state_name,
-                'minute'      => (($data['status'] ?? '') === 'LIVE') ? $data['minute'] : null,
-                'is_finished' => 0,
-            ]);
+                    $payload = [
+                        'home_score'  => $homeScore,
+                        'away_score'  => $awayScore,
+                        'state_code'  => $stateCode,
+                        'state_name'  => $stateName,
+                        'minute'      => $status === 'LIVE' ? $minute : null,
+                        'is_finished' => 0,
+                    ];
 
-            Cache::forget("sportmonks:fixture_live:{$fx->id}:{$locale}");
-            $updated++;
-        }
+                    if ($this->hasChanges($fx, $payload)) {
+                        $fx->update($payload);
+                        Cache::forget("sportmonks:fixture_live:{$fx->id}:{$locale}");
+                        $updated++;
+                    }
+                }
+            });
 
         $this->info("Fixtures synced: {$updated}");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * تحقق هل فعلاً في بيانات تغيرت قبل update
+     */
+    private function hasChanges(Fixture $fixture, array $payload): bool
+    {
+        foreach ($payload as $key => $value) {
+            if ($fixture->{$key} != $value) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

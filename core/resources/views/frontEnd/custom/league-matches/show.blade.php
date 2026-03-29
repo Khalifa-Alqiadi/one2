@@ -11,7 +11,7 @@
 
             <div class="row justify-content-center">
                 <div class="col-lg-8">
-                    <a href="{{route('league.show', ['id' => $fixture->league->id])}}"  class="league-header mb-3">
+                    <a href="{{route('league.rounds', ['id' => $fixture->league->id])}}"  class="league-header mb-3">
                         @if (data_get($fixture->league, 'image_path'))
                             <div class="logo rounded-circle bg-white">
                                 <img src="{{ data_get($fixture->league, 'image_path') }}" alt="">
@@ -47,7 +47,6 @@
 
                                     {{-- Score / Kickoff --}}
                                     <div class="text-center">
-                                        {{$state_code}}
                                         {{-- ✅ Box: Score (LIVE/HT/FT) --}}
                                         <div class="js-scorebox"
                                             style="font-size:28px;font-weight:800;letter-spacing:1px; display: {{ $state_code === 'NS' ? 'none' : 'block' }};">

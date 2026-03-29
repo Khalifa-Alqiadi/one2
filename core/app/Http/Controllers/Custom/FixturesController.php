@@ -48,18 +48,6 @@ class FixturesController extends Controller
         if($date !== null){
             $tab = $date;
         }
-
-        // $fixtures = Fixture::whereDate('starting_at', $date)->get();
-        // $tab = $request->get('tab', 'today');
-        // if (!in_array($tab, ['yesterday', 'today', 'tomorrow'])) {
-        //     $tab = 'today';
-        //     $date    = now()->toDateString();
-        // }
-        // if ($tab === 'yesterday') {
-        //     $date = now()->subDay()->toDateString();
-        // } elseif ($tab === 'tomorrow') {
-        //     $date = now()->addDay()->toDateString();
-        // }
         $fixtures = Fixture::whereDate('starting_at', $date)
             ->with(['homeTeam', 'awayTeam', 'league', 'season'])
             ->whereHas('season', function ($q) {
@@ -73,72 +61,6 @@ class FixturesController extends Controller
             'matches' => $fixtures,
             'activeTab' => $tab,
             'dates' => $dates,
-        ]);
-    }
-    public function indexOld3(Request $request)
-    {
-        $this->website_status();
-
-        $token  = config('services.SPORTMONKS_TOKEN');
-        $localeRaw = Helper::currentLanguage()->code ?? 'ar';
-        $locale = in_array($localeRaw, ['ar', 'en']) ? $localeRaw : 'en';
-
-        // أي تبويب مفتوح
-        $tab = $request->get('tab', 'today');
-
-
-        // Pagination: كل تبويب له page مستقل
-        $pageToday    = (int) $request->get('p_today', 1);
-        $pageYest     = (int) $request->get('p_yest', 1);
-        $pageTom      = (int) $request->get('p_tom', 1);
-
-        $perPage = 100;
-
-        // Includes (بدون time)
-        // لو خطتك ما تدعم events/periods بيشتغل عادي بس بدون تفاصيل دقيقة/HT
-        $includes = "participants;league;state;scores;round;periods;events";
-
-        $today    = now()->toDateString();
-        $yest     = now()->subDay()->toDateString();
-        $tom      = now()->addDay()->toDateString();
-
-        $todayErr = $yestErr = $tomErr = null;
-
-        // ✅ كل تبويب نجيب صفحة واحدة فقط (خفيف)
-        $todayRes = $this->fetchFixturesByDatePaged($today, $token, $locale, $includes, $todayErr, $perPage, $pageToday);
-        $yestRes  = $this->fetchFixturesByDatePaged($yest,  $token, $locale, $includes, $yestErr,  $perPage, $pageYest);
-        $tomRes   = $this->fetchFixturesByDatePaged($tom,   $token, $locale, $includes, $tomErr,   $perPage, $pageTom);
-
-        // Sort
-        $todays_matches = collect($todayRes['items'])->sortBy('starting_at')->values();
-        $yesterdays_matches = collect($yestRes['items'])->sortBy('starting_at')->values();
-        $tomorrows_matches = collect($tomRes['items'])->sortBy('starting_at')->values();
-
-        return view('frontEnd.custom.fixtures', [
-            'locale' => $locale,
-            'activeTab' => $tab,
-
-            // data
-            'todays_matches' => $todays_matches,
-            'yesterdays_matches' => $yesterdays_matches,
-            'tomorrows_matches' => $tomorrows_matches,
-
-            // errors
-            'todayErr' => $todayErr,
-            'yestErr'  => $yestErr,
-            'tomErr'   => $tomErr,
-
-            // pagination meta
-            'p_today' => $todayRes['pagination'],
-            'p_yest'  => $yestRes['pagination'],
-            'p_tom'   => $tomRes['pagination'],
-
-            // current pages for links
-            'pageToday' => $pageToday,
-            'pageYest'  => $pageYest,
-            'pageTom'   => $pageTom,
-
-            'perPage' => $perPage,
         ]);
     }
 
@@ -303,87 +225,6 @@ class FixturesController extends Controller
         return $all->values()->all();
     }
 
-
-
-
-
-    public function indexOld()
-    {
-        $this->website_status();
-        $lang = request('lang', 'en'); // ar | en
-        $locale = Helper::currentLanguage()->code; // إذا SportMonks يدعمها عندك
-
-        $token = config('services.SPORTMONKS_TOKEN');
-        $includes = "participants;league;state;scores;round;periods";
-        $today = now()->format('Y-m-d');
-
-        $fixtures_todays_matches = $this->fetchAllBetween($today, $token, $locale, $includes);
-
-        $todays_matches = collect($fixtures_todays_matches)
-            ->sortBy('starting_at')
-            ->values();
-
-
-        return view('frontEnd.custom.fixtures', [
-            'todays_matches' => $todays_matches,
-            'count' => count($todays_matches),
-            'locale' => $locale
-        ]);
-    }
-
-    /**
-     * ✅ يجمع كل الصفحات من between
-     */
-    private function fetchAllBetweenOld(
-        string $date,
-        string $token,
-        string $locale,
-        string $includes,
-        ?string &$err = null,
-        int $perPage = 200,
-        int $maxPages = 30
-    ): array {
-        $all = collect();
-        $page = 1;
-        $hasMore = true;
-
-        while ($hasMore && $page <= $maxPages) {
-            $url = "https://api.sportmonks.com/v3/football/fixtures/date/{$date}"
-                . "?api_token={$token}&locale={$locale}"
-                . "&include={$includes}"
-                . "&per_page={$perPage}"
-                . "&page={$page}";
-
-            $res = $this->curlGet($url);
-
-            if (!$res['ok']) {
-                $err = $res['error'] ?? 'Fixtures request failed';
-                break;
-            }
-
-            $data = collect(data_get($res, 'json.data', []));
-            if ($data->isEmpty()) break;
-
-            $all = $all->merge($data);
-
-            $hasMore = (bool) data_get($res, 'json.pagination.has_more', false);
-
-            $currentPage = (int) data_get($res, 'json.pagination.current_page', $page);
-            $lastPage    = (int) data_get($res, 'json.pagination.last_page', $currentPage);
-
-            if (data_get($res, 'json.pagination.last_page') !== null) {
-                $hasMore = $currentPage < $lastPage;
-            }
-
-            if (data_get($res, 'json.pagination') === null) {
-                $hasMore = false;
-            }
-
-            $page++;
-        }
-
-        return $all->all();
-    }
 
     public function show(Request $request, int $leagueId)
     {

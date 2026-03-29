@@ -67,38 +67,7 @@ class MatchesController extends Controller
             ->orderBy('starting_at', 'asc');
 
         $roundsCount = $baseQuery->count();
-        // ✅ دور على الجولة الحالية
-//         $currentRound = (clone $baseQuery)->where('is_current', 1)->first();
-//
-//         // ✅ إذا المستخدم ما مرر page، حوّله تلقائيًا لصفحة الجولة الحالية
-//         if (!$request->has('page') && $currentRound) {
-//             $countBefore = (clone $baseQuery)
-//                 ->where('starting_at', '<', $currentRound->starting_at)
-//                 ->count();
-//
-//             $page = (int) floor($countBefore / $perPage) + 1;
-//
-//             return redirect()->route('league.show', [
-//                 'id' => $id,
-//                 'season_id' => $seasonId,
-//                 'page' => $page,
-//             ]);
-//         }
 
-        // ✅ rounds + fixtures مرتبة من DB
-        // $rounds = $baseQuery
-        //     ->with([
-        //         'season',
-        //         'fixtures' => function ($q) {
-        //             $q->orderBy('starting_at', 'asc');
-        //         },
-        //         'fixtures.homeTeam:id,name_ar,name_en,image_path',
-        //         'fixtures.awayTeam:id,name_ar,name_en,image_path',
-        //     ])
-        //     ->paginate($perPage);
-
-        // ✅ العدد الكلي الحقيقي
-        // $totalRounds = $rounds->total();
         $totalRounds = 0;
         $rounds = [];
         // (اختياري) standings
@@ -164,7 +133,7 @@ class MatchesController extends Controller
                 }
             }else{
                 $fixtures = Fixture::where('stage_id', $stage->id)
-                    ->orderBy('starting_at', 'asc')
+                    ->orderBy('starting_at', 'desc')
                     ->get();
                 $pages->push([
                     'type' => 'stage',
@@ -208,7 +177,7 @@ class MatchesController extends Controller
 
             $targetPage = $targetIndex + 1;
 
-            return redirect()->route('league.show', [
+            return redirect()->route('league.rounds', [
                 'id' => $id,
                 'season_id' => $seasonId,
                 'page' => $targetPage,
@@ -411,7 +380,7 @@ class MatchesController extends Controller
 
         // ✅ نحدد TTL بناء على آخر حالة مخزنة (لو موجودة)
         $cached = Cache::get($cacheKey);
-        $ttlSeconds = (data_get($cached, 'status') === 'LIVE') ? 15 : 1;
+        $ttlSeconds = (data_get($cached, 'status') === 'LIVE') ? 1 : 1;
         $fixture = Fixture::with(['league', 'homeTeam', 'awayTeam'])->find($id);
         $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($id, $token, $locale) {
             return $this->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
@@ -450,6 +419,7 @@ class MatchesController extends Controller
         return response()->json([
             'ok' => true,
             'id' => $id,
+            'data' => $data,
             'time' => now()->toDateTimeString(),
         ]);
     }
@@ -498,6 +468,7 @@ class MatchesController extends Controller
         if ($isFinished) $status = 'FT';
         elseif ($isHalf) $status = 'HT';
         elseif ($isLive) $status = 'LIVE';
+        elseif ($stateCode === "INPLAY_2ND") $status = 'LIVE';
 
         $eventsRaw = (array) data_get($match, 'events', []);
         $events = $this->handleMatchesService->normalizeEvents($eventsRaw, $homeId, $awayId);
