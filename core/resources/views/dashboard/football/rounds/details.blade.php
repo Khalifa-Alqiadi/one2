@@ -78,7 +78,7 @@
                             class="dashboard-form" enctype="multipart/form-data">
                             @csrf
 
-                            @if($match->starting_at > $today)
+                            {{-- @if($match->starting_at > $today) --}}
                                 <div class="form-group row">
                                     <label for="is_home1" class="col-sm-2 form-control-label">{{ __('backend.is_home') }}</label>
                                     <div class="col-sm-10">
@@ -115,7 +115,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            @endif
+                            {{-- @endif --}}
                             <div class="form-group row m-t-md">
                                 <div class="offset-sm-2 col-sm-10">
                                     <button type="submit"

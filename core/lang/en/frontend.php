@@ -122,5 +122,13 @@ return [
     'no_team_statistics' => 'No statistics available',
     'events' => 'Events',
     'lineups' => 'Lineups',
+    'live' => 'Live',
+    'finished' => 'Finished',
+    'upcoming' => 'Upcoming',
+    'postponed' => 'Postponed',
+    'not_started' => 'Not Started',
+    'match_show' => 'Show Match',
+    'minute' => 'Minute',
+    'coming_soon' => 'Coming Soon',
 ];
 ?>

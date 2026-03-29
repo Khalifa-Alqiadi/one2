@@ -1398,6 +1398,31 @@
 .mobile-menu li a{
     padding: 15px 0;
 }
+
+/* Start matches home */
+.matches-home .gx-score {
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.matches-home .team .image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    background-color: #fff;
+    border-radius: 50%;
+}
+.matches-home .team span {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.matches-home .card-body a,
+.matches-home .js-minute {
+    color: var(--color-primary-gold);
+    font-weight: 600;
+}
+/* End matches home */
 @media (max-width: 1200px) {
 
     .navbar a,

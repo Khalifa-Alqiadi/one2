@@ -95,6 +95,7 @@ return [
         'postponed' => 'مؤجلة',
         '-' => '-',
     ],
+
     'rank' => '#',
     'team' => 'الفريق',
     'p' => 'لعب',
@@ -124,6 +125,14 @@ return [
     'no_team_statistics' => 'لا توجد إحصائيات',
     'events' => 'الأحداث',
     'lineups' => 'التشكيلة',
+    'live' => 'مباشر',
+    'finished' => 'منتهية',
+    'upcoming' => 'قادمة',
+    'postponed' => 'مؤجلة',
+    'not_started' => 'لم تبدأ',
+    'match_show' => 'عرض المباراة',
+    'minute' => 'الدقيقة',
+    'coming_soon' => 'قريباً',
 ];
 
 ?>

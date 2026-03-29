@@ -22,19 +22,44 @@ class FixturesController extends Controller
         $localeRaw = Helper::currentLanguage()->code ?? 'ar';
         $locale = in_array($localeRaw, ['ar', 'en']) ? $localeRaw : 'en';
 
+        $start = Carbon::today()->subDays(2);
+        $end = Carbon::today()->addDays(5);
 
+        $dates = [];
 
-        $date    = now()->toDateString();
-        $tab = $request->get('tab', 'today');
-        if (!in_array($tab, ['yesterday', 'today', 'tomorrow'])) {
-            $tab = 'today';
-            $date    = now()->toDateString();
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $dates[] = [
+                'key' => $date->toDateString(),
+                'label' => $date->isToday()
+                    ? 'اليوم'
+                    : ($date->isYesterday()
+                        ? 'أمس'
+                        : ($date->isTomorrow()
+                            ? 'غدًا'
+                            : $date->translatedFormat('l'))),
+                'date' => $date->translatedFormat('M d'),
+                'is_today' => $date->isToday(),
+            ];
         }
-        if ($tab === 'yesterday') {
-            $date = now()->subDay()->toDateString();
-        } elseif ($tab === 'tomorrow') {
-            $date = now()->addDay()->toDateString();
+
+        // $date    = now()->toDateString();
+        $date = $request->get('date', now()->toDateString());
+        $tab = now();
+        if($date !== null){
+            $tab = $date;
         }
+
+        // $fixtures = Fixture::whereDate('starting_at', $date)->get();
+        // $tab = $request->get('tab', 'today');
+        // if (!in_array($tab, ['yesterday', 'today', 'tomorrow'])) {
+        //     $tab = 'today';
+        //     $date    = now()->toDateString();
+        // }
+        // if ($tab === 'yesterday') {
+        //     $date = now()->subDay()->toDateString();
+        // } elseif ($tab === 'tomorrow') {
+        //     $date = now()->addDay()->toDateString();
+        // }
         $fixtures = Fixture::whereDate('starting_at', $date)
             ->with(['homeTeam', 'awayTeam', 'league', 'season'])
             ->whereHas('season', function ($q) {
@@ -43,10 +68,11 @@ class FixturesController extends Controller
             ->orderBy('starting_at')
             ->paginate(40);
 
-        return view('frontEnd.custom.matches-today', [
+        return view('frontEnd.custom.matches', [
             'locale' => $locale,
-            'fixtures' => $fixtures,
+            'matches' => $fixtures,
             'activeTab' => $tab,
+            'dates' => $dates,
         ]);
     }
     public function indexOld3(Request $request)

@@ -408,6 +408,24 @@
     color: rgba(255, 255, 255, 0.75);
 }
 
+.football .tabs-wrapper {
+    padding: 10px;
+    gap: 25px;
+    overflow-x: auto;
+}
+
+.football .tab-item {
+    color: #aaa;
+    cursor: pointer;
+    text-align: center;
+    min-width: 70px;
+}
+
+.football .tab-item.active {
+    color: var(--color-primary-gold);
+    border-bottom: 3px solid var(--color-primary-gold);
+}
+
 /* Start Matches */
 .matches h4 {
     font-size: 16px;

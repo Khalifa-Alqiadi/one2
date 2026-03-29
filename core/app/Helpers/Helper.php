@@ -1606,9 +1606,9 @@ class Helper
         });
     }
 
-    static function getMatchHome($limit = 3)
+    static function getMatchHome($limit = 4)
     {
-        $matches = Fixture::where('is_home', 1)->limit($limit)->get();
+        $matches = Fixture::with('homeTeam', 'awayTeam', 'league')->where('is_home', 1)->limit($limit)->get();
         return $matches;
     }
 
@@ -1634,5 +1634,11 @@ class Helper
 
         // 👇 هذا يرجع: السبت 28 فبراير
         return $date->translatedFormat('l d F');
+    }
+
+    static function isRTL()
+    {
+        $rtl_languages = ['ar', 'he', 'fa', 'ur'];
+        return in_array(Helper::currentLanguage()->code, $rtl_languages);
     }
 }

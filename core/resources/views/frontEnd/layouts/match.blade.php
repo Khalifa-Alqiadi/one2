@@ -15,11 +15,12 @@
                 .filter((n) => !Number.isNaN(n));
         }
 
-        function fmtMinute(m) {
+        function fmtMinute(m, stateCode = "") {
             if (m === null || m === undefined) return "";
             m = parseInt(m, 10);
             if (Number.isNaN(m)) return "";
             if (m > 90) return `90+${m - 90}'`;
+            if (m > 45 && stateCode === "INPLAY_1ST_FT") return `45+${m - 45}'`;
             return `${m}'`;
         }
 
@@ -102,7 +103,7 @@
                         setText(
                             el,
                             ".js-live-badge",
-                            "{{ $locale == 'ar' ? 'لم يبدأ بعد' : 'LIVE' }}",
+                            "{{ $locale == 'ar' ? __('frontend.coming_soon') : 'LIVE' }}",
                             false,
                         );
                     }else{
@@ -117,6 +118,7 @@
                                 "{{ $locale == 'ar' ? 'منتصف المباراة' : 'LIVE' }}",
                                 false,
                             );
+
                         }else{
                             setText(
                                 el,
@@ -129,7 +131,7 @@
                     }
 
                     if (fx.minute !== null && fx.minute !== undefined && fx.minute !== "") {
-                        const m = fmtMinute(fx.minute);
+                        const m = fmtMinute(fx.minute, fx.state_code);
                         if (m) {
                             setText(el, ".js-minute", m, true);
                             el.dataset.lastMin = m;
@@ -139,6 +141,11 @@
                         setText(el, ".js-minute", lastMin, true);
                     } else {
                         setText(el, ".js-minute", "—", true);
+                    }
+
+                    if (fx.state_code === 'HT') {
+                        setText(el, ".js-minute", "", true);
+                        el.dataset.lastMin = "";
                     }
                 });
             } catch (e) {

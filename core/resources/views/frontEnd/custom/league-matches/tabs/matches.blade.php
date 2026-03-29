@@ -58,7 +58,7 @@
                     if (!$isFinished && $fx->starting_at) {
                         try {
                             $start = \Carbon\Carbon::parse($fx->starting_at)->timezone($timezone);
-                            $isTimeLive = now()->between($start->copy()->subMinutes(15), $start->copy()->addHours(2));
+                            $isTimeLive = now()->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
                         } catch (\Throwable $e) {
                         }
                     }
