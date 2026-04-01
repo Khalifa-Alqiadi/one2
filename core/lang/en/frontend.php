@@ -132,5 +132,6 @@ return [
     'coming_soon' => 'Coming Soon',
     'live_matches' => 'Live Matches',
     'live' => 'Live',
+    'no_live_matches' => 'No live matches currently',
 ];
 ?>

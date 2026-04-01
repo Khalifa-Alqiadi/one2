@@ -18,7 +18,11 @@
                 $locale = Helper::currentLanguage()->code ?? 'ar';
             @endphp
 
-
+            @if(count($liveMatches) === 0)
+                <div class="text-white fs-5 py-5">
+                    {{ __('frontend.no_live_matches') }}
+                </div>
+            @endif
             <div class="matches matches-home">
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                     @foreach ($liveMatches as $match)
