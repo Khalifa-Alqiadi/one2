@@ -18,7 +18,7 @@
                 $locale = Helper::currentLanguage()->code ?? 'ar';
             @endphp
 
-            @if(!$liveMatches)
+            @if(empty($$liveMatches) || count($$liveMatches) < 1)
                 <div class="text-white fs-5 py-5">
                     {{ __('frontend.no_live_matches') }}
                 </div>
