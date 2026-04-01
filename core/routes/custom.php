@@ -4,7 +4,7 @@ use App\Http\Controllers\Custom\CustomController;
 use App\Http\Controllers\Football\LeaguesController;
 use App\Http\Controllers\Custom\LeagueTabsController;
 use App\Http\Controllers\Football\FixturesController;
-use App\Http\Controllers\Custom\MatchesController;
+use App\Http\Controllers\Football\MatchesController;
 use App\Http\Controllers\Football\LivescoresController;
 use App\Http\Controllers\TimezoneController;
 use Illuminate\Support\Facades\Route;
@@ -30,7 +30,7 @@ Route::get('/leagues/{id?}/rounds', [LeaguesController::class, 'rounds'])->name(
 Route::get('/club/{teamId}', [LeagueTabsController::class, 'show'])
     ->name('club.show');
 
-Route::get('/matches', [FixturesController::class, 'index'])
+Route::get('/matches', [MatchesController::class, 'index'])
     ->name('matches');
 
 // JSON endpoint used by client-side polling to refresh today's matches
@@ -39,7 +39,7 @@ Route::get('/matches/today-json', [FixturesController::class, 'todayJson'])
 
 
 // proxy live endpoint (يطلب SportMonks من السيرفر)
-Route::get('/fixtures/live-proxy', [MatchesController::class, 'liveProxy'])
+Route::get('/fixtures/live-proxy', [LivescoresController::class, 'liveProxy'])
     ->name('fixtures.live.proxy');
 
 Route::get('/live/league/{leagueId}', [LeaguesController::class, 'liveLeague'])->name('live.league');

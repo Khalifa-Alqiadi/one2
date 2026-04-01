@@ -75,7 +75,7 @@ if (@$PageTitle == "") {
 {!! Helper::SaveVisitorInfo($PageTitle) !!}
 <script>
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
+    console.log("User's timezone:", timezone);
     fetch('/set-timezone', {
         method: 'POST',
         headers: {

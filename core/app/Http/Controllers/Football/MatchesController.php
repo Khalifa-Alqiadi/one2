@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Custom;
+namespace App\Http\Controllers\Football;
 
 use App\Http\Controllers\Controller;
 use App\Helpers\Helper;
@@ -9,6 +9,7 @@ use App\Models\Round;
 use App\Models\Fixture;
 use App\Services\ApiClientService;
 use App\Services\LiveMatchesService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -26,6 +27,118 @@ class MatchesController extends Controller
     {
         $this->apiClient = $apiClient;
         $this->handleMatchesService = $handleMatchesService;
+    }
+
+    public function index(Request $request)
+    {
+        $this->website_status();
+
+        $localeRaw = Helper::currentLanguage()->code ?? 'ar';
+        $locale    = in_array($localeRaw, ['ar', 'en']) ? $localeRaw : 'en';
+        $userTz    = Helper::getUserTimezone() ?: 'UTC';
+
+        // اليوم المحلي للمستخدم
+        $todayLocal = now($userTz)->startOfDay();
+
+        // tabs: يومين قبل + 5 بعد
+        $startLocal = $todayLocal->copy()->subDays(2);
+        $endLocal   = $todayLocal->copy()->addDays(5);
+
+        $dates = [];
+        for ($date = $startLocal->copy(); $date->lte($endLocal); $date->addDay()) {
+            $dates[] = [
+                'key'      => $date->toDateString(),
+                'label'    => $date->isToday()
+                    ? __('frontend.today')
+                    : ($date->isYesterday()
+                        ? __('frontend.yesterday')
+                        : ($date->isTomorrow()
+                            ? __('frontend.tomorrow')
+                            : $date->translatedFormat('l'))),
+                'date'     => $date->translatedFormat('M d'),
+                'is_today' => $date->isSameDay($todayLocal),
+            ];
+        }
+
+        // التاريخ المختار من التاب - بصيغة تاريخ محلي للمستخدم
+        $selectedDate = $request->get('date', $todayLocal->toDateString());
+
+        // بداية ونهاية هذا اليوم بتوقيت المستخدم
+        $selectedStartLocal = Carbon::parse($selectedDate, $userTz)->startOfDay();
+        $selectedEndLocal   = Carbon::parse($selectedDate, $userTz)->endOfDay();
+
+        // نحولها إلى UTC للاستعلام من قاعدة البيانات
+        $selectedStartUtc = $selectedStartLocal->copy()->utc();
+        $selectedEndUtc   = $selectedEndLocal->copy()->utc();
+
+        $fixtures = Fixture::query()
+            ->whereBetween('starting_at', [$selectedStartUtc, $selectedEndUtc])
+            ->with(['homeTeam', 'awayTeam', 'league', 'season'])
+            ->whereHas('season', function ($q) {
+                $q->where('is_current', true);
+            })
+            ->orderBy('starting_at')
+            ->paginate(40)
+            ->appends($request->query());
+
+        return view('frontEnd.custom.matches', [
+            'locale'    => $locale,
+            'matches'   => $fixtures,
+            'activeTab' => $selectedDate,
+            'dates'     => $dates,
+        ]);
+    }
+
+    public function indexOld(Request $request)
+    {
+        $this->website_status();
+
+        $token  = config('services.SPORTMONKS_TOKEN');
+        $localeRaw = Helper::currentLanguage()->code ?? 'ar';
+        $locale = in_array($localeRaw, ['ar', 'en']) ? $localeRaw : 'en';
+
+        $start = Carbon::today()->subDays(2)->timezone(Helper::getUserTimezone());
+        $end = Carbon::today()->addDays(5)->timezone(Helper::getUserTimezone());
+
+        $dates = [];
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            $dates[] = [
+                'key' => $date->toDateString(),
+                'label' => $date->isToday()
+                    ? 'اليوم'
+                    : ($date->isYesterday()
+                        ? 'أمس'
+                        : ($date->isTomorrow()
+                            ? 'غدًا'
+                            : $date->translatedFormat('l'))),
+                'date' => $date->translatedFormat('M d'),
+                'is_today' => $date->isToday(),
+            ];
+        }
+
+
+        // $date    = now()->toDateString();
+        $date = $request->get('date', now()->timezone(Helper::getUserTimezone())->toDateString());
+        $date_live = Carbon::parse($date)->subHours(3)->toDateString();
+        $tab = now();
+        if ($date !== null) {
+            $tab = $date;
+        }
+        $fixtures = Fixture::whereDate('starting_at', $date)
+            ->with(['homeTeam', 'awayTeam', 'league', 'season'])
+            ->whereHas('season', function ($q) {
+                $q->where('is_current', true);
+            })
+            ->orderBy('starting_at', 'desc')
+            ->paginate(40);
+
+        return view('frontEnd.custom.matches', [
+            'locale' => $locale,
+            'matches' => $fixtures,
+            'activeTab' => $tab,
+            'dates' => $dates,
+        ]);
     }
 
     // =========================
@@ -131,7 +244,7 @@ class MatchesController extends Controller
                         'fixtures' => $fixtures,
                     ]);
                 }
-            }else{
+            } else {
                 $fixtures = Fixture::where('stage_id', $stage->id)
                     ->orderBy('starting_at', 'desc')
                     ->get();
@@ -204,102 +317,6 @@ class MatchesController extends Controller
             'stages',
             'paginatedPages'
         ));
-    }
-
-    // =========================
-    // B) Proxy live endpoint
-    // (يجلب المباشر من SportMonks)
-    // =========================
-     public function liveProxy(Request $request)
-    {
-        $ids = collect(explode(',', (string) $request->query('ids')))
-            ->filter()
-            ->map(fn($v) => (int) $v)
-            ->unique()
-            ->values();
-
-        if ($ids->isEmpty()) {
-            return response()->json(['ok' => true, 'fixtures' => []]);
-        }
-
-        $rows = Fixture::query()
-            ->whereIn('id', $ids)
-            ->select(['id', 'starting_at', 'is_finished', 'home_score', 'away_score', 'minute', 'state_name', 'state_code'])
-            ->get()
-            ->keyBy('id');
-
-        $token  = config('services.SPORTMONKS_TOKEN');
-        $locale = Helper::currentLanguage()->code ?? 'ar';
-
-        $out = [];
-
-        foreach ($ids as $id) {
-            $fx = $rows->get($id);
-            if (!$fx) continue;
-
-            $isFinishedDb = (bool) $fx->is_finished;
-            // ✅ الوقت يستخدم فقط لتقرير هل نسوي polling أم لا
-            $shouldPoll = $this->handleMatchesService->isFixtureTimeLive($fx->starting_at, false);
-            // إذا المباراة منتهية في DB أو خارج نافذة المتابعة => رجّع DB فقط
-            if ($isFinishedDb || !$shouldPoll) {
-                $out[] = [
-                    'id' => (int) $fx->id,
-                    'home_score' => is_numeric($fx->home_score) ? (int)$fx->home_score : null,
-                    'away_score' => is_numeric($fx->away_score) ? (int)$fx->away_score : null,
-                    'minute' => is_numeric($fx->minute) ? (int)$fx->minute : null,
-                    'state_code' => $fx->state_code,
-                    'state_name' => $fx->state_name,
-                    'is_finished' => $isFinishedDb,
-                    'status' => $isFinishedDb ? 'FT' : 'NS',
-                ];
-                continue;
-            }
-
-            // ✅ Poll from API (مع كاش بسيط اختياري)
-            $cacheKey = "sportmonks:fixture_live:{$id}:{$locale}";
-
-            // $liveData = Cache::remember($cacheKey, 8, function () use ($id, $token, $locale) {
-                $liveData = $this->handleMatchesService->fetchFixtureLiveFromSportmonks($id, $token, $locale);
-            // });
-
-            // ✅ إذا فشل API: لا تجبرها Live
-            if (!$liveData) {
-                $out[] = [
-                    'id' => (int) $fx->id,
-                    'home_score' => is_numeric($fx->home_score) ? (int)$fx->home_score : null,
-                    'away_score' => is_numeric($fx->away_score) ? (int)$fx->away_score : null,
-                    'minute' => is_numeric($fx->minute) ? (int)$fx->minute : null,
-                    'state_code' => $fx->state_code,
-                    'state_name' => $fx->state_name,
-                    'is_finished' => $isFinishedDb,
-                    'status' => $isFinishedDb ? 'FT' : 'UNK', // ✅ مجهول لكن لا تغيّر حالة المباراة
-                ];
-                continue;
-            }
-
-            // dd($liveData['status']);
-
-            // ✅ حدّث DB فقط إذا API أكد FT
-            if (($liveData['status'] ?? '') === 'FT' && $liveData['state_code'] === 'FT') {
-                \App\Models\Fixture::where('id', $id)->update([
-                    'home_score'    => $liveData['home_score'],
-                    'away_score'    => $liveData['away_score'],
-                    'ft_home_score' => $liveData['home_score'],
-                    'ft_away_score' => $liveData['away_score'],
-                    'is_finished'   => 1,
-                    'state_code'    => $liveData['state_code'] ?? 'FT',
-                    'state_name'    => $liveData['state_name'] ?? 'Finished',
-                    'minute'        => null,
-                ]);
-
-                Cache::forget($cacheKey);
-            }
-
-            $out[] = $liveData;
-        }
-
-
-        return response()->json(['ok' => true, 'fixtures' => $out]);
     }
 
 
@@ -383,11 +400,11 @@ class MatchesController extends Controller
         $ttlSeconds = (data_get($cached, 'status') === 'LIVE') ? 1 : 1;
         $fixture = Fixture::with(['league', 'homeTeam', 'awayTeam'])->find($id);
         // $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($id, $token, $locale) {
-            $data = $this->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+        $data = $this->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
         // });
 
         if (!$data) {
-            return view('frontEnd.custom.league-matches.show', [
+            return view('frontEnd.football.match-details', [
                 'fixtureId' => $id,
                 'locale' => $locale,
                 'fx' => null,
@@ -400,7 +417,7 @@ class MatchesController extends Controller
         $ttl = (($data['status'] ?? 'NS') === 'LIVE') ? now()->addSeconds(15) : now()->addHour();
         Cache::put($cacheKey, $data, $ttl);
 
-        return view('frontEnd.custom.league-matches.show', [
+        return view('frontEnd.football.match-details', [
             'fixtureId' => $id,
             'locale' => $locale,
             'fx' => $data,
@@ -494,8 +511,8 @@ class MatchesController extends Controller
         // $minute = is_numeric($minute) ? (int)$minute : null;
 
         // if ($minute === null) {
-            // $minute = collect($eventsRaw)->pluck('minute')->filter()->max();
-            // $minute = is_numeric($minute) ? (int)$minute : null;
+        // $minute = collect($eventsRaw)->pluck('minute')->filter()->max();
+        // $minute = is_numeric($minute) ? (int)$minute : null;
         // }
 
         $lineups = collect(data_get($match, 'lineups', []))->values()->all();

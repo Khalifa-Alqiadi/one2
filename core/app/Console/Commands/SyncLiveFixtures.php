@@ -23,14 +23,10 @@ class SyncLiveFixtures extends Command
         $updated = 0;
 
         Fixture::query()
-            ->when($leagueId, fn($q) => $q->where('league_id', $leagueId))
-            ->when($seasonId, fn($q) => $q->where('season_id', $seasonId))
             ->where(function ($q) {
                 $q->where('is_finished', 0)
-                  ->orWhere(function ($q2) {
-                      $q2->whereNotNull('starting_at')
-                         ->whereBetween('starting_at', [now()->subHours(4), now()->addHours(1)]);
-                  });
+                    ->whereNotNull('starting_at')
+                    ->whereBetween('starting_at', [now()->subHours(4), now()->addHours(1)]);
             })
             ->select([
                 'id',
