@@ -22,7 +22,7 @@ class League extends Model
 
     public function country()
     {
-        return $this->belongsTo(Country::class, 'country_id', 'sport_id');
+        return $this->belongsTo(Country::class, 'country_id', 'id');
     }
 
     public function seasons()
@@ -38,5 +38,10 @@ class League extends Model
     public function stages()
     {
         return $this->hasMany(Stage::class, 'league_id');
+    }
+
+    public function matches()
+    {
+        return $this->hasMany(Fixture::class, 'league_id', 'id');
     }
 }

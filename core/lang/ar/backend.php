@@ -756,7 +756,7 @@ return array(
     'resetDefaults' => 'إعادة تعيين الإعدادات الإفتراضية',
     'updatedAt' => 'أخر تعديل',
     'category' => 'التصنيف',
-    'leagues' => 'الدوريات',
+    'leagues' => 'الدوري',
     'teams' => 'الفرق',
     'details' => 'التفاصيل',
     'rounds' => 'الجولات',
@@ -912,4 +912,6 @@ return array(
     'is_slider' => 'تثبيت في السلايدر',
     'stage' => 'مرحلة',
     'round' => 'الجولة',
+    'updateMatches' => 'تحديث المباريات',
+    'live' => 'مباشر',
 );

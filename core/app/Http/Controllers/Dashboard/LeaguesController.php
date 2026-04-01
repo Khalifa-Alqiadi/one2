@@ -53,10 +53,11 @@ class LeaguesController extends Controller
     {
         $GeneralWebmasterSections = WebmasterSection::where('status', '=', '1')->orderby('row_no', 'asc')->get();
         $League = League::find($id);
+        $Season = $League->seasons()->where('is_current', 1)->first();
         $countries = Helper::countriesList();
         $tab = request()->input("tab", "details");
         if (!empty($League)) {
-            return view('dashboard.leagues.edit', compact('League', 'GeneralWebmasterSections', 'countries', 'tab'));
+            return view('dashboard.leagues.edit', compact('League', 'GeneralWebmasterSections', 'countries', 'tab', 'Season'));
         } else {
             return redirect()->action([LeaguesController::class, 'index'])->with('doneMessage', __('backend.saveDone'));
         }

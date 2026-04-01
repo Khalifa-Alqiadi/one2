@@ -64,25 +64,25 @@
                         <div class="col-md-3 col-xs-6 m-b-5p">
                             <div class="form-group m-b-0">
                                 <div class='input-group date' ui-jp="datetimepicker" ui-options="{
-                format: '{{ Helper::jsDateFormat() }}',
-                icons: {
-                  time: 'fa fa-clock-o',
-                  date: 'fa fa-calendar',
-                  up: 'fa fa-chevron-up',
-                  down: 'fa fa-chevron-down',
-                  previous: 'fa fa-chevron-left',
-                  next: 'fa fa-chevron-right',
-                  today: 'fa fa-screenshot',
-                  clear: 'fa fa-trash',
-                  close: 'fa fa-remove'
-                },
-            allowInputToggle: true,
-            locale:'{{ @Helper::currentLanguage()->code }}'
-              }">
-                                    <input type="text" name="date" id="find_date" class="form-control" value="{{ ((@$_GET['date']!="")?Helper::formatDate(@$_GET['date']):"") }}" placeholder="{{ __('backend.topicDate') }}" autocomplete="off">
-                                    <span class="input-group-addon">
-                  <span class="fa fa-calendar"></span>
-              </span>
+                                        format: '{{ Helper::jsDateFormat() }}',
+                                        icons: {
+                                        time: 'fa fa-clock-o',
+                                        date: 'fa fa-calendar',
+                                        up: 'fa fa-chevron-up',
+                                        down: 'fa fa-chevron-down',
+                                        previous: 'fa fa-chevron-left',
+                                        next: 'fa fa-chevron-right',
+                                        today: 'fa fa-screenshot',
+                                        clear: 'fa fa-trash',
+                                        close: 'fa fa-remove'
+                                        },
+                                    allowInputToggle: true,
+                                    locale:'{{ @Helper::currentLanguage()->code }}'
+                                    }">
+                                                            <input type="text" name="date" id="find_date" class="form-control" value="{{ ((@$_GET['date']!="")?Helper::formatDate(@$_GET['date']):"") }}" placeholder="{{ __('backend.topicDate') }}" autocomplete="off">
+                                                            <span class="input-group-addon">
+                                        <span class="fa fa-calendar"></span>
+                                    </span>
                                 </div>
                             </div>
                         </div>

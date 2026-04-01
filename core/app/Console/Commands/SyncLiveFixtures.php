@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\Helper;
 use App\Models\Fixture;
 use App\Services\LiveMatchesService;
 use Illuminate\Console\Command;
@@ -26,8 +27,10 @@ class SyncLiveFixtures extends Command
             ->when($seasonId, fn($q) => $q->where('season_id', $seasonId))
             ->where(function ($q) {
                 $q->where('is_finished', 0)
-                    ->whereNotNull('starting_at')
-                    ->where('starting_at', '<=', now());
+                  ->orWhere(function ($q2) {
+                      $q2->whereNotNull('starting_at')
+                         ->whereBetween('starting_at', [now()->subHours(4), now()->addHours(1)]);
+                  });
             })
             ->select([
                 'id',

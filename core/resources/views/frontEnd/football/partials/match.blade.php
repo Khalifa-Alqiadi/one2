@@ -63,10 +63,10 @@
     </div>
     <div class="card-body border-top mt-3 pb-0 d-flex align-items-center justify-content-between">
         <span>
-            {!! Helper::day_name($match->starting_at) !!}
-            @if ($timeLabel)
+            {!! Helper::day_name($dateLabel, $timeLabel) !!}
+            {{-- @if ($timeLabel)
                 • {{ $timeLabel }}
-            @endif
+            @endif --}}
         </span>
         <a href="{{ route('match.show', ['id' => $match->id]) }}">
             {{ __('frontend.match_show') }}

@@ -4,6 +4,10 @@
     $x = 0;
 @endphp
 @extends('dashboard.layouts.master')
+@section('title', __('backend.matches'))
+@push('after-styles')
+    <link rel="stylesheet" href="{{ asset('assets/dashboard/js/datatables/datatables.min.css') }}">
+@endpush
 @section('content')
     <div class="padding">
         <div class="box m-b-0">
@@ -15,7 +19,9 @@
                 <small>
                     <a href="{{ route('adminHome') }}">{{ __('backend.home') }}</a> /
                     <a>{!! $League->$name_var !!}</a> /
-                    <a href="{{ route('seasons', ['league_id' => $League->id, 'tab' => 'seasons']) }}">{{ __('backend.seasons') }}</a> /
+                    <a
+                        href="{{ route('seasons', ['league_id' => $League->id, 'tab' => 'seasons']) }}">{{ __('backend.seasons') }}</a>
+                    /
                 </small>
             </div>
             <div class="box-tool">
@@ -25,188 +31,158 @@
                             <i class="material-icons md-18">&#xe5d4;</i> {{ __('backend.options') }}
                         </a>
                         <div class="dropdown-menu dropdown-menu-scale pull-right">
-                            <a class="dropdown-item" href="{{ route('seasons', ['league_id' => $League->id, 'tab' => 'seasons']) }}"><i
-                                    class="material-icons">&#xe31b;</i> {{ __('backend.back') }}</a>
                             <a class="dropdown-item"
-                                href="{{route('leaguesRoundsAPI', ['league_id' => $League->id, 'season_id' => $season->id])}}"><i class="material-icons">&#xe863;</i>
-                                {{ __('backend.update_refrech') }}</a>
+                                href="{{ route('seasons', ['league_id' => $League->id, 'tab' => 'seasons']) }}"><i
+                                    class="material-icons">&#xe31b;</i> {{ __('backend.back') }}</a>
                             {{-- <a class="dropdown-item" onclick="updateMatchesAPI()"><i class="material-icons">&#xe863;</i>
                                 {{ __('backend.update_matches') }}</a> --}}
                         </div>
                     </li>
                 </ul>
             </div>
-
+            <div class="box-tool box-tool-lg">
+            <ul class="nav">
+                <li class="nav-item inline">
+                    <button type="button" class="btn info" id="filter_btn" title="{{ __('backend.search') }}"
+                        data-toggle="tooltip">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </li>
+                @if (@Auth::user()->permissionsGroup->add_status)
+                    <li class="nav-item inline">
+                        <button type="button" class="btn accent" id="import_btn" title="{{ __('backend.import') }}"
+                            data-toggle="tooltip">
+                            <i class="fa fa-upload"></i>
+                        </button>
+                    </li>
+                @endif
+                <li class="nav-item inline">
+                    <button type="button" class="btn warn" id="print_btn" title="{{ __('backend.print') }}"
+                        data-toggle="tooltip" onclick="print_as('print')">
+                        <i class="fa fa-print"></i>
+                    </button>
+                </li>
+                <li class="nav-item inline">
+                    <button type="button" class="btn success" id="excel_btn" title="{{ __('backend.export') }}"
+                        data-toggle="tooltip" onclick="print_as('excel')">
+                        <i class="fa fa-file-excel-o"></i>
+                    </button>
+                </li>
+            </ul>
         </div>
         <div class="b-t">
-            @if ($paginatedPages->total() == 0)
-                <div class="row p-a">
-                    <div class="col-sm-12">
-                        <div class="p-a text-center">
-                            <div class="text-muted m-b">
-                                <i class="fa fa-futbol-o fa-4x"></i>
-                            </div>
-                            <h6>{{ __('backend.noData') }}</h6>
-                        </div>
-                    </div>
-                </div>
-            @else
-                @php
-                    $pageItem = $paginatedPages->first();
-                    $pageTitle = $pageItem['title'] ?? '-';
-                    $fixtures = $pageItem['fixtures'] ?? collect();
-                    $pageType = $pageItem['type'] ?? 'round';
-                    $stage = $pageItem['stage'] ?? null;
-                    $round = $pageItem['round'] ?? null;
-                @endphp
-
+            <div class="dker b-b displayNone" id="filter_div">
                 <div class="p-a">
-                    <h4 class="m-b-md">
-                        {{ $pageTitle }}
-                    </h4>
-
-                    @if ($stage)
-                        <div class="text-muted m-b-sm">
-                            {{ __('backend.stage') }}:
-                            <strong>{{ $stage->$name_var ?? '-' }}</strong>
+                    <form method="GET" action="{{ route('teams') }}" class="dashboard-form" id="filter_form"
+                        target="">
+                        <input type="hidden" name="stat" id="search_submit_stat" value="">
+                        <div class="filter_div">
+                            <div class="row">
+                                <div class="col-md-3 col-xs-6 m-b-5p">
+                                    <input type="text" name="find_q" id="find_q" class="form-control"
+                                        value="{{ @$_GET['find_q'] }}" placeholder="{{ __('backend.searchFor') }}"
+                                        autocomplete="off">
+                                </div>
+                                <div class="col-md-3 col-xs-6 m-b-5p">
+                                    <div class="form-group m-b-0">
+                                        <select name="season_id" id="find_season_id" class="form-control select2"
+                                            ui-jp="select2" ui-options="{theme: 'bootstrap'}">
+                                            <option value="">{{ __('backend.season') }} (
+                                                {{ __('backend.all') }} )</option>
+                                            <?php
+                                                $t_arrow = '&raquo;';
+                                            ?>
+                                            @foreach ($seasons as $season)
+                                                <option value="{{ $season->id }}">{{ $season->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-xs-6 m-b-5p">
+                                    <div class="form-group m-b-0">
+                                        <select name="status" id="find_status" class="form-control select2"
+                                            ui-jp="select2" ui-options="{theme: 'bootstrap'}">
+                                            <option value="">{{ __('backend.status') }} (
+                                                {{ __('backend.all') }} )</option>
+                                            <?php
+                                                $t_arrow = '&raquo;';
+                                            ?>
+                                            @foreach (App\Enum\StatusMatchesEenum::cases() as $status)
+                                                <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-xs-6 m-b-5p">
+                                    <div class="form-group m-b-0">
+                                        <div class='input-group date' ui-jp="datetimepicker" ui-options="{
+                                                format: '{{ Helper::jsDateFormat() }}',
+                                                icons: {
+                                                time: 'fa fa-clock-o',
+                                                date: 'fa fa-calendar',
+                                                up: 'fa fa-chevron-up',
+                                                down: 'fa fa-chevron-down',
+                                                previous: 'fa fa-chevron-left',
+                                                next: 'fa fa-chevron-right',
+                                                today: 'fa fa-screenshot',
+                                                clear: 'fa fa-trash',
+                                                close: 'fa fa-remove'
+                                                },
+                                            allowInputToggle: true,
+                                            locale:'{{ @Helper::currentLanguage()->code }}'
+                                            }">
+                                                                    <input type="text" name="date" id="find_date" class="form-control" value="{{ ((@$_GET['date']!="")?Helper::formatDate(@$_GET['date']):"") }}" placeholder="{{ __('backend.topicDate') }}" autocomplete="off">
+                                                                    <span class="input-group-addon">
+                                                <span class="fa fa-calendar"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-1 col-xs-6">
+                                    <button class="btn white w-full" id="search-btn" type="button"><i
+                                            class="fa fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    @endif
 
-                    @if ($round)
-                        <div class="text-muted m-b-md">
-                            {{ __('backend.round') }}:
-                            <strong>{{ $round->name ?? '-' }}</strong>
-                        </div>
-                    @endif
+                    </form>
+                </div>
+            </div>
+        </div>
+            <div class="box nav-active-border b-primary">
+                @include('dashboard.football.leagues.tabs')
+            </div>
+        </div>
+
+        <div class="b-t">
+
+            <form method="POST" action="{{ route('roundsUpdateAll') }}" class="dashboard-form">
+                @csrf
+
+                <div class="table-responsive">
+                    <table class="table table-bordered m-a-0" id="matchsTable">
+                        <thead class="dker">
+                            <tr>
+                                <th class="dker width20">
+                                    <label class="ui-check m-a-0">
+                                        <input id="checkAll" type="checkbox"><i></i>
+                                    </label>
+                                </th>
+                                <th class="text-center w-64">ID</th>
+                                <th>{{ __('backend.matche') }}</th>
+                                <th class="text-center" style="width:200px;">{{ __('backend.starting_at') }}</th>
+                                <th class="text-center" style="width:200px;">{{ __('backend.status') }}</th>
+                                <th class="text-center" style="width:100px;">{{ __('backend.bulkAction') }}</th>
+                            </tr>
+                        </thead>
+                    </table>
                 </div>
 
-                <form method="POST" action="{{ route('roundsUpdateAll') }}" class="dashboard-form">
-                    @csrf
+                <footer class="dker p-a">
 
-                    <div class="table-responsive">
-                        <table class="table table-bordered m-a-0">
-                            <thead class="dker">
-                                <tr>
-                                    <th class="dker width20">
-                                        <label class="ui-check m-a-0">
-                                            <input id="checkAll" type="checkbox"><i></i>
-                                        </label>
-                                    </th>
-                                    <th class="text-center w-64">ID</th>
-                                    <th>{{ __('backend.matche') }}</th>
-                                    <th class="text-center" style="width:200px;">{{ __('backend.starting_at') }}</th>
-                                    <th class="text-center" style="width:200px;">{{ __('backend.status') }}</th>
-                                    <th class="text-center" style="width:100px;">{{ __('backend.bulkAction') }}</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @forelse($fixtures as $match)
-                                    <tr>
-                                        <td class="dker">
-                                            <label class="ui-check m-a-0">
-                                                <input type="checkbox" name="ids[]" value="{{ $match->id }}">
-                                                <i class="dark-white"></i>
-                                                <input type="hidden" name="row_ids[]" value="{{ $match->id }}"
-                                                    class="form-control row_no">
-                                            </label>
-                                        </td>
-
-                                        <td class="text-center">{{ $match->id }}</td>
-
-                                        <td class="h6 nowrap">
-                                            <div class="d-flex content-justify-between">
-                                                <a href="{{ route('matcheRoundsEdit', ['id' => $match->id]) }}"
-                                                    class="d-flex justify-content-between"
-                                                    style="justify-content: space-between; display:flex">
-                                                    <div>
-                                                        @if ($match->homeTeam)
-                                                            @if ($match->homeTeam->image_path)
-                                                                <img src="{{ $match->homeTeam->image_path }}"
-                                                                    style="height:30px" alt="">
-                                                            @endif
-                                                            <span>{{ $match->homeTeam->$name_var }}</span>
-                                                        @endif
-                                                    </div>
-                                                    <span class="m-x-sm">vs</span>
-                                                    <div>
-                                                        @if ($match->awayTeam)
-                                                            @if ($match->awayTeam->image_path)
-                                                                <img src="{{ $match->awayTeam->image_path }}"
-                                                                    style="height:30px" alt="">
-                                                            @endif
-                                                            <span>{{ $match->awayTeam->$name_var }}</span>
-                                                        @endif
-                                                    </div>
-                                                </a>
-
-                                            </div>
-                                        </td>
-
-                                        <td class="text-center">
-                                            {{ $match->starting_at ? $match->starting_at->format('Y-m-d H:i') : '-' }}
-                                        </td>
-
-                                        <td class="text-center">
-                                            @if ($match->is_finished)
-                                                <span class="text-info">{{ __('backend.finished') }}</span>
-                                            @elseif ($match->starting_at && $match->starting_at > now())
-                                                <span class="text-success">{{ __('backend.not_started_yet') }}</span>
-                                            @else
-                                                <span class="text-warning">{{ __('backend.live_now') ?? 'Live' }}</span>
-                                            @endif
-                                        </td>
-
-                                        <td class="text-center">
-                                            <div class="dropdown">
-                                                <button type="button" class="btn btn-sm light dk dropdown-toggle"
-                                                    data-toggle="dropdown">
-                                                    <i class="material-icons">&#xe5d4;</i>
-                                                    {{ __('backend.options') }}
-                                                </button>
-                                                <div class="dropdown-menu pull-right">
-                                                    @if (@Auth::user()->permissionsGroup->edit_status)
-                                                        <a class="dropdown-item"
-                                                            href="{{ route('matcheRoundsEdit', ['id' => $match->id]) }}">
-                                                            <i class="material-icons">&#xe3c9;</i>
-                                                            {{ __('backend.edit') }}
-                                                        </a>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted">
-                                            {{ __('backend.noData') }}
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <footer class="dker p-a">
-                        <div class="row">
-                            <div class="col-sm-3 text-center">
-                                <small class="text-muted inline m-t-sm m-b-sm">
-                                    {{ __('backend.showing') }}
-                                    {{ $paginatedPages->firstItem() }}
-                                    - {{ $paginatedPages->lastItem() }}
-                                    {{ __('backend.of') }}
-                                    <strong>{{ $paginatedPages->total() }}</strong>
-                                    {{ __('backend.records') }}
-                                </small>
-                            </div>
-
-                            <div class="col-sm-9 text-right text-center-xs">
-                                {!! $paginatedPages->appends(request()->query())->links() !!}
-                            </div>
-                        </div>
-                    </footer>
-                </form>
-            @endif
+                </footer>
+            </form>
         </div>
 
     </div>
@@ -221,3 +197,110 @@
             $('#updateMatchesModal').modal('show');
         }
     </script>
+@endpush
+@push('after-scripts')
+    <script src="{{ asset('assets/dashboard/js/datatables/datatables.min.js') }}"></script>
+    <script type="text/javascript">
+        $("#checkAll").click(function() {
+            $('input:checkbox').not(this).prop('checked', this.checked);
+        });
+        $(document).ready(function() {
+            var table_name = "#matchsTable";
+            var dataTable = $('#matchsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                searching: false, // ✅ بدون بحث
+                "pageLength": {{ config('smartend.backend_pagination') }},
+                "lengthMenu": [
+                    [10, 20, 30, 50, 75, 100, 200, -1],
+                    [10, 20, 30, 50, 75, 100, 200, "All"]
+                ],
+                ajax: {
+                    "url": "{{ route('leagues.matches.list', $League->id) }}",
+                    "dataType": "json",
+                    "type": "POST",
+                    data: function(d) {
+                        d._token = "{{ csrf_token() }}";
+                        d.find_q = $('#find_q').val();
+                        d.date = $('#find_date').val();
+                        d.season_id = $('#find_season_id').val();
+                        d.status = $('#find_status').val();
+                        // لو بتضيف فلتر لاحقًا:
+                        // d.q = $('#q').val();
+                        // d.status = $('#status').val();
+                    }
+                },
+                "dom": '<"dataTables_wrapper"<"col-sm-12 col-md-9"i><"col-sm-12 col-md-3"l><"col-sm-12 col-md-12"r><"row"t><"row b-t p-x p-t dker"<"col-sm-12"p>>>',
+                "fnDrawCallback": function() {
+                    if ($(table_name + '_paginate .paginate_button').length > 3) {
+                        $(table_name + '_paginate')[0].style.display = "block";
+                    } else {
+                        $(table_name + '_paginate')[0].style.display = "none";
+                    }
+
+
+                    $('[data-toggle="tooltip"]').tooltip({
+                        html: true
+                    });
+                    $('[data-toggle-second="tooltip"]').tooltip({
+                        html: true
+                    });
+                },
+                "language": {!! json_encode(__('backend.dataTablesTranslation')) !!},
+                columns: [{
+                        "data": "check",
+                        "class": "dker",
+                        "orderable": false
+                    },
+                    {
+                        data: "id",
+                        orderable: true
+                    },
+                    {
+                        data: "title",
+                        orderable: true
+                    },
+                    {
+                        data: "starting_at",
+                        orderable: true
+                    },
+                    {
+                        data: "is_finished",
+                        orderable: true
+                    },
+                    {
+                        data: "options",
+                        orderable: false
+                    },
+                ],
+                order: [
+                    [0, "desc"]
+                ],
+            });
+            dataTable.on('page.dt', function() {
+                $('html, body').animate({
+                    scrollTop: $(".dataTables_wrapper").offset().top
+                }, 'slow');
+            });
+            $.fn.dataTable.ext.errMode = 'none';
+            $("#search-btn").on('click', function() {
+                dataTable.draw();
+            });
+            $('#filter_form').submit(function() {
+                if ($("#search_submit_stat").val() === "") {
+                    dataTable.draw();
+                    return false;
+                }
+            });
+
+            $("#filter_btn").on('click', function() {
+                $("#filter_div").slideToggle();
+            });
+
+            // function DeleteTeam(id) {
+            //     $("#team_delete_btn").attr("row-id", id);
+            //     $("#delete-team").modal("show");
+            // }
+        });
+    </script>
+@endpush

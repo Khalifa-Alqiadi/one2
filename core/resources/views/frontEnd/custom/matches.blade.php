@@ -36,19 +36,20 @@
                     @foreach ($matches as $match)
                         <?php
                         $isFinished = (bool) $match->is_finished;
-                        $timezone = env('TIMEZONE', 'UTC');
+                        $timezone = Helper::getUserTimezone();
                         $isTimeLive = false;
                         if (!$isFinished && $match->starting_at) {
                             try {
                                 $start = \Carbon\Carbon::parse($match->starting_at);
-                                $isTimeLive = now()->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
+                                $isTimeLive = now()
+                                    ->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
                             } catch (\Throwable $e) {
                             }
                         }
 
                         $dt = $match->starting_at ? \Carbon\Carbon::parse($match->starting_at)->timezone($timezone) : null;
                         $dateLabel = $dt ? $dt->translatedFormat('m/d') : '';
-                        $timeLabel = $dt ? $dt->format('H:i') : '';
+                        $timeLabel = $dt ? $dt->format('h:i A') : '';
 
                         $minute = is_numeric($match->minute) ? (int) $match->minute : null;
                         ?>
@@ -81,8 +82,7 @@
                                     </div>
                                     <div class="details text-center">
                                         @if ($isFinished || $isTimeLive)
-                                            <div
-                                                class="d-flex gx-score align-items-center justify-content-center gap-2">
+                                            <div class="d-flex gx-score align-items-center justify-content-center gap-2">
                                                 <div class="goals js-home-score">
                                                     <span class="">{{ $match->home_score }}</span>
                                                 </div>
@@ -123,7 +123,11 @@
                                 </div>
                                 <div
                                     class="card-body border-top mt-3 pb-0 d-flex align-items-center justify-content-between">
-                                    <span>{!! Helper::day_name($match->starting_at) !!}</span>
+                                    <span>{!! Helper::day_name($dt) !!}
+                                        @if ($timeLabel)
+                                            • {{ $timeLabel }}
+                                        @endif
+                                    </span>
                                     <a href="{{ route('match.show', ['id' => $match->id]) }}">
                                         {{ __('frontend.match_show') }}
                                         <i class="fas fa-arrow-{{ Helper::isRTL() ? 'left' : 'right' }} mx-1"></i>
@@ -139,143 +143,5 @@
 @endsection
 
 @push('after-scripts')
-    <script>
-        (function() {
-            const URL = "{{ route('fixtures.live.proxy') }}";
-            let inflight = false;
-
-            function liveEls() {
-                return Array.from(
-                    document.querySelectorAll('[id^="fixture-"][data-live="1"]'),
-                );
-            }
-
-            function liveIds() {
-                return liveEls()
-                    .map(el => parseInt(el.id.replace('fixture-', ''), 10))
-                    .filter(id => !Number.isNaN(id));
-            }
-
-            function fmtMinute(m, stateCode = "") {
-                if (m === null || m === undefined || m === "") return "";
-                m = parseInt(m, 10);
-                if (Number.isNaN(m)) return "";
-
-                if (m > 90) return `90+${m - 90}'`;
-                if (m > 45 && stateCode === "INPLAY_1ST_FT") return `45+${m - 45}'`;
-
-                return `${m}'`;
-            }
-
-            function setText(el, selector, value, allowEmpty = false) {
-                const node = el.querySelector(selector);
-                if (!node) return;
-
-                if (value === null || value === undefined) {
-                    if (allowEmpty) node.textContent = "";
-                    return;
-                }
-
-                if (!allowEmpty && (value === "-" || value === "")) return;
-
-                node.textContent = value;
-            }
-
-            async function tick() {
-                if (inflight) return;
-
-                const ids = liveIds();
-                if (!ids.length) return;
-
-                inflight = true;
-
-                try {
-                    const res = await fetch(URL + "?ids=" + encodeURIComponent(ids.join(",")), {
-                        cache: "no-store",
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest"
-                        }
-                    });
-
-                    if (!res.ok) return;
-
-                    const json = await res.json();
-                    if (!json || !json.ok || !Array.isArray(json.fixtures)) return;
-
-                    json.fixtures.forEach((fx) => {
-                        const el = document.getElementById("fixture-" + fx.id);
-                        if (!el) return;
-
-                        const lastHome = el.dataset.lastHome ?? "";
-                        const lastAway = el.dataset.lastAway ?? "";
-                        const lastMin = el.dataset.lastMin ?? "";
-
-                        if (fx.home_score !== null && fx.home_score !== undefined && fx.home_score !== "") {
-                            setText(el, ".js-home-score", fx.home_score);
-                            el.dataset.lastHome = fx.home_score;
-                        } else if (lastHome !== "") {
-                            setText(el, ".js-home-score", lastHome);
-                        }
-
-                        if (fx.away_score !== null && fx.away_score !== undefined && fx.away_score !== "") {
-                            setText(el, ".js-away-score", fx.away_score);
-                            el.dataset.lastAway = fx.away_score;
-                        } else if (lastAway !== "") {
-                            setText(el, ".js-away-score", lastAway);
-                        }
-
-                        if (["FT", "AET", "PEN"].includes(fx.state_code) || fx.is_finished) {
-                            el.dataset.live = "0";
-                            setText(el, ".js-live-badge", "{{ $locale == 'ar' ? 'النهائية' : 'FT' }}",
-                                true);
-                            setText(el, ".js-minute", "", true);
-                            el.dataset.lastMin = "";
-                            return;
-                        }
-
-                        if (fx.state_code === "NS") {
-                            el.dataset.live = "0";
-                            setText(el, ".js-live-badge",
-                                "{{ $locale == 'ar' ? 'لم تبدأ' : 'Not Started' }}", true);
-                            setText(el, ".js-minute", "", true);
-                            el.dataset.lastMin = "";
-                            return;
-                        }
-
-                        el.dataset.live = "1";
-
-                        if (fx.state_code === "HT") {
-                            setText(el, ".js-live-badge",
-                                "{{ $locale == 'ar' ? 'منتصف المباراة' : 'HT' }}", true);
-                            setText(el, ".js-minute", "", true);
-                            el.dataset.lastMin = "";
-                            return;
-                        }
-
-                        setText(el, ".js-live-badge", "{{ $locale == 'ar' ? 'مباشر' : 'LIVE' }}", true);
-
-                        if (fx.minute !== null && fx.minute !== undefined && fx.minute !== "") {
-                            const minuteText = fmtMinute(fx.minute, fx.state_code);
-                            if (minuteText) {
-                                setText(el, ".js-minute", minuteText, true);
-                                el.dataset.lastMin = minuteText;
-                            }
-                        } else if (lastMin !== "") {
-                            setText(el, ".js-minute", lastMin, true);
-                        } else {
-                            setText(el, ".js-minute", "", true);
-                        }
-                    });
-
-                } catch (e) {
-                    console.error("Live fixtures error:", e);
-                } finally {
-                    inflight = false;
-                }
-            }
-
-            tick();
-            setInterval(tick, 5000);
-        })();
-    </script>
+    @include('frontEnd.layouts.match')
 @endpush

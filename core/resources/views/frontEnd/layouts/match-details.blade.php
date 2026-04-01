@@ -24,9 +24,9 @@
             showBlock($('.js-scorebox'), status !== 'NS');
             showBlock($('.js-kickoffbox'), status === 'NS');
 
-            if (status === 'NS') {
-                setText('.js-kickoff', formatKickoff(fx.starting_at));
-            }
+            // if (status === 'NS') {
+            //     setText('.js-kickoff', formatKickoff(fx.starting_at));
+            // }
 
             setText('.js-home', fx.score?.home ?? '-');
             setText('.js-away', fx.score?.away ?? '-');
@@ -149,9 +149,9 @@
   showBlock(document.querySelector('.js-kickoffbox'), status === 'NS');
 
   // kickoff time
-  if (status === 'NS') {
-    setText('.js-kickoff', fx.starting_at ? new Date(fx.starting_at).toLocaleString() : '');
-  }
+//   if (status === 'NS') {
+//     setText('.js-kickoff', fx.starting_at ? new Date(fx.starting_at).toLocaleString() : '');
+//   }
 
   // score
   setText('.js-home', fx.score?.home ?? '-');

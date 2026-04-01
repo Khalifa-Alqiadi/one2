@@ -25,6 +25,7 @@ class SeasonsController extends Controller
     {
         $GeneralWebmasterSections = WebmasterSection::where('status', '=', '1')->orderby('row_no', 'asc')->get();
         $League = $League_id;
+        $Season = $League->seasons()->where('is_current', 1)->first();
         if (@Auth::user()->permissionsGroup->view_status) {
             $Seasons = Season::where('created_by', '=', Auth::user()->id)
                 ->where('league_id', $League->id);
@@ -39,7 +40,7 @@ class SeasonsController extends Controller
 
         $Seasons = $Seasons->orderby('id', 'desc')->paginate(config('smartend.backend_pagination'));
 
-        return view('dashboard.football.seasons.list', compact('Seasons', 'League', 'tab', 'GeneralWebmasterSections'));
+        return view('dashboard.football.seasons.list', compact('Seasons', 'League', 'tab', 'GeneralWebmasterSections', 'Season'));
     }
 
     public function update(League $League_id)

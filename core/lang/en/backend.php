@@ -910,4 +910,6 @@ return array(
     'is_slider' => 'Pin to Slider',
     'Stage' => 'Stage',
     'round' => 'Round',
+    'updateMatches' => 'Update matches',
+    'live' => 'Live',
 );

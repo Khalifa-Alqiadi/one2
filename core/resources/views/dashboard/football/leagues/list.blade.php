@@ -89,12 +89,14 @@ $x = 0;
                                             <td class="text-center">{{ $League->id }}</td>
                                             <td class="h6 nowrap">
                                                 <div class="d-flex content-justify-between">
+                                                    <a href="{{ route("seasons",["league_id"=>$League->id]) }}">
                                                     {{ $League->$name_var }}
-                                                    <div class="pull-right">
-                                                        @if ($League->image_path)
-                                                            <img src="{{ $League->image_path }}" style="height:30px" alt="">
-                                                        @endif
-                                                    </div>
+                                                        <div class="pull-right">
+                                                            @if ($League->image_path)
+                                                                <img src="{{ $League->image_path }}" style="height:30px" alt="">
+                                                            @endif
+                                                        </div>
+                                                    </a>
 
                                                 </div>
 
@@ -111,8 +113,12 @@ $x = 0;
                                                     <div class="dropdown-menu pull-right">
                                                         @if(@Auth::user()->permissionsGroup->edit_status)
                                                             <a class="dropdown-item"
-                                                            href="{{ route("leaguesEdit",["id"=>$League->id]) }}"><i
+                                                                href="{{ route("seasons",["league_id"=>$League->id]) }}"><i
                                                                     class="material-icons">&#xe3c9;</i> {{ __('backend.edit') }}
+                                                            </a>
+                                                            <a class="dropdown-item" target="_blank"
+                                                                href="{{ route("league.rounds",["id"=>$League->id]) }}"><i
+                                                                    class="material-icons">&#xe8f4;</i> {{ __('backend.preview') }}
                                                             </a>
                                                         @endif
                                                     </div>

@@ -1641,4 +1641,13 @@ class Helper
         $rtl_languages = ['ar', 'he', 'fa', 'ur'];
         return in_array(Helper::currentLanguage()->code, $rtl_languages);
     }
+
+    static function getUserTimezone()
+    {
+        $tz = session('user_timezone');
+        if (!$tz) {
+            $tz = config('app.timezone');
+        }
+        return $tz;
+    }
 }

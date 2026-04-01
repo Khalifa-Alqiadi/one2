@@ -28,6 +28,14 @@
                             </div>
                         </form>
                     </li>
+                    <li class="nav-item inline">
+                        @if (@Auth::user()->permissionsGroup->add_status)
+                            <a class="btn btn-fw info w-100" style="overflow: hidden"
+                                href="{{ route('countriesUpdateAPI') }}">
+                                <i class="material-icons">&#xe02e;</i>
+                                &nbsp; {{ __('backend.update_refrech') }}</a>
+                        @endif
+                    </li>
                 </ul>
             </div>
             <div>
@@ -36,12 +44,12 @@
                     <div class="table-responsive" style="overflow: inherit">
                         <table class="table table-bordered" style="width: 100%" id="countries_table">
                             <thead class="dker">
-                            <th>#</th>
+                            <th style="width:90px;">#</th>
                             <th>{{ __('backend.country') }}</th>
                             <th style="width:120px;">{{ __('backend.countryCode') }}</th>
                             <th style="width:120px;">{{ __('backend.countryTel') }}</th>
-                            <th style="width:160px;">{{ __('backend.createdAt') }}</th>
-                            <th class="text-center" style="width:60px;">{{ __('backend.options') }}</th>
+                            {{-- <th style="width:160px;">{{ __('backend.createdAt') }}</th> --}}
+                            {{-- <th class="text-center" style="width:60px;">{{ __('backend.options') }}</th> --}}
                             </thead>
                             <tbody>
                                     <?php
@@ -62,11 +70,9 @@
 
                                         <td class="text-center">{{ $country->id }}</td>
                                         <td class="h6 nowrap">
-
-                                                <a href="{{ route("countriesEdit",["id"=>$country->id]) }}">
-
-                                                    {{ $title }}
-                                                </a>
+                                            {{-- <a href="{{ route("countriesEdit",["id"=>$country->id]) }}"> --}}
+                                                {{ $title }}
+                                            {{-- </a> --}}
                                         </td>
                                         <td class="text-center">
                                             {{ $country->code }}
@@ -74,10 +80,10 @@
                                         <td class="text-center">
                                             {{ $country->tel }}
                                         </td>
-                                        <td class="text-center">
+                                        {{-- <td class="text-center">
                                             {{ $country->created_at->format('Y-m-d') }}
-                                        </td>
-                                        <td class="text-center">
+                                        </td> --}}
+                                        {{-- <td class="text-center">
                                             <div class="dropdown {{ (($x+1) >= count($countries))?"dropup":"" }}">
                                                 <button type="button" class="btn btn-sm light dk dropdown-toggle"
                                                         data-toggle="dropdown"><i class="material-icons">&#xe5d4;</i>
@@ -92,7 +98,7 @@
                                                     @endif
                                                 </div>
                                             </div>
-                                        </td>
+                                        </td> --}}
                                     </tr>
                                 @endforeach
 

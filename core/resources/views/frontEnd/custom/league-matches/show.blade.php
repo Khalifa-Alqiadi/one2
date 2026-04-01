@@ -11,7 +11,7 @@
 
             <div class="row justify-content-center">
                 <div class="col-lg-8">
-                    <a href="{{route('league.rounds', ['id' => $fixture->league->id])}}"  class="league-header mb-3">
+                    <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="league-header mb-3">
                         @if (data_get($fixture->league, 'image_path'))
                             <div class="logo rounded-circle bg-white">
                                 <img src="{{ data_get($fixture->league, 'image_path') }}" alt="">
@@ -43,6 +43,11 @@
                                         $status = $fx['status'] ?? 'NS';
                                         $state_code = $fx['state_code'] ?? 'NS';
                                         $startAt = $fx['starting_at'] ?? null;
+                                        $dt = $startAt
+                                            ? \Carbon\Carbon::parse($startAt)->timezone(Helper::getUserTimezone())
+                                            : null;
+                                        $dateLabel = $dt ? $dt->translatedFormat('m/d') : '';
+                                        $timeLabel = $dt ? $dt->format('H:i') : '';
                                     @endphp
 
                                     {{-- Score / Kickoff --}}
@@ -56,17 +61,16 @@
                                         </div>
 
                                         {{-- ✅ Box: Not started (NS) --}}
-                                        <div class="js-kickoffbox"
-                                            style="display: {{ $state_code === 'NS' ? 'block' : 'none' }};">
-                                            <div class="fw-bold" style="font-size:14px; opacity:.95;">لم تبدأ بعد</div>
-                                            <div class="text-muted small js-kickoff">
-                                                {{ $startAt ? \Carbon\Carbon::parse($startAt)->timezone('Asia/Riyadh')->format('H:i  -  Y/m/d') : '' }}
-                                            </div>
+                                        <div class="js-kickoffbox">
+                                            <div class="fw-bold"
+                                                style="font-size:14px; opacity:.95;
+                                                display: {{ $state_code === 'NS' ? 'block' : 'none' }};">
+                                                لم تبدأ بعد</div>
                                         </div>
 
                                         <div class="small mt-2">
                                             <span class="badge bg-success js-status"
-                                                style="display: {{ ($state_code === 'LIVE' || $state_code === 'INPLAY_2ND' || $state_code === 'INPLAY_1ST') ? 'inline-block' : 'none' }};">مباشر</span>
+                                                style="display: {{ $state_code === 'LIVE' || $state_code === 'INPLAY_2ND' || $state_code === 'INPLAY_1ST' ? 'inline-block' : 'none' }};">مباشر</span>
 
                                             <span class="badge bg-secondary js-ns"
                                                 style="display: {{ $state_code === 'NS' ? 'inline-block' : 'none' }};">لم
@@ -83,8 +87,15 @@
                                                 {{ $status === 'LIVE' && !empty($fx['minute']) ? $fx['minute'] . "'" : '' }}
                                             </span>
                                         </div>
+                                        <div class="text-muted small mt-3">
+                                            <span>
+                                                {!! Helper::day_name($dt) !!}
+                                                @if ($timeLabel)
+                                                    • {{ $timeLabel }}
+                                                @endif
+                                            </span>
+                                        </div>
                                     </div>
-
                                     {{-- Away --}}
                                     <div class="d-flex align-items-center gap-2">
                                         <strong>{{ $fixture->awayTeam->$name_var ?? '-' }}</strong>
@@ -152,7 +163,6 @@
                                 </script>
                             @endpush
                         @endif
-
                     @endif
                 </div>
             </div>

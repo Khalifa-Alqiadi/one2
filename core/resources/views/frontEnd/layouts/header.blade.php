@@ -43,9 +43,19 @@
             </a>
 
             @include('frontEnd.layouts.menu')
-        </div>    
-        
+        </div>
+
         <div class="content-bottom d-flex align-items-center">
+            <div class="live-header mx-3">
+                {{-- @if(Helper::GeneralWebmasterSettings("football_live_status")) --}}
+                    <a href="{{ route('live.matches') }}" class="btn-header text-white bg-transparent d-flex align-items-center"
+                       style="color: #fff !important;
+                       width: 100px;">
+                        <img src="{{ URL::to('uploads/settings/live-icon-red1.svg') }}" alt="">
+                        {{ __('frontend.live') }}
+                    </a>
+                {{-- @endif --}}
+            </div>
             <div class="header-search mx-2">
                 @if(Helper::GeneralWebmasterSettings("header_search_status"))
                     <div id="header-search">
@@ -75,6 +85,6 @@
                     </a>
                 @endif
             </div>
-        </div>            
+        </div>
     </div>
 </header>

@@ -130,5 +130,7 @@ return [
     'match_show' => 'Show Match',
     'minute' => 'Minute',
     'coming_soon' => 'Coming Soon',
+    'live_matches' => 'Live Matches',
+    'live' => 'Live',
 ];
 ?>

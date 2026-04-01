@@ -23,11 +23,9 @@ class CountriesController extends Controller
 
     public function index()
     {
+        // Country::where('title_en', null)->delete();
         $GeneralWebmasterSections = WebmasterSection::where('status', '=', '1')->orderby('row_no', 'asc')->get();
-
-
         $countries = Country::paginate(config('smartend.backend_pagination'));
-
         return view('dashboard.countries.list', compact('GeneralWebmasterSections', 'countries'));
     }
 
@@ -59,7 +57,7 @@ class CountriesController extends Controller
         $columns[] = "title";
         $columns[] = "code";
         $columns[] = "tel";
-        $columns[] = "created_at";
+        // $columns[] = "created_at";
         $order = @$columns[$request->input('order.0.column')];
 
         $totalData = $Countries->count();
@@ -84,28 +82,24 @@ class CountriesController extends Controller
 
                 $lang = Helper::currentLanguage()->code;
                 $title = $Country->{'title_' . $lang} ?? $Country->title_en ?? '';
-                if (@Auth::user()->permissionsGroup->edit_status) {
-                    $nestedData['title'] = '<a href="#" onclick="UpdateCountry(\'' . $Country->id . '\');return false;">' . "<div class='h6 m-b-0'>" . $title . "</div>" . '</a>';
-                } else {
-                    $nestedData['title'] = "<div class='h6 m-b-0'>" . $title . "</div>";
-                }
+
+                $nestedData['title'] = "<div class='h6 m-b-0'>" . $title . "</div>";
 
                 $nestedData['code'] = "<div class='text-center'>" . htmlspecialchars($Country->code) . "</div>";
                 $nestedData['tel'] = "<div class='text-center'>" . htmlspecialchars($Country->tel) . "</div>";
-                $nestedData['created_at'] = "<div class='text-center'>" . Helper::formatDate($Country->created_at) . " " . date('h:i A', strtotime($Country->created_at)) . "</div>";
 
-                $options = '<div class="dropdown">
-        <button type="button" class="btn btn-sm light dk dropdown-toggle" data-toggle="dropdown"><i class="material-icons">&#xe5d4;</i> ' . __('backend.options') . '</button>
-        <div class="dropdown-menu pull-right">';
-                if (@Auth::user()->permissionsGroup->edit_status) {
-                    $options .= '<a class="dropdown-item" onclick="UpdateCountry(\'' . $Country->id . '\')"><i class="material-icons">&#xe3c9;</i> ' . __('backend.edit') . '</a>';
-                }
-                if (@Auth::user()->permissionsGroup->delete_status) {
-                    $options .= '<a class="dropdown-item text-danger" onclick="DeleteCountry(\'' . $Country->id . '\')"><i class="material-icons">&#xe872;</i> ' . __('backend.delete') . '</a>';
-                }
-                $options .= '</div></div>';
+                // $options = '<div class="dropdown">
+                //     <button type="button" class="btn btn-sm light dk dropdown-toggle" data-toggle="dropdown"><i class="material-icons">&#xe5d4;</i> ' . __('backend.options') . '</button>
+                //     <div class="dropdown-menu pull-right">';
+                // if (@Auth::user()->permissionsGroup->edit_status) {
+                //     $options .= '<a class="dropdown-item" onclick="UpdateCountry(\'' . $Country->id . '\')"><i class="material-icons">&#xe3c9;</i> ' . __('backend.edit') . '</a>';
+                // }
+                // if (@Auth::user()->permissionsGroup->delete_status) {
+                //     $options .= '<a class="dropdown-item text-danger" onclick="DeleteCountry(\'' . $Country->id . '\')"><i class="material-icons">&#xe872;</i> ' . __('backend.delete') . '</a>';
+                // }
+                // $options .= '</div></div>';
 
-                $nestedData['options'] = "<div class='text-center'>" . $options . "</div>";
+                // $nestedData['options'] = "<div class='text-center'>" . $options . "</div>";
 
                 $data[] = $nestedData;
             }
@@ -215,38 +209,54 @@ class CountriesController extends Controller
 
     public function update_api()
     {
-        $locale = Helper::currentLanguage()->code;
-        $token  = config('services.SPORTMONKS_TOKEN');
+        $token = config('services.SPORTMONKS_TOKEN');
 
         $page  = 1;
         $saved = 0;
 
         do {
-            $url = "https://api.sportmonks.com/v3/core/countries"
+            $urlAr = "https://api.sportmonks.com/v3/core/countries"
                 . "?api_token={$token}"
-                . "&locale={$locale}"
+                . "&locale=ar"
                 . "&page={$page}";
 
-            $countriesRes = $this->apiClient->curlGet($url);
-            $data = data_get($countriesRes, 'json', []);
+            $urlEn = "https://api.sportmonks.com/v3/core/countries"
+                . "?api_token={$token}"
+                . "&locale=en"
+                . "&page={$page}";
 
-            $countries = $data['data'] ?? [];
+            $countriesResAr = $this->apiClient->curlGet($urlAr);
+            $countriesResEn = $this->apiClient->curlGet($urlEn);
 
-            foreach ($countries as $country) {
+            $dataAr = data_get($countriesResAr, 'json', []);
+            $dataEn = data_get($countriesResEn, 'json', []);
+
+            $countriesAr = $dataAr['data'] ?? [];
+            $countriesEn = $dataEn['data'] ?? [];
+
+            $enIndexed = collect($countriesEn)->keyBy('id');
+
+            foreach ($countriesAr as $countryAr) {
+                $countryEn = $enIndexed->get($countryAr['id']);
+
+                // $code = $countryAr['iso2'] ?? $countryEn['iso2'] ?? null;
+
+
                 Country::updateOrCreate(
                     [
-                        'sport_id' => $country['id'],
-                        'title_ar' => $country['name'] ?? null,
-                    ], // شرط التطابق (ثابت)
+                        'id' => $countryAr['id'] ?? null,
+                    ],
                     [
-                        'code'     => $country['iso2'] ?? null,
+                        'code' => $countryAr['iso2'] ?? null,
+                        'title_ar' => $countryAr['name'] ?? null,
+                        'title_en' => $countryEn['name'] ?? null,
                     ]
                 );
 
                 $saved++;
             }
 
-            $hasMore = (bool) data_get($data, 'pagination.has_more', false);
+            $hasMore = (bool) data_get($dataAr, 'pagination.has_more', false);
             $page++;
         } while ($hasMore);
 

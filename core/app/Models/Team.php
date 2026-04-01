@@ -27,6 +27,6 @@ class Team extends Model
 
     public function country()
     {
-        return $this->belongsTo(Country::class, 'country_id', 'sport_id');
+        return $this->belongsTo(Country::class, 'country_id', 'id');
     }
 }

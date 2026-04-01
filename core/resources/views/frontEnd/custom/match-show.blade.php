@@ -57,11 +57,11 @@
                                         </div>
 
                                         {{-- ✅ Box: Not started (NS) --}}
-                                        <div class="js-kickoffbox"
-                                            style="display: {{ $state_code === 'NS' ? 'block' : 'none' }};">
-                                            <div class="fw-bold" style="font-size:14px; opacity:.95;">لم تبدأ بعد</div>
+                                        <div class="js-kickoffbox">
+                                            <div class="fw-bold" style="font-size:14px; opacity:.95;
+                                                display: {{ $state_code === 'NS' ? 'block' : 'none' }}">لم تبدأ بعد</div>
                                             <div class="text-muted small js-kickoff">
-                                                {{ $startAt ? \Carbon\Carbon::parse($startAt)->timezone('Asia/Riyadh')->format('H:i  -  Y/m/d') : '' }}
+                                                {{ $startAt ? \Carbon\Carbon::parse($startAt)->timezone(Helper::getUserTimezone())->format('H:i  -  Y/m/d') : '' }}
                                             </div>
                                         </div>
 
@@ -83,6 +83,10 @@
                                             <span class="text-success fw-bold js-minute">
                                                 {{ $status === 'LIVE' && !empty($fx['minute']) ? $fx['minute'] . "'" : '' }}
                                             </span>
+
+                                        </div>
+                                        <div class="text-muted small ">
+                                            {{ $startAt ? \Carbon\Carbon::parse($startAt)->timezone(Helper::getUserTimezone())->format('H:i  -  Y/m/d') : '' }}
                                         </div>
                                     </div>
 

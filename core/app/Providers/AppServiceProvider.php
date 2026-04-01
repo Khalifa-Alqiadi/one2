@@ -39,4 +39,5 @@ class AppServiceProvider extends ServiceProvider
             \App\Console\Commands\SyncLiveFixtures::class,
         ]);
     }
+
 }

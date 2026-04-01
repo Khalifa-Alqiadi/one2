@@ -12,6 +12,7 @@ use App\Services\ApiClientService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 
 class RoundsController extends Controller
 {
@@ -23,13 +24,13 @@ class RoundsController extends Controller
         $this->apiClient = $apiClient;
         $this->middleware('auth');
     }
-    public function index(Request $request, $league_id, $season_id){
+    public function indexOld(Request $request, $league_id, $season_id){
         $GeneralWebmasterSections = WebmasterSection::where('status', '1')
             ->orderBy('row_no', 'asc')
             ->get();
 
         $League = League::find($league_id);
-        $season = Season::find($season_id);
+        $Season = Season::find($season_id);
 
         if (!$League) {
             return redirect()
@@ -46,8 +47,8 @@ class RoundsController extends Controller
         */
         $stages = $League->stages()
             ->with([
-                'rounds' => function ($q) use ($season) {
-                    $q->where('season_id', $season->id)
+                'rounds' => function ($q) use ($Season) {
+                    $q->where('season_id', $Season->id)
                         ->orderBy('starting_at', 'asc');
                 },
                 'fixtures' => function ($fx) {
@@ -56,7 +57,7 @@ class RoundsController extends Controller
                 'fixtures.homeTeam',
                 'fixtures.awayTeam',
             ])
-            ->where('season_id', $season->id)
+            ->where('season_id', $Season->id)
             ->orderBy('sort_order', 'asc')
             ->orderBy('starting_at', 'asc')
             ->get();
@@ -164,18 +165,189 @@ class RoundsController extends Controller
 
             return redirect()->route('leaguesRounds', [
                 'league_id' => $League->id,
-                'season_id' => $season->id,
+                'season_id' => $Season->id,
                 'page' => $targetPage,
             ]);
         }
 
+        $tab = $request->input('tab', 'matches');
+
         return view('dashboard.football.rounds.list', compact(
             'League',
             'GeneralWebmasterSections',
-            'season',
+            'Season',
             'stages',
-            'paginatedPages'
+            'paginatedPages',
+            'tab'
         ));
+    }
+    public function index(Request $request, $league_id){
+        $GeneralWebmasterSections = WebmasterSection::where('status', '1')
+            ->orderBy('row_no', 'asc')
+            ->get();
+
+        $League = League::find($league_id);
+
+        $seasons = $League->seasons()->orderBy('starting_at', 'desc')->get();
+
+
+
+        $tab = $request->input('tab', 'matches');
+
+        return view('dashboard.football.rounds.list', compact(
+            'League',
+            'GeneralWebmasterSections',
+            'tab',
+            'seasons'
+        ));
+    }
+
+    public function list(Request $request, $league_id)
+    {
+        $limit = (int) $request->input('length', 10);
+        $start = (int) $request->input('start', 0);
+        $locale = Helper::currentLanguage()->code;
+        $name = "name_" . $locale;
+        $title = "title_" . $locale;
+
+        $dir = $request->input('order.0.dir', 'desc');
+        $orderColumnIndex = (int) $request->input('order.0.column', 0);
+        $q = $request->input('find_q');
+        $season_id = $request->input('season_id');
+        $find_date = $request->input('date');
+        $find_status = $request->input('status');
+
+        if (!$season_id) {
+            $season_id = Season::where('is_current', 1)
+                ->where('league_id', $league_id)
+                ->value('id');
+        }
+        $matchesQuery = Fixture::where('season_id', $season_id)
+            ->where('league_id', $league_id)
+            ->with(['homeTeam', 'awayTeam']);
+
+        if($find_date){
+            $matchesQuery = $matchesQuery->whereDate('starting_at', $find_date);
+        }
+        if($find_status){
+            if ($find_status === 'not_started') {
+                $matchesQuery = $matchesQuery->where(function($q) {
+                    $q->where('is_finished', 0);
+                });
+            } elseif ($find_status === 'live') {
+                $matchesQuery = $matchesQuery->where(function($q) {
+                    $q->where('is_finished', 0)
+                        ->where('starting_at', '<=', now());
+                });
+            } elseif ($find_status === 'finished') {
+                $matchesQuery = $matchesQuery->where('is_finished', 1);
+            }
+        }
+
+        // أعمدة datatable حسب ترتيبها في JS
+        $columns = [
+            'id',
+            "title",
+            'season_id',
+            'starting_at',
+            'is_finished',
+        ];
+
+        $order = $columns[$orderColumnIndex] ?? 'starting_at';
+        if (!in_array($dir, ['asc', 'desc'])) $dir = 'desc';
+
+        // فلترة بسيطة اختيارية (لو تبغى)
+        // $q = trim((string) $request->input('q', ''));
+        // if ($q !== '') {
+        //     $matchesQuery->where(function ($qq) use ($q) {
+        //         $qq->where('name_ar', 'like', "%{$q}%")
+        //             ->orWhere('name_en', 'like', "%{$q}%");
+        //     });
+        // }
+
+
+
+
+
+        $totalData = $matchesQuery->count();
+        $totalFiltered = (clone $matchesQuery)->count();
+
+        // paginate + order
+        $rows = $matchesQuery->orderBy($order, $dir)
+            ->orderBy('starting_at', 'asc')
+            ->limit($limit > 0 ? $limit : 10)
+            ->get();
+
+        $data = [];
+        $x = 0;
+        $matchsCount = $rows->count();
+        foreach ($rows as $team) {
+            $x++;
+            $logo = '<a href="' . route('matcheRoundsEdit', ['id' => $team->id]) . '"
+                    class="d-flex justify-content-between"
+                    style="justify-content: space-between; display:flex">
+                    <div>';
+            if($team->homeTeam || $team->awayTeam){
+                if ($team->homeTeam->image_path){
+                    $logo .= '<img src="' . $team->homeTeam->image_path . '"
+                        style="height:30px; margin: 0 4px;" alt="">';
+                }
+                $logo .= '<span>' . $team->homeTeam->$name . '</span></div>';
+                $logo .= '<span class="m-x-sm">vs</span>';
+                $logo .= '<div>';
+                if ($team->awayTeam) {
+                    if ($team->awayTeam->image_path) {
+                        $logo .= '<img src="' . $team->awayTeam->image_path . '"
+                            style="height:30px; margin: 0 4px;" alt="">';
+                    }
+                    $logo .= '<span>' . $team->awayTeam->$name . '</span>';
+                }
+                $logo .= '</div>';
+            }
+            $logo .= '</a>';
+            $starting_at = "<div class='text-center'>" . ($team->starting_at ? Carbon::parse($team->starting_at)->format('Y-m-d H:i') : '-') . "</div>";
+            $is_finished = "<div class='text-center'>";
+                if ($team->is_finished)
+                    $is_finished .= '<span class="text-info">' . __('backend.finished') . '</span>';
+                elseif ($team->starting_at && $team->starting_at > now())
+                    $is_finished .= '<span class="text-success">' . __('backend.not_started_yet') . '</span>';
+                else
+                    $is_finished .= '<span class="text-warning">' . __('backend.live_now') . '</span>';
+            $is_finished .= "</div>";
+
+            $options = '
+                      <div class="dropdown ' . ((($x + 2) >= $matchsCount) ? "dropup" : "") . '">
+                    <button type="button" class="btn btn-sm light dk dropdown-toggle" data-toggle="dropdown"><i class="material-icons">&#xe5d4;</i> ' . __('backend.options') . '</button>
+                    <div class="dropdown-menu pull-right">';
+            if (@Auth::user()->permissionsGroup->edit_status) {
+                $options .= '<a class="dropdown-item" href="' . route("matcheRoundsEdit", [
+                    "id" => $team->id
+                ]) . '"><i class="material-icons">&#xe3c9;</i> ' . __('backend.edit') . '</a>';
+            }
+            $options .= '</div></div>';
+
+            $data[] = [
+                'check' => "<div class='row_checker'><label class=\"ui-check m-a-0\">
+                            <input type=\"checkbox\" name=\"ids[]\" value=\"" . $team->id . "\"><i
+                                    class=\"dark-white\"></i>
+                                    <input type='hidden' name='row_ids[]' value='" . $team->id . "' class='form-control row_no'>
+                        </label>
+                    </div>",
+                'id'         => '<div class="text-center">' . $team->id . '</div>',
+                // 'logo'       => '<div class="text-center">' . $logo . '</div>',
+                'title'       => $logo,
+                'starting_at' => $starting_at,
+                'is_finished' => $is_finished,
+                'options'    => "<div class='text-center'>" . $options . "</div>",
+            ];
+        }
+
+        return response()->json([
+            "draw"            => (int) $request->input('draw'),
+            "recordsTotal"    => (int) $totalData,
+            "recordsFiltered" => (int) $totalFiltered,
+            "data"            => $data,
+        ]);
     }
 
     private function syncRoundsBySeasonAPI($league, int $seasonId, string $token, string $locale): void
@@ -245,7 +417,7 @@ class RoundsController extends Controller
         $savedFixtures = $this->syncFixturesBySeasonAPI($league, $seasonId, $token, $locale);
 
         return redirect()
-            ->action([LeaguesController::class, 'index'], ['league_id' => $league->id, 'season_id' => $season_id])
+            ->action([SeasonsController::class, 'index'], ['league_id' => $league->id])
             ->with('doneMessage', __('backend.saveDone') . " - {$savedFixtures} fixtures synced");
     }
 

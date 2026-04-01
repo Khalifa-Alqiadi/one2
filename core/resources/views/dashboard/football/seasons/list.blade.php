@@ -1,6 +1,7 @@
 
 <?php
 $name_var = 'name_' . @Helper::currentLanguage()->code;
+$x = 0;
 ?>
 @extends('dashboard.layouts.master')
 
@@ -91,12 +92,32 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
                                             {{ $Season->is_current ? 'Yes' : 'No' }}
                                         </td>
                                         <td class="text-center">
+                                            <div class="dropdown {{ (($x+1) >= count($Seasons))?"dropup":"" }}">
+                                                <button type="button" class="btn btn-sm light dk dropdown-toggle"
+                                                        data-toggle="dropdown"><i class="material-icons">&#xe5d4;</i>
+                                                    {{ __('backend.options') }}
+                                                </button>
+                                                <div class="dropdown-menu pull-right">
+                                                    @if(@Auth::user()->permissionsGroup->edit_status)
+                                                        <a class="dropdown-item"
+                                                            href="{{route('leaguesRoundsAPI', ['league_id' => $League->id, 'season_id' => $Season->id])}}"><i
+                                                                class="material-icons">&#xe3c9;</i> {{ __('backend.updateMatches') }}
+                                                        </a>
+                                                        <a class="dropdown-item" target="_blank"
+                                                            href="{{ route("league.rounds",["id"=>$League->id]) }}"><i
+                                                                class="material-icons">&#xe8f4;</i> {{ __('backend.preview') }}
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </td>
+                                        {{-- <td class="text-center">
                                             <a class=""
                                                 href="{{route('leaguesRounds', ['league_id' => $League->id, 'season_id' => $Season->id])}}"
                                                 ><i
                                                     class="material-icons">&#xe8f4;</i>
                                             </a>
-                                        </td>
+                                        </td> --}}
                                         {{-- <td class="text-center">{{ $League->sport_id }}</td> --}}
                                     </tr>
                                 @endforeach

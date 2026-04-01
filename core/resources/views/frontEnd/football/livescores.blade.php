@@ -10,30 +10,18 @@
         <div class="container">
             <div class="section-title text-start mb-4">
                 <h2 class="d-flex align-items-center gap-2">
-                    <img src="{{ URL::to('uploads/settings/Vector.svg') }}" alt="">
-                    {{ __('frontend.matches') }}
+                    <img src="{{ URL::to('uploads/settings/live-icon-red1.svg') }}" alt="">
+                    {{ __('frontend.live_matches') }}
                 </h2>
             </div>
             @php
-                $locale = $locale ?? 'ar';
-                $activeTab = $activeTab ?? 'today';
+                $locale = Helper::currentLanguage()->code ?? 'ar';
             @endphp
-
-            <div class="tabs-wrapper d-flex mb-5">
-                @foreach ($dates as $day)
-                    <a href="{{ route('matches', ['date' => $day['key']]) }}"
-                        class="tab-item {{ $activeTab === $day['key'] ? 'active' : '' }}" data-date="{{ $day['key'] }}">
-
-                        <div class="tab-label">{{ $day['label'] }}</div>
-                        <div class="tab-date">{{ $day['date'] }}</div>
-                    </a>
-                @endforeach
-            </div>
 
 
             <div class="matches matches-home">
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                    @foreach ($matches as $match)
+                    @foreach ($liveMatches as $match)
                         <?php
                         $isFinished = (bool) $match->is_finished;
                         $timezone = Helper::getUserTimezone();
@@ -53,16 +41,18 @@
 
                         $minute = is_numeric($match->minute) ? (int) $match->minute : null;
                         ?>
-                        <div class="col mb-3">
-                            @include('frontEnd.football.partials.match', [
-                                'match' => $match,
-                                'isFinished' => $isFinished,
-                                'isTimeLive' => $isTimeLive,
-                                'dateLabel' => $dateLabel,
-                                'timeLabel' => $timeLabel,
-                                'minute' => $minute,
-                            ])
-                        </div>
+                        @if($isTimeLive)
+                            <div class="col mb-3">
+                                @include('frontEnd.football.partials.match', [
+                                    'match' => $match,
+                                    'isFinished' => $isFinished,
+                                    'isTimeLive' => $isTimeLive,
+                                    'dateLabel' => $dateLabel,
+                                    'timeLabel' => $timeLabel,
+                                    'minute' => $minute,
+                                ])
+                            </div>
+                        @endif
                     @endforeach
                 </div>
             </div>

@@ -19,8 +19,8 @@ class FixturesController extends Controller
         $localeRaw = Helper::currentLanguage()->code ?? 'ar';
         $locale = in_array($localeRaw, ['ar', 'en']) ? $localeRaw : 'en';
 
-        $start = Carbon::today()->subDays(2);
-        $end = Carbon::today()->addDays(5);
+        $start = Carbon::today()->subDays(2)->timezone(Helper::getUserTimezone());
+        $end = Carbon::today()->addDays(5)->timezone(Helper::getUserTimezone());
 
         $dates = [];
 
@@ -39,8 +39,10 @@ class FixturesController extends Controller
             ];
         }
 
+
         // $date    = now()->toDateString();
-        $date = $request->get('date', now()->toDateString());
+        $date = $request->get('date', now()->timezone(Helper::getUserTimezone())->toDateString());
+        $date_live = Carbon::parse($date)->subHours(3)->toDateString();
         $tab = now();
         if($date !== null){
             $tab = $date;

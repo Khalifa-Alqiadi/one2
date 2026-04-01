@@ -96,7 +96,7 @@ $x = 0;
                                                         $ftitle = $country->$title_var2;
                                                     }
                                                     ?>
-                                                    <option value="{{ $country->sport_id }}">{{ $ftitle }}</option>
+                                                    <option value="{{ $country->id }}">{{ $ftitle }}</option>
                                                 @endforeach
                                             </select>
                                         </div>

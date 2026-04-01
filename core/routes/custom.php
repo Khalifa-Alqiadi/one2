@@ -5,6 +5,8 @@ use App\Http\Controllers\Football\LeaguesController;
 use App\Http\Controllers\Custom\LeagueTabsController;
 use App\Http\Controllers\Football\FixturesController;
 use App\Http\Controllers\Custom\MatchesController;
+use App\Http\Controllers\Football\LivescoresController;
+use App\Http\Controllers\TimezoneController;
 use Illuminate\Support\Facades\Route;
 
 // private route example ( require login )
@@ -47,6 +49,11 @@ Route::get('/fixtures/{id}/live', [MatchesController::class, 'fixtureLiveDetails
 
 Route::get('/match/details/{id}', [MatchesController::class, 'showFixture'])
     ->name('match.show');
+
+Route::get('/live-matches', [LivescoresController::class, 'index'])
+    ->name('live.matches');
+
+Route::post('/set-timezone', [TimezoneController::class, 'set']);
 
 
 

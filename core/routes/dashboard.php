@@ -147,14 +147,16 @@ Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['aut
     Route::post('/leagues/updateAll', [LeaguesController::class, 'updateAll'])->name('leaguesUpdateAll');
 
     // Rounds
-    Route::get('/leagues/{league_id?}/season/{season_id?}/rounds', [RoundsController::class, 'index'])->name('leaguesRounds');
+    Route::get('/leagues/{league_id?}/rounds', [RoundsController::class, 'index'])->name('leaguesRounds');
     Route::get('/leagues/{league_id?}/season/{season_id?}/rounds/API', [RoundsController::class, 'syncSeasonStructure'])->name('leaguesRoundsAPI');
     Route::post('/leagues/matches/rounds-update-all', [RoundsController::class, 'matchesUpdateAllAPI'])->name('roundsUpdateAll');
     Route::get('/leagues/matches/{id}/edit', [RoundsController::class, 'matcheRoundsEdit'])->name('matcheRoundsEdit');
     Route::post('/leagues/matches/{id}/update', [RoundsController::class, 'matchUpdate'])->name('matchUpdate');
+    Route::post('/leagues/{league_id}/matches/list', [RoundsController::class, 'list'])->name('leagues.matches.list');
     // Seasons
     Route::get('/leagues/{league_id?}/seasons', [SeasonsController::class, 'index'])->name('seasons');
     Route::get('/leagues/{league_id?}/seasons/update', [SeasonsController::class, 'update'])->name('seasonsUpdate');
+
 
     Route::get('/teams', [TeamsController::class, 'index'])->name('teams');
     Route::post('teams-list', [TeamsController::class, 'list'])->name('teams.list');
