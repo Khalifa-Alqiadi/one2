@@ -108,7 +108,7 @@
                     </thead>
 
                     <tbody>
-                        @forelse($rows as $row)
+                        @forelse($standings as $row)
                             @php
                                 $team = data_get($row, 'participant', []);
                                 $teamId = data_get($team, 'id');
