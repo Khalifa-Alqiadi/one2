@@ -348,6 +348,199 @@ class LiveMatchesService
         return collect($events)
             ->filter(fn($e) => is_array($e))
             ->map(function ($e) use ($homeId, $awayId) {
+                $minute = (int) (data_get($e, 'minute') ?? 0);
+                $participant_id = (int) (data_get($e, 'participant_id') ?? 0);
+                $extraMinute = data_get($e, 'extra_minute');
+                $extraMinute = is_numeric($extraMinute) ? (int) $extraMinute : null;
+
+                $minuteLabel = $minute > 0
+                    ? ($minute . ($extraMinute && $extraMinute > 0 ? '+' . $extraMinute : '') . "'")
+                    : '';
+
+                $participantId = (int) (data_get($e, 'participant_id') ?? 0);
+                $side = $participantId === $homeId
+                    ? 'home'
+                    : ($participantId === $awayId ? 'away' : 'neutral');
+
+                $typeCode = strtolower((string) (
+                    data_get($e, 'type.code')
+                    ?? data_get($e, 'type.developer_name')
+                    ?? data_get($e, 'type_code')
+                    ?? ''
+                ));
+
+                $typeName = (string) (
+                    data_get($e, 'type.name')
+                    ?? data_get($e, 'name')
+                    ?? ''
+                );
+
+                $playerName = (string) (
+                    data_get($e, 'player.name')
+                    ?? data_get($e, 'player.display_name')
+                    ?? data_get($e, 'player_name')
+                    ?? ''
+                );
+
+                $relatedPlayerName = (string) (
+                    data_get($e, 'relatedplayer.name')
+                    ?? data_get($e, 'relatedplayer.display_name')
+                    ?? data_get($e, 'related_player_name')
+                    ?? ''
+                );
+
+                $playerImg = (string) (data_get($e, 'player.image_path') ?? '');
+                $relatedImg = (string) (data_get($e, 'relatedplayer.image_path') ?? '');
+
+                $isGoal = in_array($typeCode, ['goal', 'penalty', 'own_goal'], true);
+                $isSub = str_contains($typeCode, 'sub');
+
+                $isYellowCard = in_array($typeCode, ['yellowcard', 'yellow_card'], true);
+                $isRedCard = in_array($typeCode, ['redcard', 'red_card'], true);
+                $isSecondYellow = in_array($typeCode, ['secondyellow', 'second_yellow'], true);
+
+                if ($isSub) {
+                    // SportMonks غالبًا player = OUT و related_player = IN
+                    $inName = $playerName;
+                    // $outName = $playerName;
+                    $outName = $relatedPlayerName;
+
+                    $inImg = $playerImg;
+                    // $outImg = $playerImg;
+                    $outImg = $relatedImg;
+
+                    // if ($outName === '' && $inName !== '') {
+                    //     [$outName, $inName] = [$inName, $outName];
+                    //     [$outImg, $inImg] = [$inImg, $outImg];
+                    // }
+
+                    return [
+                        'minute' => $minute,
+                        'participant_id' => $participant_id,
+                        'extra_minute' => $extraMinute,
+                        'minute_label' => $minuteLabel,
+                        'side' => $side,
+                        'kind' => 'sub',
+                        'type_code' => $typeCode,
+                        'type_name' => $typeName,
+                        'label' => 'تبديل لاعب',
+                        'player_name' => $playerName,
+                        'related_player_name' => $relatedPlayerName,
+                        'player_image' => $playerImg,
+                        'related_player_image' => $relatedImg,
+                        'sub' => [
+                            'in' => [
+                                'name' => $inName,
+                                'image' => $inImg,
+                                'number' => null,
+                                'pos' => null,
+                            ],
+                            'out' => [
+                                'name' => $outName,
+                                'image' => $outImg,
+                                'number' => null,
+                                'pos' => null,
+                            ],
+                        ],
+                        'raw' => $e,
+                    ];
+                }
+
+                if ($isGoal) {
+                    return [
+                        'minute' => $minute,
+                        'participant_id' => $participant_id,
+                        'extra_minute' => $extraMinute,
+                        'minute_label' => $minuteLabel,
+                        'side' => $side,
+                        'kind' => 'goal',
+                        'type_code' => $typeCode,
+                        'type_name' => $typeName,
+                        'label' => $typeName ?: 'هدف',
+                        'player_name' => $playerName,
+                        'related_player_name' => $relatedPlayerName,
+                        'player_image' => $playerImg,
+                        'related_player_image' => $relatedImg,
+                        'goal' => [
+                            'scorer_name' => $playerName,
+                            'scorer_image' => $playerImg,
+                            'assist_name' => $relatedPlayerName,
+                            'scoreline' => (string) (data_get($e, 'result') ?? ''),
+                            'info' => (string) (data_get($e, 'info') ?? ''),
+                            'addition' => (string) (data_get($e, 'addition') ?? ''),
+                        ],
+                        'raw' => $e,
+                    ];
+                }
+
+                if ($isYellowCard || $isRedCard || $isSecondYellow || str_contains($typeCode, 'card')) {
+                    $cardKind = 'card';
+                    $cardLabel = $typeName ?: 'بطاقة';
+
+                    if ($isYellowCard) {
+                        $cardKind = 'yellow_card';
+                        $cardLabel = 'بطاقة صفراء';
+                    } elseif ($isRedCard) {
+                        $cardKind = 'red_card';
+                        $cardLabel = 'بطاقة حمراء';
+                    } elseif ($isSecondYellow) {
+                        $cardKind = 'second_yellow';
+                        $cardLabel = 'البطاقة الصفراء الثانية';
+                    }
+
+                    return [
+                        'minute' => $minute,
+                        'participant_id' => $participant_id,
+                        'extra_minute' => $extraMinute,
+                        'minute_label' => $minuteLabel,
+                        'side' => $side,
+                        'kind' => $cardKind,
+                        'type_code' => $typeCode,
+                        'type_name' => $typeName,
+                        'label' => $cardLabel,
+                        'player_name' => $playerName,
+                        'player_image' => $playerImg,
+                        'card' => [
+                            'player_name' => $playerName,
+                            'player_image' => $playerImg,
+                            'type_code' => $typeCode,
+                            'type_name' => $typeName,
+                        ],
+                        'raw' => $e,
+                    ];
+                }
+
+                return [
+                    'minute' => $minute,
+                    'participant_id' => $participant_id,
+                    'extra_minute' => $extraMinute,
+                    'minute_label' => $minuteLabel,
+                    'side' => $side,
+                    'kind' => 'other',
+                    'type_code' => $typeCode,
+                    'type_name' => $typeName,
+                    'label' => $typeName ?: 'حدث',
+                    'player_name' => $playerName,
+                    'related_player_name' => $relatedPlayerName,
+                    'player_image' => $playerImg,
+                    'related_player_image' => $relatedImg,
+                    'raw' => $e,
+                ];
+            })
+            ->sortByDesc(function ($x) {
+                $minute = (int) ($x['minute'] ?? 0);
+                $extra = (int) ($x['extra_minute'] ?? 0);
+                return ($minute * 1000) + $extra;
+            })
+            ->values()
+            ->all();
+    }
+
+    public function normalizeEventsOld(array $events, int $homeId, int $awayId): array
+    {
+        return collect($events)
+            ->filter(fn($e) => is_array($e))
+            ->map(function ($e) use ($homeId, $awayId) {
 
                 // minute label
                 $minute = (int) (data_get($e, 'minute') ?? 0);
@@ -476,5 +669,4 @@ class LiveMatchesService
             ->values()
             ->all();
     }
-
 }

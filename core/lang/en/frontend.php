@@ -133,5 +133,14 @@ return [
     'live_matches' => 'Live Matches',
     'live' => 'Live',
     'no_live_matches' => 'No live matches currently',
+    'match_info' => 'Match Details',
+    'venue' => 'Venue',
+    'tv_stations' => 'TV Stations',
+    'injuries' => 'Injuries',
+    'suspensions' => 'Suspensions',
+    'capacity' => 'Capacity',
+    'unknown_venue' => 'Unknown Venue',
+    'round' => 'Round',
+    'half_time' => 'Half Time',
 ];
 ?>

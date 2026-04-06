@@ -294,7 +294,7 @@
 }
 
 /* الشريط الجانبي الملون مثل الصورة */
-.football .standing-row::before {
+/* .football .standing-row::before {
     content: "";
     position: absolute;
     right: 0;
@@ -303,7 +303,7 @@
     width: 3px;
     background: transparent;
     border-radius: 0 8px 8px 0;
-}
+} */
 
 .football .stripe-green::before {
     background: #22c55e;
@@ -1238,17 +1238,14 @@
     display: flex
 }
 
-.football-match .gx-ns-bar-away {
-    background: #7dd3fc
+.football-match .gx-ns-bar-away,
+.football-match .gx-ns-bar-draw,
+.football-match .gx-ns-bar-away2,
+.football-match .gx-ns-bar-home,
+.football-match .gx-ns-bar-home2 {
+    background: var(--color-primary-gold)
 }
 
-.football-match .gx-ns-bar-draw {
-    background: #e5e7eb
-}
-
-.football-match .gx-ns-bar-home {
-    background: #fb7185
-}
 
 /* End Matches */
 .gx-fixtures-grid .gx-fixture-card{
@@ -1308,4 +1305,10 @@
     .football .standings-table {
         min-width: 720px;
     }
+}
+
+.standing-row.active,
+.standing-row.active td{
+    transition: all .5s ease-in-out;
+    background-color: #584303;
 }

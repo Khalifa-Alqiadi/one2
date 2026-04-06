@@ -62,7 +62,9 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
 
                 {{-- Standings --}}
                 @include('frontEnd.football.rounds-tabs.standings', [
-                    'standings' => $standings
+                    'standings' => $standings,
+                    'homeID'    => 0,
+                    'awayID'    => 0,
                 ])
 
 

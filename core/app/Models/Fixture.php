@@ -17,6 +17,7 @@ class Fixture extends Model
         'state_id',
         'stage_id',
         'state_name',
+        'state_code',
         'home_score',
         'away_score',
         'is_finished',
@@ -25,12 +26,30 @@ class Fixture extends Model
         'minute',
         'payload',
         'is_slider',
-        'is_home'
+        'is_home',
+        'events_json',
+        'statistics_json',
+        'lineups_json',
+        'win_probabilities_json',
+        'details_synced_at',
+        'tv_stations_json',
+        'injuries_json',
+        'suspensions_json',
+        'venue_json',
     ];
 
     protected $casts = [
-        'starting_at' => 'datetime',
+        'events_json'            => 'array',
+        'statistics_json'        => 'array',
+        'lineups_json'           => 'array',
+        'win_probabilities_json' => 'array',
+        'details_synced_at'      => 'datetime',
+        'starting_at'            => 'datetime',
         'payload' => 'array',
+        'tv_stations_json' => 'array',
+        'injuries_json' => 'array',
+        'suspensions_json' => 'array',
+        'venue_json' => 'array',
     ];
 
     public function league()
@@ -51,6 +70,11 @@ class Fixture extends Model
     public function awayTeam()
     {
         return $this->belongsTo(Team::class, 'away_team_id', 'id');
+    }
+
+    public function round()
+    {
+        return $this->belongsTo(Round::class, 'round_id', 'id');
     }
 
 

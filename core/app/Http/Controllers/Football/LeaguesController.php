@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Fixture;
 use App\Models\League;
 use App\Models\Round;
+use App\Models\Standing;
 use App\Services\ApiClientService;
+use App\Services\SportmonksStandingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,7 +22,6 @@ class LeaguesController extends Controller
     public function __construct(ApiClientService $apiClient)
     {
         $this->apiClient = $apiClient;
-
     }
 
 
@@ -56,11 +57,13 @@ class LeaguesController extends Controller
             $this->refreshStandingsCache($seasonId, $locale);
         }
 
-        $standingsPack = $this->getStandingsCached($seasonId, $locale);
-        $standings = $standingsPack['standings'] ?? [];
-        $standingsErr = $standingsPack['ok'] ? null : ($standingsPack['error'] ?? 'Standings error');
-        // وقت آخر تحديث (من الكاش)
-        $standingsUpdatedAt = $standingsPack['fetched_at'] ?? null;
+        $standingsPack = null;
+        $standingsErr = null;
+
+        $standingsData = $this->getStandingsCached($seasonId, $locale);
+
+        $standings = $standingsData['standings'] ?? [];
+        $standingsUpdatedAt = $standingsData['fetched_at'] ?? null;
 
         $perPage = 1;
 
@@ -134,7 +137,7 @@ class LeaguesController extends Controller
                         'fixtures' => $fixtures,
                     ]);
                 }
-            }else{
+            } else {
                 $fixtures = Fixture::where('stage_id', $stage->id)
                     ->orderBy('starting_at', 'desc')
                     ->get();
@@ -151,6 +154,7 @@ class LeaguesController extends Controller
         $perPage = 1;
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $currentItems = $pages->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
 
         $paginatedPages = new LengthAwarePaginator(
             $currentItems,
@@ -214,60 +218,63 @@ class LeaguesController extends Controller
     {
         $cacheKey = "sm:standings:season:{$seasonId}:{$locale}";
         $metaKey  = "sm:standings:season:{$seasonId}:{$locale}:meta";
+
+        $hasStandings = Standing::where('season_id', $seasonId)->exists();
+
         Cache::forget($cacheKey);
         Cache::forget($metaKey);
+
+        if (!$hasStandings) {
+            app(SportmonksStandingService::class)->syncSeasonStandings($seasonId, $locale);
+        }
     }
 
-    private function getStandingsCached(int $seasonId, string $locale): array
+    private function getStandingsCached(int $seasonId, string $locale, bool $forceRefresh = false): array
     {
-        $token = config('services.SPORTMONKS_TOKEN');
-
         $cacheKey = "sm:standings:season:{$seasonId}:{$locale}";
         $metaKey  = "sm:standings:season:{$seasonId}:{$locale}:meta";
 
-        // كاش ساعة
-        $data = Cache::remember($cacheKey, 3600, function () use ($seasonId, $token, $locale, $metaKey) {
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+            Cache::forget($metaKey);
+        }
 
-            $url = "https://api.sportmonks.com/v3/football/standings/seasons/{$seasonId}"
-                . "?api_token={$token}"
-                . "&locale={$locale}"
-                // حاول تجيب participant + details + form (لو include غير مدعوم عندك احذفه)
-                . "&include=participant;details.type;form";
+        $standings = Cache::remember($cacheKey, 3600, function () use ($seasonId, $metaKey) {
+            $rows = Standing::query()
+                ->where('season_id', $seasonId)
+                ->orderByRaw("CASE WHEN group_name IS NULL OR group_name = '' THEN 1 ELSE 0 END")
+                ->orderBy('group_name')
+                ->orderBy('position')
+                ->get();
 
-            $res = $this->apiClient->curlGet($url);
+            $payload = $rows
+                ->map(function ($row) {
+                    return is_array($row->payload_json) ? $row->payload_json : [];
+                })
+                ->filter(fn($row) => !empty($row))
+                ->values()
+                ->all();
 
+            $lastSyncedAt = optional(
+                $rows->sortByDesc('synced_at')->first()
+            )->synced_at;
 
-            if (!data_get($res, 'ok')) {
-                // رجع فاضي وخلي الخطأ يتحكم فيه show()
-                return [
-                    'ok' => false,
-                    'error' => data_get($res, 'error', 'Standings API failed'),
-                    'data' => [],
-                ];
-            }
+            Cache::put($metaKey, [
+                'fetched_at' => $lastSyncedAt
+                    ? $lastSyncedAt->toDateTimeString()
+                    : now()->toDateTimeString(),
+            ], 3600);
 
-            $json = data_get($res, 'json', []);
-            $rows = data_get($json, 'data', []);
-
-            // خزّن وقت آخر تحديث
-            Cache::put($metaKey, ['fetched_at' => now()->toDateTimeString()], 3600);
-
-            return [
-                'ok' => true,
-                'error' => null,
-                'data' => is_array($rows) ? $rows : [],
-            ];
+            return $payload;
         });
 
-        // meta (وقت التحديث)
         $meta = Cache::get($metaKey, []);
-        $fetchedAt = data_get($meta, 'fetched_at');
 
         return [
-            'ok' => (bool) data_get($data, 'ok', false),
-            'error' => data_get($data, 'error'),
-            'standings' => data_get($data, 'data', []),
-            'fetched_at' => $fetchedAt,
+            'ok' => true,
+            'error' => null,
+            'standings' => $standings,
+            'fetched_at' => data_get($meta, 'fetched_at'),
         ];
     }
 
@@ -282,6 +289,4 @@ class LeaguesController extends Controller
             }
         }
     }
-
-
 }

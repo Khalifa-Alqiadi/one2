@@ -1613,13 +1613,15 @@ class Helper
     }
 
 
-    static function day_name($date)
+    static function day_name($date, $year = false)
     {
         $locale = Helper::currentLanguage()->code;
 
         $date = Carbon::parse($date)->locale($locale);
         $today = Carbon::now()->locale($locale);
-
+        if ($year) {
+            return $date->translatedFormat('d F Y');
+        }
         if ($date->isToday()) {
             return __('frontend.today') . ' ' . $date->translatedFormat('d F');
         }

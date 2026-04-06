@@ -8,9 +8,7 @@ use App\Models\League;
 use App\Models\Round;
 use App\Models\Fixture;
 use App\Services\ApiClientService;
-use App\Services\FetchFixtureDetailsFromSportmonksService;
 use App\Services\LiveMatchesService;
-use App\Services\SportmonksStandingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -24,17 +22,11 @@ class MatchesController extends Controller
 
     private ApiClientService $apiClient;
     private LiveMatchesService $handleMatchesService;
-    private FetchFixtureDetailsFromSportmonksService $fetchFixtureDetailsFromSportmonks;
 
-    public function __construct(
-        ApiClientService $apiClient,
-        LiveMatchesService $handleMatchesService,
-        FetchFixtureDetailsFromSportmonksService $fetchFixtureDetailsFromSportmonks
-        )
+    public function __construct(ApiClientService $apiClient, LiveMatchesService $handleMatchesService)
     {
         $this->apiClient = $apiClient;
         $this->handleMatchesService = $handleMatchesService;
-        $this->fetchFixtureDetailsFromSportmonks = $fetchFixtureDetailsFromSportmonks;
     }
 
     public function index(Request $request)
@@ -338,169 +330,47 @@ class MatchesController extends Controller
         Cache::forget($metaKey);
     }
 
-    private function buildFixtureDetailsFromDatabase(Fixture $fixture, string $locale): array
-    {
-        $name_var = 'name_' . $locale;
-        return [
-            'id' => (int) $fixture->id,
-            'starting_at' => $fixture->starting_at,
-            'status' => $fixture->state ?? 'NS',
-            'state_code' => $fixture->state_code ?? 'NS',
-            'state_name' => $fixture->state_name ?? '',
-            'minute' => $fixture->minute,
-
-
-
-            'home' => [
-                'id' => (int) ($fixture->homeTeam->id ?? 0),
-                'name' => data_get($fixture->homeTeam, $name_var, ''),
-                'logo' => data_get($fixture->homeTeam, 'image_path', ''),
-            ],
-            'away' => [
-                'id' => (int) ($fixture->awayTeam->id ?? 0),
-                'name' => data_get($fixture->awayTeam, $name_var, ''),
-                'logo' => data_get($fixture->awayTeam, 'image_path', ''),
-            ],
-
-            'score' => [
-                'home' => $fixture->home_score,
-                'away' => $fixture->away_score,
-            ],
-
-            'events' => $fixture->events_json ?? [],
-            'fixture' => $fixture,
-            'locale' => $locale,
-            'lineups' => $fixture->lineups_json ?? [],
-            'statistics_rows' => $fixture->statistics_json ?? [],
-            'venue' => $fixture->venue_json ?? [],
-            'probabilities' => $fixture->win_probabilities_json ?? null,
-            'tv_stations' => $fixture->tv_stations_json ?? [],
-            'injuries' => $fixture->injuries_json ?? [],
-            'suspensions' => $fixture->suspensions_json ?? [],
-            'predictable' => null,
-        ];
-    }
-
-    private function shouldFetchLiveDetails(?string $status, ?string $stateCode): bool
-    {
-        $status = strtoupper((string) $status);
-        $stateCode = strtoupper((string) $stateCode);
-
-        return in_array($status, ['LIVE', 'HT', 'INPLAY_2ND', 'INPLAY_1ST'], true)
-            || in_array($stateCode, ['LIVE', 'HT', 'INPLAY_1ST', 'INPLAY_2ND'], true);
-    }
-
     public function showFixture(Request $request, int $id)
     {
         $token  = config('services.SPORTMONKS_TOKEN');
         $locale = Helper::currentLanguage()->code ?? 'ar';
 
-        $fixture = Fixture::with(['league', 'homeTeam', 'awayTeam'])->findOrFail($id);
+        $refresh = ((int)$request->query('refresh', 0)) === 1;
+        $cacheKey = "sportmonks:fixture_details:{$id}:{$locale}";
 
-        if ($request->boolean('refresh_standings')) {
-            app(SportmonksStandingService::class)->refreshStandingsCache($fixture->season_id, $locale);
+        if ($refresh) {
+            Cache::forget($cacheKey);
+            Cache::forget("sm:fixture_prob:{$id}:{$locale}");
         }
 
-        $standingsPack = null;
-        $standingsErr = null;
+        // ✅ نحدد TTL بناء على آخر حالة مخزنة (لو موجودة)
+        $cached = Cache::get($cacheKey);
+        $ttlSeconds = (data_get($cached, 'status') === 'LIVE') ? 1 : 1;
+        $fixture = Fixture::with(['league', 'homeTeam', 'awayTeam'])->find($id);
+        // $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($id, $token, $locale) {
+        $data = $this->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+        // });
 
-        $standingsData = app(SportmonksStandingService::class)->getStandingsCached($fixture->season_id, $locale);
-
-        $standings = $standingsData['standings'] ?? [];
-        $standingsUpdatedAt = $standingsData['fetched_at'] ?? null;
-
-        $isFinished = (bool) $fixture->is_finished;
-        $isTimeLive = false;
-        if (!$isFinished && $fixture->starting_at) {
-            try {
-                $start = \Carbon\Carbon::parse($fixture->starting_at);
-                $isTimeLive = now()
-                    ->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
-            } catch (\Throwable $e) {
-            }
+        if (!$data) {
+            return view('frontEnd.football.match-details', [
+                'fixtureId' => $id,
+                'locale' => $locale,
+                'fx' => null,
+                'fixture' => $fixture,
+                'err' => 'تعذر جلب بيانات المباراة من API',
+            ]);
         }
-        $dbStatus = strtoupper((string) ($fixture->state_code ?? 'NS'));
-        $dbStateCode = strtoupper((string) ($fixture->state_name ?? $dbStatus));
 
-        $isLive = $this->shouldFetchLiveDetails($dbStatus, $dbStateCode);
-        if ($isTimeLive) {
-            $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-            // dd($data);
-
-            if ($data) {
-                $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
-
-            } else {
-                $data = $this->buildFixtureDetailsFromDatabase($fixture->fresh(['league', 'homeTeam', 'awayTeam']), $locale);
-            }
-        } else {
-            // $data = $this->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-            // $this->persistFixtureDetails($fixture, $data);
-            if(!$fixture->lineups_json && $isFinished == true){
-                $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-                if ($data) {
-                    $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
-                }
-            }elseif(!$fixture->lineups_json){
-                $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-                if ($data) {
-                    $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
-                }
-            }
-            $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
-
-        }
-        $name_var = 'name_' . $locale;
-        $PageTitle = $fixture->homeTeam->$name_var . ' vs ' . $fixture->awayTeam->$name_var . ' - ' . ($fixture->league->$name_var ?? '');
+        // ✅ بعد الجلب: لو LIVE خزنه 15 ثانية، غير كذا ساعة
+        $ttl = (($data['status'] ?? 'NS') === 'LIVE') ? now()->addSeconds(15) : now()->addHour();
+        Cache::put($cacheKey, $data, $ttl);
 
         return view('frontEnd.football.match-details', [
             'fixtureId' => $id,
-            'locale'    => $locale,
-            'fx'        => $data,
-            'fixture'   => $fixture->fresh(['league', 'homeTeam', 'awayTeam']),
-            'err'       => null,
-            'PageTitle' => $PageTitle,
-            'standings' => $standings,
-            'standingsErr' => $standingsErr,
-            'standingsUpdatedAt' => $standingsUpdatedAt,
-        ]);
-    }
-
-    public function liveFixtureDetails(int $id)
-    {
-        $token  = config('services.SPORTMONKS_TOKEN');
-        $locale = Helper::currentLanguage()->code ?? 'ar';
-
-        $fixture = Fixture::with(['league', 'homeTeam', 'awayTeam'])->findOrFail($id);
-
-        $dbStatus = strtoupper((string) ($fixture->state ?? 'NS'));
-        $dbStateCode = strtoupper((string) ($fixture->state ?? $dbStatus));
-        $isFinished = (bool) $fixture->is_finished;
-        $isTimeLive = false;
-        if (!$isFinished && $fixture->starting_at) {
-            try {
-                $start = \Carbon\Carbon::parse($fixture->starting_at);
-                $isTimeLive = now()
-                    ->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
-            } catch (\Throwable $e) {
-            }
-        }
-
-        if ($isTimeLive) {
-            $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-
-            if ($data) {
-                $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
-            } else {
-                $data = $this->buildFixtureDetailsFromDatabase($fixture->fresh(['league', 'homeTeam', 'awayTeam']), $locale);
-            }
-        } else {
-            $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
-        }
-
-        return response()->json([
-            'ok' => true,
-            'data' => $data,
+            'locale' => $locale,
+            'fx' => $data,
+            'fixture' => $fixture,
+            'err' => null,
         ]);
     }
 
@@ -508,7 +378,7 @@ class MatchesController extends Controller
     {
         $url = "https://api.sportmonks.com/v3/football/fixtures/{$fixtureId}"
             . "?api_token={$token}&locale={$locale}"
-            . "&include=state;participants;scores;events;events.player;events.type;events.relatedPlayer;lineups;lineups.player;lineups.position;statistics.type;metadata;odds;periods;tvStations;tvStations.country;tvStations.tvStation;sidelined;sidelined.type;sidelined.player;sidelined.sideline;tvstations;venue";
+            . "&include=state;participants;scores;events;events.player;events.type;lineups;lineups.player;lineups.position;statistics.type;metadata;odds;periods";
 
         $res = $this->apiClient->curlGet($url);
         if (!data_get($res, 'ok')) return null;
@@ -568,7 +438,6 @@ class MatchesController extends Controller
         $minute = is_numeric($minute) ? (int) $minute : null;
 
         $eventsRaw = (array) data_get($match, 'events', []);
-        // dd($eventsRaw);
         $events = $this->handleMatchesService->normalizeEvents($eventsRaw, $homeId, $awayId);
 
         // $minute = data_get($match, 'time.minute') ?? data_get($match, 'time.current_minute');
@@ -590,54 +459,6 @@ class MatchesController extends Controller
 
         // ✅ probabilities (لو عندك add-on سيطلع، غير كذا null)
         $probabilities = null;
-
-        $tvStationsRaw = data_get($match, 'tvstations', []);
-        $tvStationsRaw = is_array($tvStationsRaw) ? $tvStationsRaw : [];
-        if (isset($tvStationsRaw['data']) && is_array($tvStationsRaw['data'])) {
-            $tvStationsRaw = $tvStationsRaw['data'];
-        }
-        $tvStations = $this->normalizeTvStations($tvStationsRaw);
-
-        $sidelinedRaw = data_get($match, 'sidelined', []);
-        if (isset($sidelinedRaw['data']) && is_array($sidelinedRaw['data'])) {
-            $sidelinedRaw = $sidelinedRaw['data'];
-        }
-        // dd($sidelinedRaw);
-        $sidelinedRaw = is_array($sidelinedRaw) ? $sidelinedRaw : [];
-        // dd($sidelinedRaw);
-        $injuries = collect($sidelinedRaw)->filter(function ($row) {
-            return mb_strtolower((string) (
-                data_get($row, 'type.name')
-                ?? data_get($row, 'sideline.category')
-                ?? ''
-            ));
-        })->values()->all();
-
-        $suspensions = collect($sidelinedRaw)->filter(function ($row) {
-            $text = mb_strtolower((string) (
-                data_get($row, 'type.name')
-                ?? data_get($row, 'category')
-                ?? data_get($row, 'sideline.category')
-                ?? data_get($row, 'sideline.type')
-                ?? ''
-            ));
-
-            return str_contains($text, 'suspend')
-                || str_contains($text, 'card')
-                || str_contains($text, 'red');
-        })->values()->all();
-
-        // dd($injuries, $suspensions);
-
-        $venue = data_get($match, 'venue', []);
-
-        $venueData = [
-            'id' => (int) data_get($venue, 'id', 0),
-            'name' => (string) data_get($venue, 'name', ''),
-            'city' => (string) data_get($venue, 'city_name', ''),
-            'capacity' => (int) data_get($venue, 'capacity', 0),
-            'image' => (string) data_get($venue, 'image_path', ''),
-        ];
 
         $odds = data_get($match, 'odds', []);
         $odds = is_array($odds) ? $odds : [];
@@ -686,11 +507,6 @@ class MatchesController extends Controller
 
             'probabilities' => $probabilities,
             'predictable'   => data_get($match, 'metadata.predictable'),
-
-            'tv_stations' => $tvStations,
-            'injuries' => $injuries,
-            'suspensions' => $suspensions,
-            'venue' => $venueData,
         ];
     }
 
@@ -923,149 +739,113 @@ class MatchesController extends Controller
         return ['home' => $home, 'draw' => $draw, 'away' => (int)$away];
     }
 
-    private function normalizeTvStations(array $rows): array
+    private function parsePercent(string $s): ?int
     {
-        return collect($rows)
-            ->filter(fn($x) => is_array($x))
-            ->map(function ($row) {
-                return [
-                    'id'      => (int) data_get($row, 'id', 0),
-                    'name'    => (string) (
-                        data_get($row, 'tvstation.name')
-                        ?? data_get($row, 'data.tvstation.name')
-                        ?? ''
-                    ),
-                    'image'   => (string) (
-                        data_get($row, 'tvstation.image_path')
-                        ?? data_get($row, 'data.tvstation.image_path')
-                        ?? data_get($row, 'logo')
-                        ?? ''
-                    ),
-                    'country' => (string) (
-                        data_get($row, 'country.name')
-                        ?? data_get($row, 'country')
-                        ?? ''
-                    ),
-                    'url'     => (string) (
-                        data_get($row, 'tvstation.url')
-                        ?? data_get($row, 'data.tvstation.url')
-                        ?? ''
-                    ),
-                ];
-            })
-            ->filter(fn($x) => $x['id'] || $x['name'] !== '')
-            ->values()
-            ->all();
+        $s = trim($s);
+        if ($s === '') return null;
+        $s = str_replace('%', '', $s);
+        return is_numeric($s) ? (int) round((float)$s, 0) : null;
     }
 
-    private function normalizeInjuries(array $rows): array
+    private function fetchWinProbabilitiesFromPredictionsEndpoint(int $fixtureId, string $token, string $locale): ?array
     {
-        return collect($rows)
-            ->filter(fn($x) => is_array($x))
-            ->map(function ($row) {
-                $player = data_get($row, 'player', []);
+        // حسب الدوكس: predictions base url + probabilities by fixture id
+        // https://api.sportmonks.com/v3/football/predictions/probabilities/fixtures/{fixture_id}
+        $url = "https://api.sportmonks.com/v3/football/predictions/probabilities/fixtures/{$fixtureId}"
+            . "?api_token={$token}&locale={$locale}"
+            . "&include=type";
 
-                return [
-                    'id'           => (int) data_get($row, 'id', 0),
-                    'player_id'    => (int) (
-                        data_get($player, 'id')
-                        ?? data_get($row, 'player_id')
-                        ?? 0
-                    ),
-                    'player_name'  => (string) (
-                        data_get($player, 'display_name')
-                        ?? data_get($player, 'name')
-                        ?? data_get($row, 'player_name')
-                        ?? ''
-                    ),
-                    'player_image' => (string) (
-                        data_get($player, 'image_path')
-                        ?? ''
-                    ),
-                    'team_id'      => (int) (
-                        data_get($row, 'team_id')
-                        ?? data_get($row, 'participant_id')
-                        ?? 0
-                    ),
-                    'type'         => (string) (
-                        data_get($row, 'type.name')
-                        ?? data_get($row, 'type')
-                        ?? 'injury'
-                    ),
-                    'reason'       => (string) (
-                        data_get($row, 'reason')
-                        ?? data_get($row, 'description')
-                        ?? ''
-                    ),
-                    'since'        => data_get($row, 'start_date')
-                        ?? data_get($row, 'since')
-                        ?? null,
-                ];
-            })
-            ->filter(fn($x) => $x['player_id'] || $x['player_name'] !== '')
-            ->values()
-            ->all();
+        $res = $this->apiClient->curlGet($url);
+        if (!data_get($res, 'ok')) return null;
+
+        $rows = data_get($res, 'json.data', []);
+        dd(123, $rows);
+        $rows = is_array($rows) ? $rows : [];
+
+        return $this->extractWinProbabilitiesFromPredictions($rows);
     }
 
-    private function normalizeSuspensions(array $rows): array
+    private function fetchOdds1X2ByFixture(int $fixtureId, string $token, string $locale): ?array
     {
-        return collect($rows)
-            ->filter(fn($x) => is_array($x))
-            ->map(function ($row) {
-                $player = data_get($row, 'player', []);
-                $type = (string) (
-                    data_get($row, 'type.name')
-                    ?? data_get($row, 'type')
-                    ?? data_get($row, 'status')
-                    ?? ''
-                );
+        // ✅ Endpoint شائع في SportMonks Odds Feed
+        $url = "https://api.sportmonks.com/v3/football/odds/pre-match/fixtures/{$fixtureId}"
+            . "?api_token={$token}&locale={$locale}";
 
-                return [
-                    'id'           => (int) data_get($row, 'id', 0),
-                    'player_id'    => (int) (
-                        data_get($player, 'id')
-                        ?? data_get($row, 'player_id')
-                        ?? 0
-                    ),
-                    'player_name'  => (string) (
-                        data_get($player, 'display_name')
-                        ?? data_get($player, 'name')
-                        ?? data_get($row, 'player_name')
-                        ?? ''
-                    ),
-                    'player_image' => (string) (
-                        data_get($player, 'image_path')
-                        ?? ''
-                    ),
-                    'team_id'      => (int) (
-                        data_get($row, 'team_id')
-                        ?? data_get($row, 'participant_id')
-                        ?? 0
-                    ),
-                    'type'         => $type,
-                    'reason'       => (string) (
-                        data_get($row, 'reason')
-                        ?? data_get($row, 'description')
-                        ?? ''
-                    ),
-                    'until'        => data_get($row, 'end_date')
-                        ?? data_get($row, 'until')
-                        ?? null,
-                ];
-            })
-            ->filter(function ($x) {
-                $type = mb_strtolower((string) ($x['type'] ?? ''));
-                $reason = mb_strtolower((string) ($x['reason'] ?? ''));
+        $res = $this->apiClient->curlGet($url);
+        if (!data_get($res, 'ok')) {
+            logger()->warning('Odds endpoint failed', [
+                'http' => data_get($res, 'status'),
+                'json' => data_get($res, 'json'),
+            ]);
+            return null;
+        }
 
-                return str_contains($type, 'suspend')
-                    || str_contains($reason, 'suspend')
-                    || str_contains($type, 'red')
-                    || str_contains($reason, 'red')
-                    || str_contains($type, 'card')
-                    || str_contains($reason, 'card');
-            })
-            ->values()
-            ->all();
+        $rows = data_get($res, 'json.data', []);
+        $rows = is_array($rows) ? $rows : [];
+
+        // ✅ نحاول نلقط 1X2: home/draw/away
+        // شكل الداتا يختلف، فنمشي بفلاتر مرنة
+        $homeOdd = null;
+        $drawOdd = null;
+        $awayOdd = null;
+
+        foreach ($rows as $r) {
+            $label = strtolower((string)(data_get($r, 'label') ?? data_get($r, 'name') ?? data_get($r, 'market.name') ?? ''));
+            $market = strtolower((string)(data_get($r, 'market.description') ?? data_get($r, 'market.name') ?? ''));
+
+            // نحاول نحدد سوق 1X2 / fulltime result
+            $is1x2 = str_contains($label, '1x2')
+                || str_contains($market, '1x2')
+                || str_contains($market, 'fulltime result')
+                || str_contains($market, 'match winner');
+
+            if (!$is1x2) continue;
+
+            // كثير من الردود تكون outcomes داخل bookie/values
+            $values = data_get($r, 'values') ?? data_get($r, 'outcomes') ?? data_get($r, 'bookmaker.data.0.odds') ?? null;
+
+            if (is_array($values)) {
+                foreach ($values as $v) {
+                    $out = strtolower((string)(data_get($v, 'label') ?? data_get($v, 'name') ?? data_get($v, 'outcome') ?? ''));
+                    $odd = data_get($v, 'value') ?? data_get($v, 'odd') ?? data_get($v, 'probability') ?? null;
+                    $odd = is_numeric($odd) ? (float)$odd : null;
+
+                    // home / draw / away
+                    if ($odd) {
+                        if (in_array($out, ['1', 'home', 'team1'], true)) $homeOdd = $odd;
+                        elseif (in_array($out, ['x', 'draw', 'tie'], true)) $drawOdd = $odd;
+                        elseif (in_array($out, ['2', 'away', 'team2'], true)) $awayOdd = $odd;
+                    }
+                }
+            }
+
+            if ($homeOdd && $drawOdd && $awayOdd) break;
+        }
+
+        if (!$homeOdd || !$drawOdd || !$awayOdd) return null;
+
+        return [
+            'home_odd' => $homeOdd,
+            'draw_odd' => $drawOdd,
+            'away_odd' => $awayOdd,
+        ];
+    }
+    private function oddsToProbabilities(?float $homeOdd, ?float $drawOdd, ?float $awayOdd): ?array
+    {
+        if (!$homeOdd || !$drawOdd || !$awayOdd) return null;
+        if ($homeOdd <= 0 || $drawOdd <= 0 || $awayOdd <= 0) return null;
+
+        $ih = 1 / $homeOdd;
+        $id = 1 / $drawOdd;
+        $ia = 1 / $awayOdd;
+        $sum = $ih + $id + $ia;
+        if ($sum <= 0) return null;
+
+        $home = round(($ih / $sum) * 100, 0);
+        $draw = round(($id / $sum) * 100, 0);
+        $away = max(0, 100 - $home - $draw);
+
+        return ['home' => (int)$home, 'draw' => (int)$draw, 'away' => (int)$away];
     }
 
     public function fixtureLiveDetails(Request $request, int $id)

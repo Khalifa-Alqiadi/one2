@@ -153,6 +153,8 @@ Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['aut
     Route::get('/leagues/matches/{id}/edit', [RoundsController::class, 'matcheRoundsEdit'])->name('matcheRoundsEdit');
     Route::post('/leagues/matches/{id}/update', [RoundsController::class, 'matchUpdate'])->name('matchUpdate');
     Route::post('/leagues/{league_id}/matches/list', [RoundsController::class, 'list'])->name('leagues.matches.list');
+    Route::get('/leagues/{league_id?}/standings/sync/{seasonId}', [RoundsController::class, 'syncBySeason'])
+        ->name('standings.sync');
     // Seasons
     Route::get('/leagues/{league_id?}/seasons', [SeasonsController::class, 'index'])->name('seasons');
     Route::get('/leagues/{league_id?}/seasons/update', [SeasonsController::class, 'update'])->name('seasonsUpdate');

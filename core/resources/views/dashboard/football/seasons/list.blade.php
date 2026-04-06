@@ -103,6 +103,10 @@ $x = 0;
                                                             href="{{route('leaguesRoundsAPI', ['league_id' => $League->id, 'season_id' => $Season->id])}}"><i
                                                                 class="material-icons">&#xe3c9;</i> {{ __('backend.updateMatches') }}
                                                         </a>
+                                                        <a class="dropdown-item"
+                                                            href="{{route('standings.sync', ['league_id' => $League->id, 'seasonId' => $Season->id])}}"><i
+                                                                class="material-icons">&#xe3c9;</i> {{ __('backend.update_standings_table') }}
+                                                        </a>
                                                         <a class="dropdown-item" target="_blank"
                                                             href="{{ route("league.rounds",["id"=>$League->id]) }}"><i
                                                                 class="material-icons">&#xe8f4;</i> {{ __('backend.preview') }}

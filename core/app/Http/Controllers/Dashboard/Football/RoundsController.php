@@ -9,6 +9,7 @@ use App\Models\League;
 use App\Models\Season;
 use App\Models\WebmasterSection;
 use App\Services\ApiClientService;
+use App\Services\SportmonksStandingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -644,78 +645,53 @@ class RoundsController extends Controller
         return $saved;
     }
 
-    private function normalizeStateCode($rawCode, string $stateName): ?string
+    public function normalizeStateCode($rawCode, string $stateName): ?string
     {
         $code = strtoupper(trim((string) $rawCode));
         $name = mb_strtolower(trim($stateName));
 
-        // لو الـ API ما رجّع code
         if ($code === '' || $code === 'NULL') {
-            // استنتاج من الاسم العربي/الانجليزي
-            if (str_contains($name, 'نهاية') || str_contains($name, 'انته') || str_contains($name, 'نهائ') || str_contains($name, 'finished') || str_contains($name, 'full time')) {
-                return 'FT';
-            }
-            if (str_contains($name, 'مباشر') || str_contains($name, 'live') || str_contains($name, 'in play') || str_contains($name, 'inplay')) {
-                return 'LIVE';
-            }
-            if (str_contains($name, 'الشوط') || str_contains($name, 'half')) {
-                return 'HT';
-            }
-            if (str_contains($name, 'لم تبدأ') || str_contains($name, 'not started') || str_contains($name, 'ns')) {
-                return 'NS';
-            }
+            if (
+                str_contains($name, 'نهاية') || str_contains($name, 'انته') || str_contains($name, 'نهائ')
+                || str_contains($name, 'finished') || str_contains($name, 'full time')
+            ) return 'FT';
+
+            if (str_contains($name, 'مباشر') || str_contains($name, 'live') || str_contains($name, 'in play') || str_contains($name, 'inplay')) return 'LIVE';
+
+            if (str_contains($name, 'الشوط') || str_contains($name, 'half')) return 'HT';
+
+            if (str_contains($name, 'لم تبدأ') || str_contains($name, 'not started') || str_contains($name, 'ns')) return 'NS';
+
             return null;
         }
 
-        // توحيد أكواد محتملة من SportMonks
+        $code = str_replace([' ', '-'], '_', $code);
+
         $map = [
-            'FT' => 'FT',
             'FINISHED' => 'FT',
             'FULLTIME' => 'FT',
             'FULL_TIME' => 'FT',
-
-            'LIVE' => 'LIVE',
             'INPLAY' => 'LIVE',
             'IN_PLAY' => 'LIVE',
             'PLAYING' => 'LIVE',
-
-            'HT' => 'HT',
             'HALFTIME' => 'HT',
             'HALF_TIME' => 'HT',
-
-            'NS' => 'NS',
             'NOTSTARTED' => 'NS',
             'NOT_STARTED' => 'NS',
-
-            'ET' => 'ET',
             'AET' => 'ET',
             'EXTRATIME' => 'ET',
             'EXTRA_TIME' => 'ET',
-
-            'PEN' => 'PEN',
             'PENALTIES' => 'PEN',
-
-            'POSTP' => 'POSTP',
             'POSTPONED' => 'POSTP',
-
-            'CANC' => 'CANC',
             'CANCELLED' => 'CANC',
             'CANCELED' => 'CANC',
-
-            'SUSP' => 'SUSP',
             'SUSPENDED' => 'SUSP',
-
-            'ABD' => 'ABD',
             'ABANDONED' => 'ABD',
         ];
 
-        $code = str_replace([' ', '-'], '_', $code);
         $code = $map[$code] ?? $code;
 
-        // تقصير أكواد طويلة
-        if (strlen($code) > 10) {
-            $code = substr($code, 0, 10);
-        }
+        if (strlen($code) > 10) $code = substr($code, 0, 10);
 
         return $code ?: null;
     }
@@ -852,5 +828,16 @@ class RoundsController extends Controller
         ]);
 
         return redirect()->action([RoundsController::class, 'matcheRoundsEdit'], ['id' => $id])->with('doneMessage', __('backend.saveDone'));
+    }
+
+    public function syncBySeason($league_id, int $seasonId, SportmonksStandingService $service)
+    {
+        $locale = Helper::currentLanguage()->code ?? 'ar';
+        $result = $service->syncSeasonStandings($seasonId, $locale);
+
+        return redirect()
+            ->action([SeasonsController::class, 'index'], ['league_id' => $league_id])
+            ->with('doneMessage', __('backend.saveDone'));
+
     }
 }

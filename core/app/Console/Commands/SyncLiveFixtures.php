@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Helpers\Helper;
 use App\Models\Fixture;
+use App\Services\FetchFixtureDetailsFromSportmonksService;
 use App\Services\LiveMatchesService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -12,6 +13,13 @@ class SyncLiveFixtures extends Command
 {
     protected $signature = 'fixtures:sync-live {--league_id=} {--season_id=}';
     protected $description = 'Sync live / near-live fixtures from SportMonks and update DB';
+
+//     private FetchFixtureDetailsFromSportmonksService $fetchFixtureDetailsFromSportmonks;
+//
+//     public function __construct(FetchFixtureDetailsFromSportmonksService $fetchFixtureDetailsFromSportmonks)
+//     {
+//         $this->fetchFixtureDetailsFromSportmonks = $fetchFixtureDetailsFromSportmonks;
+//     }
 
     public function handle(): int
     {
@@ -46,8 +54,8 @@ class SyncLiveFixtures extends Command
             ])
             ->chunkById(100, function ($fixtures) use ($token, $locale, &$updated) {
                 foreach ($fixtures as $fx) {
-                    $data = app(LiveMatchesService::class)
-                        ->fetchFixtureLiveFromSportmonks($fx->id, $token, $locale);
+                    $data = app(FetchFixtureDetailsFromSportmonksService::class)
+                        ->fetchFixtureDetailsFromSportmonks($fx->id, $token, $locale);
 
                     if (!$data) {
                         continue;
@@ -63,19 +71,21 @@ class SyncLiveFixtures extends Command
                     $isFinalState = in_array($stateCode, ['FT', 'AET', 'PEN', 'CANC', 'POSTP'], true);
 
                     if ($isFinalState) {
-                        $payload = [
-                            'home_score'    => $homeScore,
-                            'away_score'    => $awayScore,
-                            'ft_home_score' => $homeScore,
-                            'ft_away_score' => $awayScore,
-                            'is_finished'   => 1,
-                            'state_code'    => $stateCode,
-                            'state_name'    => $stateName,
-                            'minute'        => null,
-                        ];
+                        // $payload = [
+                        //     'home_score'    => $homeScore,
+                        //     'away_score'    => $awayScore,
+                        //     'ft_home_score' => $homeScore,
+                        //     'ft_away_score' => $awayScore,
+                        //     'is_finished'   => 1,
+                        //     'state_code'    => $stateCode,
+                        //     'state_name'    => $stateName,
+                        //     'minute'        => null,
+                        // ];
 
-                        if ($this->hasChanges($fx, $payload)) {
-                            $fx->update($payload);
+                        // $payload = $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fx, $data);
+
+                        if ($this->hasChanges($fx, $data)) {
+                            app(FetchFixtureDetailsFromSportmonksService::class)->persistFixtureDetails($fx, $data);
                             Cache::forget("sportmonks:fixture_live:{$fx->id}:{$locale}");
                             $updated++;
                         }
@@ -83,17 +93,17 @@ class SyncLiveFixtures extends Command
                         continue;
                     }
 
-                    $payload = [
-                        'home_score'  => $homeScore,
-                        'away_score'  => $awayScore,
-                        'state_code'  => $stateCode,
-                        'state_name'  => $stateName,
-                        'minute'      => $status === 'LIVE' ? $minute : null,
-                        'is_finished' => 0,
-                    ];
+                    // $payload = [
+                    //     'home_score'  => $homeScore,
+                    //     'away_score'  => $awayScore,
+                    //     'state_code'  => $stateCode,
+                    //     'state_name'  => $stateName,
+                    //     'minute'      => $status === 'LIVE' ? $minute : null,
+                    //     'is_finished' => 0,
+                    // ];
 
-                    if ($this->hasChanges($fx, $payload)) {
-                        $fx->update($payload);
+                    if ($this->hasChanges($fx, $data)) {
+                        app(FetchFixtureDetailsFromSportmonksService::class)->persistFixtureDetails($fx, $data);
                         Cache::forget("sportmonks:fixture_live:{$fx->id}:{$locale}");
                         $updated++;
                     }

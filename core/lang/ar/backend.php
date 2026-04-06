@@ -914,4 +914,5 @@ return array(
     'round' => 'الجولة',
     'updateMatches' => 'تحديث المباريات',
     'live' => 'مباشر',
+    'update_standings_table' => 'تحديث جدول الترتيب',
 );

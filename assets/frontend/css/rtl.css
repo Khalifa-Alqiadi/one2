@@ -5,6 +5,10 @@
     margin-left: auto !important
 }
 
+.text-start{
+    text-align: right !important;
+}
+
 .me-3,
 .me-auto,
 .me-md-auto {
