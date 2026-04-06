@@ -112,8 +112,9 @@
                             @php
                                 $team = data_get($row, 'participant', []);
                                 $teamId = data_get($team, 'id');
-                                $teamName = data_get($team, 'name', '-');
-                                $teamLogo = data_get($team, 'image_path', '');
+                                $team2 = Helper::getTeame($teamId);
+                                $teamName = data_get($team2, 'name_' . $locale, '-');
+                                $teamLogo = data_get($team2, 'image_path', '');
                                 $pos = (int) data_get($row, 'position', 0);
                                 $pts = (int) data_get($row, 'points', 0);
 

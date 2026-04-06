@@ -20,6 +20,7 @@ use App\Models\Topic;
 use App\Models\Tag;
 use App\Models\TopicCategory;
 use App\Models\Webmail;
+use App\Models\Team;
 use App\Models\Language;
 use App\Models\WebmasterSection;
 use App\Models\WebmasterSetting;
@@ -1651,5 +1652,9 @@ class Helper
             $tz = config('app.timezone');
         }
         return $tz;
+    }
+
+    static function getTeame($id){
+        return Team::find($id);
     }
 }
