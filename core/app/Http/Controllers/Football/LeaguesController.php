@@ -240,7 +240,7 @@ class LeaguesController extends Controller
         }
 
         $standings = Cache::remember($cacheKey, 3600, function () use ($seasonId, $metaKey) {
-            $rows = Standing::query()
+            $rows = Standing::with('participant')
                 ->where('season_id', $seasonId)
                 ->orderByRaw("CASE WHEN group_name IS NULL OR group_name = '' THEN 1 ELSE 0 END")
                 ->orderBy('group_name')
@@ -248,10 +248,66 @@ class LeaguesController extends Controller
                 ->get();
 
             $payload = $rows
-                ->map(function ($row) {
-                    return is_array($row->payload_json) ? $row->payload_json : [];
+                ->map(function (Standing $row) {
+                    $item = is_array($row->payload_json) ? $row->payload_json : [];
+
+                    // fallback لو payload_json فارغ أو ناقص
+                    if (empty($item)) {
+                        $item = [
+                            'id'              => $row->sportmonks_standing_id,
+                            'league_id'       => $row->league_id,
+                            'season_id'       => $row->season_id,
+                            'stage_id'        => $row->stage_id,
+                            'round_id'        => $row->round_id,
+                            'participant_id'  => $row->participant_id,
+                            'participant'  => $row->participant,
+                            'group_name'      => $row->group_name,
+                            'position'        => $row->position,
+                            'points'          => $row->points,
+                            'played'          => $row->played,
+                            'won'             => $row->won,
+                            'draw'            => $row->draw,
+                            'lost'            => $row->lost,
+                            'goals_for'       => $row->goals_for,
+                            'goals_against'   => $row->goals_against,
+                            'goal_difference' => $row->goal_difference,
+                            'form'            => [],
+                            'details'         => [],
+                        ];
+                    }
+
+                    // احقن participant من العلاقة إذا غير موجود داخل payload
+                    if (!isset($item['participant']) || !is_array($item['participant'])) {
+                        $item['participant'] = $row->participant ? $row->participant->toArray() : [];
+                    }
+
+                    // fallback للقيم الأساسية لو ناقصة داخل payload
+                    $item['position']        = data_get($item, 'position', $row->position);
+                    $item['points']          = data_get($item, 'points', $row->points);
+                    $item['played']          = data_get($item, 'played', $row->played);
+                    $item['won']             = data_get($item, 'won', $row->won);
+                    $item['draw']            = data_get($item, 'draw', $row->draw);
+                    $item['lost']            = data_get($item, 'lost', $row->lost);
+                    $item['goals_for']       = data_get($item, 'goals_for', $row->goals_for);
+                    $item['goals_against']   = data_get($item, 'goals_against', $row->goals_against);
+                    $item['goal_difference'] = data_get($item, 'goal_difference', $row->goal_difference);
+                    $item['group_name']      = data_get($item, 'group_name', $row->group_name);
+
+                    // لو form مخزنة كنص W,D,L نحولها لمصفوفة بسيطة للواجهة
+                    if ((!isset($item['form']) || !is_array($item['form'])) && !empty($row->form)) {
+                        $item['form'] = collect(explode(',', $row->form))
+                            ->filter()
+                            ->values()
+                            ->map(fn($f, $i) => [
+                                'form' => strtoupper(trim($f)),
+                                'sort_order' => $i + 1,
+                            ])
+                            ->all();
+                    }
+
+                    return $item;
                 })
-                ->filter(fn($row) => !empty($row))
+                ->filter(fn($row) => is_array($row) && !empty($row))
                 ->values()
                 ->all();
 
@@ -271,9 +327,9 @@ class LeaguesController extends Controller
         $meta = Cache::get($metaKey, []);
 
         return [
-            'ok' => true,
-            'error' => null,
-            'standings' => $standings,
+            'ok'         => true,
+            'error'      => null,
+            'standings'  => $standings,
             'fetched_at' => data_get($meta, 'fetched_at'),
         ];
     }

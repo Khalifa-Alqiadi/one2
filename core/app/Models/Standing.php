@@ -35,4 +35,8 @@ class Standing extends Model
         'payload_json' => 'array',
         'synced_at'    => 'datetime',
     ];
+
+    public function participant(){
+        return $this->belongsTo(Team::class, 'participant_id', 'id');
+    }
 }

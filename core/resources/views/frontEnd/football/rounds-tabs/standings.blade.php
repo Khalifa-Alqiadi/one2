@@ -260,12 +260,9 @@
                                 }
 
                                 $form = collect(data_get($row, 'form', []))
-                                    ->sortByDesc('sort_order')
                                     ->pluck('form')
-                                    ->filter()
-                                    ->map(fn($f) => strtoupper((string) $f))
-                                    ->take(5)
-                                    ->values();
+                                    ->map(fn($f)=>strtoupper($f))
+                                    ->take(5);
 
                                 $rowClass = 'zone-none';
                                 if ($pos >= 1 && $pos <= 4) {
