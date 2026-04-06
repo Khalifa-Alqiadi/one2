@@ -19,7 +19,7 @@
 
 <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v={{ Helper::system_version() }}" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=71" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=2" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=3" rel="stylesheet"/>
 
 
 @if( @Helper::currentLanguage()->direction=="rtl")
