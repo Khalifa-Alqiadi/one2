@@ -1659,10 +1659,6 @@ class Helper
         if (!$tz) {
             $tz = config('app.timezone');
         }
-
-        dd($tz);
-
-        return $tz;
     }
 
     static function getTeame($id)
