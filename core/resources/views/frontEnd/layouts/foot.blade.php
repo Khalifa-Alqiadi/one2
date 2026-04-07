@@ -73,15 +73,4 @@ if (@$PageTitle == "") {
 ?>
 @include("frontEnd.layouts.cookie")
 {!! Helper::SaveVisitorInfo($PageTitle) !!}
-<script>
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    fetch('{{route("set.timezone")}}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ timezone: timezone })
-    });
-</script>
