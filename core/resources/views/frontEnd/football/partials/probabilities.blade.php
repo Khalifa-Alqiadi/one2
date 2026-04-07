@@ -34,7 +34,7 @@
         <div class="card-body position-relative px-0 pt-0">
             <div class="row">
                 <div class="col-4 pt-3">
-                    <div class="fw-bold text-center gx-ns-perc-val js-p-home">
+                    <div class="fw-bold text-center gx-ns-perc-val js-p-away">
                         {{ $pAway }}%
                     </div>
                     <div class="gx-ns-bar">
@@ -50,7 +50,7 @@
                     </div>
                 </div>
                 <div class="col-4 pt-3">
-                    <div class="fw-bold text-center gx-ns-perc-val js-p-away">
+                    <div class="fw-bold text-center gx-ns-perc-val js-p-home">
                         {{ $pHome }}%
                     </div>
                     <div class="gx-ns-bar">

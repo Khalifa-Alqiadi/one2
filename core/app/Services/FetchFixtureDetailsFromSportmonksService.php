@@ -4,7 +4,8 @@ namespace App\Services;
 
 use App\Models\Fixture;
 
-class FetchFixtureDetailsFromSportmonksService{
+class FetchFixtureDetailsFromSportmonksService
+{
     private ApiClientService $apiClient;
     private LiveMatchesService $handleMatchesService;
 
@@ -107,36 +108,47 @@ class FetchFixtureDetailsFromSportmonksService{
         }
         $tvStations = $this->normalizeTvStations($tvStationsRaw);
 
+        // $sidelinedRaw = data_get($match, 'sidelined', []);
+        // if (isset($sidelinedRaw['data']) && is_array($sidelinedRaw['data'])) {
+        //     $sidelinedRaw = $sidelinedRaw['data'];
+        // }
+        // // dd($sidelinedRaw);
+        // $sidelinedRaw = is_array($sidelinedRaw) ? $sidelinedRaw : [];
+        // dd($sidelinedRaw);
+        // dd($sidelinedRaw);
+        //         $injuries = collect($sidelinedRaw)->filter(function ($row) {
+        //             return mb_strtolower((string) (
+        //                 data_get($row, 'type.name')
+        //                 ?? data_get($row, 'sideline.category')
+        //                 ?? ''
+        //             ));
+        //         })->values()->all();
+        //
+        //         $suspensions = collect($sidelinedRaw)->filter(function ($row) {
+        //             $text = mb_strtolower((string) (
+        //                 data_get($row, 'type.name')
+        //                 ?? data_get($row, 'category')
+        //                 ?? data_get($row, 'sideline.category')
+        //                 ?? data_get($row, 'sideline.type')
+        //                 ?? ''
+        //             ));
+        //
+        //             return str_contains($text, 'suspend')
+        //                 || str_contains($text, 'card')
+        //                 || str_contains($text, 'red');
+        //         })->values()->all();
+
+        // dd($injuries, $suspensions);
         $sidelinedRaw = data_get($match, 'sidelined', []);
         if (isset($sidelinedRaw['data']) && is_array($sidelinedRaw['data'])) {
             $sidelinedRaw = $sidelinedRaw['data'];
         }
-        // dd($sidelinedRaw);
         $sidelinedRaw = is_array($sidelinedRaw) ? $sidelinedRaw : [];
-        // dd($sidelinedRaw);
-        $injuries = collect($sidelinedRaw)->filter(function ($row) {
-            return mb_strtolower((string) (
-                data_get($row, 'type.name')
-                ?? data_get($row, 'sideline.category')
-                ?? ''
-            ));
-        })->values()->all();
 
-        $suspensions = collect($sidelinedRaw)->filter(function ($row) {
-            $text = mb_strtolower((string) (
-                data_get($row, 'type.name')
-                ?? data_get($row, 'category')
-                ?? data_get($row, 'sideline.category')
-                ?? data_get($row, 'sideline.type')
-                ?? ''
-            ));
+        $normalizedSidelined = $this->normalizeSidelined($sidelinedRaw);
 
-            return str_contains($text, 'suspend')
-                || str_contains($text, 'card')
-                || str_contains($text, 'red');
-        })->values()->all();
-
-        // dd($injuries, $suspensions);
+        $injuries = $this->extractInjuriesFromSidelined($normalizedSidelined);
+        $suspensions = $this->extractSuspensionsFromSidelined($normalizedSidelined);
 
         $venue = data_get($match, 'venue', []);
 
@@ -455,5 +467,76 @@ class FetchFixtureDetailsFromSportmonksService{
             'minute'                 => data_get($data, 'minute'),
             'is_finished'            => $data['state_code'] == 'FT' ? 1 : 0,
         ]);
+    }
+
+
+    private function normalizeSidelined(array $rows): array
+    {
+        return collect($rows)
+            ->filter(fn($row) => is_array($row))
+            ->map(function ($row) {
+                return [
+                    'id' => (int) data_get($row, 'id', 0),
+                    'fixture_id' => (int) data_get($row, 'fixture_id', 0),
+                    'participant_id' => (int) data_get($row, 'participant_id', 0),
+                    'player_id' => (int) data_get($row, 'player_id', 0),
+                    'type_id' => (int) data_get($row, 'type_id', 0),
+
+                    'type_name' => (string) data_get($row, 'type.name', ''),
+                    'type_code' => (string) data_get($row, 'type.code', ''),
+                    'developer_name' => (string) data_get($row, 'type.developer_name', ''),
+                    'model_type' => (string) data_get($row, 'type.model_type', ''),
+
+                    'player_name' => (string) (
+                        data_get($row, 'player.display_name')
+                        ?? data_get($row, 'player.name')
+                        ?? ''
+                    ),
+                    'player_image' => (string) data_get($row, 'player.image_path', ''),
+
+                    'sideline' => data_get($row, 'sideline'),
+                    'raw' => $row,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+    private function extractInjuriesFromSidelined(array $rows): array
+    {
+        return collect($rows)
+            ->filter(function ($row) {
+                $typeCode = mb_strtolower((string) data_get($row, 'type_code', ''));
+                $devName  = mb_strtolower((string) data_get($row, 'developer_name', ''));
+                $typeName = mb_strtolower((string) data_get($row, 'type_name', ''));
+
+                return str_contains($typeCode, 'injury')
+                    || str_contains($devName, 'injury')
+                    || str_contains($typeName, 'إصابة')
+                    || str_contains($typeCode, 'hamstring')
+                    || str_contains($typeCode, 'knee')
+                    || str_contains($typeCode, 'ankle')
+                    || str_contains($typeCode, 'muscle');
+            })
+            ->values()
+            ->all();
+    }
+    private function extractSuspensionsFromSidelined(array $rows): array
+    {
+        return collect($rows)
+            ->filter(function ($row) {
+                $typeCode = mb_strtolower((string) data_get($row, 'type_code', ''));
+                $devName  = mb_strtolower((string) data_get($row, 'developer_name', ''));
+                $typeName = mb_strtolower((string) data_get($row, 'type_name', ''));
+
+                return str_contains($typeCode, 'suspension')
+                    || str_contains($devName, 'suspension')
+                    || str_contains($typeName, 'إيقاف')
+                    || str_contains($typeCode, 'yellow-card')
+                    || str_contains($typeCode, 'red-card')
+                    || str_contains($devName, 'yellow_card')
+                    || str_contains($devName, 'red_card');
+            })
+            ->values()
+            ->all();
     }
 }

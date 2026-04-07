@@ -62,19 +62,20 @@
 
     <div class="standings-wrap-v2">
         <div class="standings-head-v2">
-            <div class="standings-title-v2">{{ $locale == 'ar' ? 'الترتيب' : 'Standings' }}</div>
+            <div class="standings-title-v2">{{ __('frontend.standings') }}</div>
+            @if (@Auth::check())
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="season-pill-v2">
+                        <span class="muted">{{ __('frontend.last_update') }}</span>
+                        <strong>{{ $updatedLabel ?: (__('frontend.not_available')) }}</strong>
+                    </div>
 
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <div class="season-pill-v2">
-                    <span class="muted">{{ $locale == 'ar' ? 'آخر تحديث' : 'Last update' }}</span>
-                    <strong>{{ $updatedLabel ?: ($locale == 'ar' ? 'غير متاح' : 'N/A') }}</strong>
+                    <a class="btn btn-sm btn-outline-light"
+                        href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['refresh_standings' => 1])) }}">
+                        {{ __('frontend.refresh') }}
+                    </a>
                 </div>
-
-                <a class="btn btn-sm btn-outline-light"
-                    href="{{ url()->current() . '?' . http_build_query(array_merge(request()->query(), ['refresh_standings' => 1])) }}">
-                    {{ $locale == 'ar' ? 'تحديث' : 'Refresh' }}
-                </a>
-            </div>
+            @endif
         </div>
 
         @forelse($groups as $g)
@@ -86,7 +87,7 @@
             @if ($isGrouped && $groupTitle !== '')
                 <div class="group-head-v2">
                     <strong>{{ $groupTitle }}</strong>
-                    <span>{{ $locale == 'ar' ? 'عدد الفرق' : 'Teams' }}: {{ $rows->count() }}</span>
+                    <span>{{ __('frontend.teams_count') }}: {{ $rows->count() }}</span>
                 </div>
             @endif
 
@@ -94,16 +95,16 @@
                 <table class="table table-dark table-hover align-middle standings-table-v2 mb-0">
                     <thead>
                         <tr>
-                            <th class="club-col text-start">{{ $locale == 'ar' ? 'النادي' : 'Club' }}</th>
-                            <th class="text-center stat-col">{{ $locale == 'ar' ? 'لعب' : 'P' }}</th>
-                            <th class="text-center stat-col">{{ $locale == 'ar' ? 'ف' : 'W' }}</th>
-                            <th class="text-center stat-col">{{ $locale == 'ar' ? 'ت' : 'D' }}</th>
-                            <th class="text-center stat-col">{{ $locale == 'ar' ? 'خ' : 'L' }}</th>
-                            <th class="text-center stat-col">{{ $locale == 'ar' ? 'له' : 'GF' }}</th>
-                            <th class="text-center stat-col">{{ $locale == 'ar' ? 'عليه' : 'GA' }}</th>
-                            <th class="text-center stat-col">{{ $locale == 'ar' ? 'فرق' : 'GD' }}</th>
-                            <th class="text-center stat-col pts-col">{{ $locale == 'ar' ? 'نقاط' : 'Pts' }}</th>
-                            <th class="text-center form-col">{{ $locale == 'ar' ? 'آخر 5 مباريات' : 'Last 5' }}</th>
+                            <th class="club-col text-start">{{ __('frontend.club') }}</th>
+                            <th class="text-center stat-col">{{ __('frontend.standings_table.p') }}</th>
+                            <th class="text-center stat-col">{{ __('frontend.standings_table.w') }}</th>
+                            <th class="text-center stat-col">{{ __('frontend.standings_table.d') }}</th>
+                            <th class="text-center stat-col">{{ __('frontend.standings_table.l') }}</th>
+                            <th class="text-center stat-col">{{ __('frontend.standings_table.gf') }}</th>
+                            <th class="text-center stat-col">{{ __('frontend.standings_table.ga') }}</th>
+                            <th class="text-center stat-col">{{ __('frontend.standings_table.gd') }}</th>
+                            <th class="text-center stat-col pts-col">{{ __('frontend.standings_table.pts') }}</th>
+                            <th class="text-center form-col">{{ __('frontend.standings_table.last_5') }}</th>
                         </tr>
                     </thead>
 
@@ -319,7 +320,7 @@
                         @empty
                             <tr>
                                 <td colspan="10" class="text-center text-muted py-4">
-                                    {{ $locale == 'ar' ? 'لا توجد بيانات' : 'No data' }}
+                                    {{ __('frontend.no_data') }}
                                 </td>
                             </tr>
                         @endforelse
@@ -328,7 +329,7 @@
             </div>
         @empty
             <div class="text-center text-muted py-4">
-                {{ $locale == 'ar' ? 'لا توجد بيانات ترتيب' : 'No standings data' }}
+                {{ __('frontend.no_standings_data') }}
             </div>
         @endforelse
     </div>

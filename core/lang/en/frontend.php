@@ -142,5 +142,22 @@ return [
     'unknown_venue' => 'Unknown Venue',
     'round' => 'Round',
     'half_time' => 'Half Time',
+    'standings' => 'Standings',
+    'last_update' => 'Last Update',
+    'not_available' => 'Not Available',
+    'teams_count' => 'Number of Teams',
+    'club' => 'Club',
+    'standings_table' => [
+        'p' => 'P',
+        'w' => 'W',
+        'd' => 'D',
+        'l' => 'L',
+        'gf'=> 'GF',
+        'ga'=> 'GA',
+        'gd'=> 'GD',
+        'pts'=> 'Pts',
+        'last_5'=> 'Last 5',
+    ],
+    'no_standings_data' => 'No Standings Data',
 ];
 ?>

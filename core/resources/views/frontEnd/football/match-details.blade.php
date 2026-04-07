@@ -27,10 +27,13 @@
 
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                                 {{-- Home --}}
-                                <div class="d-flex align-items-center gap-2">
-                                    <img src="{{ $fixture->homeTeam->image_path ?? '' }}"
-                                        style="width:54px;height:54px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.08);padding:4px;">
-                                    <h4 class="fw-bold">{{ $fixture->homeTeam->$name_var ?? '-' }}</h4>
+                                <div class="">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ $fixture->homeTeam->image_path ?? '' }}"
+                                            style="width:54px;height:54px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.08);padding:4px;">
+                                        <h4 class="fw-bold">{{ $fixture->homeTeam->$name_var ?? '-' }}</h4>
+                                    </div>
+                                    @include('frontEnd.football.partials.top-events', ['teamid' => $fixture->homeTeam->id])
                                 </div>
 
                                 {{-- Score --}}
@@ -103,10 +106,13 @@
                                     </div>
                                 </div>
                                 {{-- Away --}}
-                                <div class="d-flex align-items-center gap-2">
-                                    <img src="{{ $fixture->awayTeam->image_path ?? '' }}"
-                                        style="width:54px;height:54px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.08);padding:4px;">
-                                    <h4 class="fw-bold">{{ $fixture->awayTeam->$name_var ?? '-' }}</h4>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ $fixture->awayTeam->image_path ?? '' }}"
+                                            style="width:54px;height:54px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.08);padding:4px;">
+                                        <h4 class="fw-bold">{{ $fixture->awayTeam->$name_var ?? '-' }}</h4>
+                                    </div>
+                                    @include('frontEnd.football.partials.top-events', ['teamid' => $fixture->awayTeam->id])
                                 </div>
                             </div>
                         </div>
@@ -245,16 +251,25 @@
                             </div>
                         </div>
 
+                        @include('frontEnd.football.partials.probabilities') {{-- هذا ملف جديد خاص باحتمالات الفوز (أفضل من وضع الكود هنا مباشرة) --}}
+
                         {{-- ✅ Box: TV Stations --}}
-                        {{-- <div class="card bg-dark text-light border-0 shadow-sm mb-3" style="border-radius:14px;">
+                        <div class="card bg-dark text-light shadow-sm mb-3" style="border-radius:14px;">
                             <div class="card-body">
                                 <h5 class="card-title mb-3">{{ __('frontend.tv_stations') }}</h5>
                                 @if (!empty($fx['tv_stations']) && is_array($fx['tv_stations']))
-                                    <ul class="list-unstyled mb-0">
+                                    <ul class="list-unstyled mb-0 px-2">
                                         @foreach ($fx['tv_stations'] as $station)
-                                            <li class="mb-2">
-                                                <i class="fas fa-tv me-2" style="color:rgba(255,255,255,.6);"></i>
-                                                {{ $station['name'] ?? __('frontend.unknown_station') }}
+                                            <li class="mb-2 border-bottom pb-2 border-secondary">
+                                                <a href="{{$station['url']}}" target="_blank">
+                                                    @if($station['image'] != null)
+                                                        <img src="{{ $station['image'] }}" alt="station Image" class="ms-2"
+                                                            style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+                                                    @else
+                                                        <i class="fas fa-tv me-2" style="color:rgba(255,255,255,.6);"></i>
+                                                    @endif
+                                                    {{ $station['name'] ?? __('frontend.unknown_station') }}
+                                                </a>
                                             </li>
                                         @endforeach
                                     </ul>
@@ -262,8 +277,8 @@
                                     <div class="text-muted">{{ __('frontend.no_tv_stations') }}</div>
                                 @endif
                             </div>
-                        </div> --}}
-                        @include('frontEnd.football.partials.probabilities') {{-- هذا ملف جديد خاص باحتمالات الفوز (أفضل من وضع الكود هنا مباشرة) --}}
+                        </div>
+
                     </div>
                 </div>
             </div>
