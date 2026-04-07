@@ -77,10 +77,10 @@ if (@$PageTitle == "") {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     fetch('/set-timezone/' + timezone, {
         method: 'GET',
+        cache: 'no-store',
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ timezone: timezone })
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
     });
 </script>
