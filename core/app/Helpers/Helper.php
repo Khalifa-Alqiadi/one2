@@ -1645,16 +1645,26 @@ class Helper
         return in_array(Helper::currentLanguage()->code, $rtl_languages);
     }
 
-    static function getUserTimezone()
+    static function getUserTimezone(): string
     {
-        $tz = session('user_timezone');
+        // 1. من الكوكي
+        $tz = request()->cookie('user_timezone');
+
+        // 2. fallback إلى session
+        if (!$tz) {
+            $tz = session('user_timezone');
+        }
+
+        // 3. fallback إلى النظام
         if (!$tz) {
             $tz = config('app.timezone');
         }
+
         return $tz;
     }
 
-    static function getTeame($id){
+    static function getTeame($id)
+    {
         return Team::find($id);
     }
 }

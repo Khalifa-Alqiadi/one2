@@ -144,7 +144,12 @@
                         </li>
                         <li class="nav-item">
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-standings" type="button">
-                                {{ $locale == 'ar' ? 'الترتيب' : 'Standings' }}
+                                {{ __('frontend.standings') }}
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-commentary" type="button">
+                                {{ __('frontend.discussion') }}
                             </button>
                         </li>
                     </ul>
@@ -164,6 +169,8 @@
                             'homeID' => $fixture->homeTeam->id,
                             'awayID' => $fixture->awayTeam->id,
                         ])
+
+                        @include('frontEnd.football.partials.discussion')
 
                     </div>
 

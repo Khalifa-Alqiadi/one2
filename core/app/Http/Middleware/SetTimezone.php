@@ -13,9 +13,10 @@ class SetTimezone
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
+
     public function handle(Request $request, Closure $next)
     {
-        $timezone = session('user_timezone', "UTC");
+        $timezone = $request->cookie('user_timezone');
 
         if ($timezone) {
             date_default_timezone_set($timezone);

@@ -8,7 +8,7 @@ class TimezoneController extends Controller
 {
     public function set(Request $request)
     {
-        session(['user_timezone' => $request->timezone]);
-        return response()->json(['ok' => true]);
+        return response()->json(['ok' => true])
+            ->cookie('user_timezone', $request->timezone, 60 * 24 * 30);
     }
 }

@@ -54,6 +54,7 @@ Route::get('/live-matches', [LivescoresController::class, 'index'])
     ->name('live.matches');
 
 Route::post('/set-timezone', [TimezoneController::class, 'set']);
+Route::post('/fixture/{id}/commentary', [MatchesController::class, 'commentary'])->name('commentary');
 
 
 

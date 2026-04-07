@@ -159,5 +159,6 @@ return [
         'last_5'=> 'Last 5',
     ],
     'no_standings_data' => 'No Standings Data',
+    'discussion' => 'Discussion',
 ];
 ?>

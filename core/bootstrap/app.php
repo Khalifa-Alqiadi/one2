@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         //
         $middleware->alias([
             'LanguageSwitcher' => \App\Http\Middleware\LanguageSwitcher::class,
-            'SetTimezone' => \App\Http\Middleware\SetTimezone::class,
+            \App\Http\Middleware\SetTimezone::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -449,6 +449,8 @@ class MatchesController extends Controller
             $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
 
         }
+        // $service = app(\App\Services\FetchCommentaryService::class)->getLiveCommentary($id, $locale);
+        // dd($service);
         $name_var = 'name_' . $locale;
         $PageTitle = $fixture->homeTeam->$name_var . ' vs ' . $fixture->awayTeam->$name_var . ' - ' . ($fixture->league->$name_var ?? '');
 
@@ -516,5 +518,13 @@ class MatchesController extends Controller
             'data' => $data,
             'time' => now()->toDateTimeString(),
         ]);
+    }
+
+    public function commentary($id){
+        $service = app(\App\Services\FetchCommentaryService::class);
+
+        return response()->json(
+            $service->getLiveCommentary($id, 'ar')
+        );
     }
 }
