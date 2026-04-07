@@ -33,7 +33,9 @@
                                             style="width:54px;height:54px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.08);padding:4px;">
                                         <h4 class="fw-bold">{{ $fixture->homeTeam->$name_var ?? '-' }}</h4>
                                     </div>
-                                    @include('frontEnd.football.partials.top-events', ['teamid' => $fixture->homeTeam->id])
+                                    @include('frontEnd.football.partials.top-events', [
+                                        'teamid' => $fixture->homeTeam->id,
+                                    ])
                                 </div>
 
                                 {{-- Score --}}
@@ -77,23 +79,23 @@
                                         <div class="fw-bold"
                                             style="font-size:14px; opacity:.95;
                                             display: {{ $state_code === 'NS' ? 'block' : 'none' }};">
-                                            {{__('frontend.not_started')}}</div>
+                                            {{ __('frontend.not_started') }}</div>
                                     </div>
 
                                     <div class="small mt-2">
                                         <span class="badge bg-success js-status"
                                             style="display: {{ $state_code === 'LIVE' || $state_code === 'INPLAY_2ND' || $state_code === 'INPLAY_1ST' ? 'inline-block' : 'none' }};">
-                                            {{__('frontend.live')}}
+                                            {{ __('frontend.live') }}
                                         </span>
 
                                         <span class="badge fs-6 text-secondary js-ns"
-                                            style="display: {{ $state_code === 'NS' ? 'inline-block' : 'none' }};">{{__('frontend.not_started')}}</span>
+                                            style="display: {{ $state_code === 'NS' ? 'inline-block' : 'none' }};">{{ __('frontend.not_started') }}</span>
 
                                         <span class="badge fs-6 text-secondary js-ht"
-                                            style="display: {{ $state_code === 'HT' ? 'inline-block' : 'none' }};">{{__('frontend.half_time')}}</span>
+                                            style="display: {{ $state_code === 'HT' ? 'inline-block' : 'none' }};">{{ __('frontend.half_time') }}</span>
 
                                         <span class="badge fs-6 text-secondary js-ft"
-                                            style="display: {{ $state_code === 'FT' ? 'inline-block' : 'none' }};">{{__('frontend.finished')}}</span>
+                                            style="display: {{ $state_code === 'FT' ? 'inline-block' : 'none' }};">{{ __('frontend.finished') }}</span>
 
                                         <span class="text-success fw-bold js-minute">
                                             {{ $status === 'LIVE' && !empty($fx['minute']) ? $fx['minute'] . "'" : '' }}
@@ -112,7 +114,9 @@
                                             style="width:54px;height:54px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.08);padding:4px;">
                                         <h4 class="fw-bold">{{ $fixture->awayTeam->$name_var ?? '-' }}</h4>
                                     </div>
-                                    @include('frontEnd.football.partials.top-events', ['teamid' => $fixture->awayTeam->id])
+                                    @include('frontEnd.football.partials.top-events', [
+                                        'teamid' => $fixture->awayTeam->id,
+                                    ])
                                 </div>
                             </div>
                         </div>
@@ -157,8 +161,8 @@
 
                         @include('frontEnd.football.rounds-tabs.standings', [
                             'standings' => $standings,
-                            'homeID'    => $fixture->homeTeam->id,
-                            'awayID'    => $fixture->awayTeam->id,
+                            'homeID' => $fixture->homeTeam->id,
+                            'awayID' => $fixture->awayTeam->id,
                         ])
 
                     </div>
@@ -190,22 +194,33 @@
                 <div class="col-lg-4">
                     <div class="">
                         {{-- ✅ Box: TV Stations --}}
-                        @if(!$isFinished)
+                        @if (!$isFinished)
                             <div class="card bg-dark text-light shadow-sm mb-3" style="border-radius:14px;">
                                 <div class="card-body">
                                     <h5 class="card-title mb-3">{{ __('frontend.tv_stations') }}</h5>
-                                    @if (!empty($fx['tv_stations']) && is_array($fx['tv_stations']))
+
+                                    @php
+                                        $stations = collect($fx['tv_stations'] ?? [])
+                                            ->filter(fn($station) => is_array($station))
+                                            ->unique(fn($station) => strtolower(trim($station['name'] ?? '')))
+                                            ->values();
+                                    @endphp
+
+                                    @if ($stations->isNotEmpty())
                                         <ul class="list-unstyled mb-0 px-2">
-                                            @foreach ($fx['tv_stations'] as $station)
-                                                @if($station['url'] != null)
+                                            @foreach ($stations as $station)
+                                                @if (!empty($station['url']))
                                                     <li class="mb-2 border-bottom pb-2 border-secondary">
-                                                        <a href="{{$station['url']}}" target="_blank">
-                                                            @if($station['image'] != null)
-                                                                <img src="{{ $station['image'] }}" alt="station Image" class="ms-2"
+                                                        <a href="{{ $station['url'] }}" target="_blank">
+                                                            @if (!empty($station['image']))
+                                                                <img src="{{ $station['image'] }}" alt="station Image"
+                                                                    class="ms-2"
                                                                     style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
                                                             @else
-                                                                <i class="fas fa-tv me-2" style="color:rgba(255,255,255,.6);"></i>
+                                                                <i class="fas fa-tv me-2"
+                                                                    style="color:rgba(255,255,255,.6);"></i>
                                                             @endif
+
                                                             {{ $station['name'] ?? __('frontend.unknown_station') }}
                                                         </a>
                                                     </li>
@@ -233,8 +248,9 @@
                                         </div>
                                     @endif
                                     <div>
-                                        <div class="fw-bold">{{ data_get($fixture->league, $name_var, 'League') ?? __('frontend.unknown_venue') }}
-                                             - {{__('frontend.round')}} {{ $fixture->round->name ?? '' }}
+                                        <div class="fw-bold">
+                                            {{ data_get($fixture->league, $name_var, 'League') ?? __('frontend.unknown_venue') }}
+                                            - {{ __('frontend.round') }} {{ $fixture->round->name ?? '' }}
                                         </div>
                                     </div>
                                 </div>
@@ -267,8 +283,10 @@
                                     <div>
                                         <div class="fw-bold">{{ $fx['venue']['name'] ?? __('frontend.unknown_venue') }}
                                         </div>
-                                        <div class="text-muted" dir="{{ Helper::currentLanguage()->direction }}" style="font-size:14px;">
-                                            <span dir="{{ Helper::currentLanguage()->direction }}">{{ $fx['venue']['city'] ?? '' }}</span>
+                                        <div class="text-muted" dir="{{ Helper::currentLanguage()->direction }}"
+                                            style="font-size:14px;">
+                                            <span
+                                                dir="{{ Helper::currentLanguage()->direction }}">{{ $fx['venue']['city'] ?? '' }}</span>
                                             @if (!empty($fx['venue']['capacity']))
                                                 • {{ number_format($fx['venue']['capacity']) }}
                                                 {{ __('frontend.capacity') }}
