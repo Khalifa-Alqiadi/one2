@@ -1659,6 +1659,7 @@ class Helper
         if (!$tz) {
             $tz = config('app.timezone');
         }
+
         return $tz;
     }
 

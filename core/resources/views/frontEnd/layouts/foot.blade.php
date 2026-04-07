@@ -82,6 +82,7 @@ if (@$PageTitle == "") {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
         }
-        console.log(tt);
+
     });
+    console.log(tt);
 </script>
