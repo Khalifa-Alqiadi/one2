@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 
 class TimezoneController extends Controller
 {
-    public function set(Request $request)
+    public function set(Request $request, $timezone)
     {
-        request()->cookie('user_timezone', $request->timezone, 60 * 24 * 30);
+        request()->cookie('user_timezone', $timezone, 60 * 24 * 30);
         return response()->json(['ok' => true]);
     }
 }

@@ -75,9 +75,8 @@ if (@$PageTitle == "") {
 {!! Helper::SaveVisitorInfo($PageTitle) !!}
 <script>
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
-    fetch('/set-timezone', {
-        method: 'POST',
+    fetch('/set-timezone/' + timezone, {
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
