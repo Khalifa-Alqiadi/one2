@@ -1660,6 +1660,8 @@ class Helper
             $tz = config('app.timezone');
         }
 
+        dd($tz);
+
         return $tz;
     }
 
