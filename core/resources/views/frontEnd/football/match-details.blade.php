@@ -189,6 +189,35 @@
                 </div>
                 <div class="col-lg-4">
                     <div class="">
+                        {{-- ✅ Box: TV Stations --}}
+                        @if(!$isFinished)
+                            <div class="card bg-dark text-light shadow-sm mb-3" style="border-radius:14px;">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">{{ __('frontend.tv_stations') }}</h5>
+                                    @if (!empty($fx['tv_stations']) && is_array($fx['tv_stations']))
+                                        <ul class="list-unstyled mb-0 px-2">
+                                            @foreach ($fx['tv_stations'] as $station)
+                                                @if($station['url'] != null)
+                                                    <li class="mb-2 border-bottom pb-2 border-secondary">
+                                                        <a href="{{$station['url']}}" target="_blank">
+                                                            @if($station['image'] != null)
+                                                                <img src="{{ $station['image'] }}" alt="station Image" class="ms-2"
+                                                                    style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+                                                            @else
+                                                                <i class="fas fa-tv me-2" style="color:rgba(255,255,255,.6);"></i>
+                                                            @endif
+                                                            {{ $station['name'] ?? __('frontend.unknown_station') }}
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <div class="text-muted">{{ __('frontend.no_tv_stations') }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                         {{-- ✅ Box: Match Info (الملعب، المدينة، السعة) --}}
                         <div class="card bg-dark text-light shadow-sm mb-3" style="border-radius:14px;">
                             <div class="card-body">
@@ -252,33 +281,6 @@
                         </div>
 
                         @include('frontEnd.football.partials.probabilities') {{-- هذا ملف جديد خاص باحتمالات الفوز (أفضل من وضع الكود هنا مباشرة) --}}
-
-                        {{-- ✅ Box: TV Stations --}}
-                        <div class="card bg-dark text-light shadow-sm mb-3" style="border-radius:14px;">
-                            <div class="card-body">
-                                <h5 class="card-title mb-3">{{ __('frontend.tv_stations') }}</h5>
-                                @if (!empty($fx['tv_stations']) && is_array($fx['tv_stations']))
-                                    <ul class="list-unstyled mb-0 px-2">
-                                        @foreach ($fx['tv_stations'] as $station)
-                                            <li class="mb-2 border-bottom pb-2 border-secondary">
-                                                <a href="{{$station['url']}}" target="_blank">
-                                                    @if($station['image'] != null)
-                                                        <img src="{{ $station['image'] }}" alt="station Image" class="ms-2"
-                                                            style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
-                                                    @else
-                                                        <i class="fas fa-tv me-2" style="color:rgba(255,255,255,.6);"></i>
-                                                    @endif
-                                                    {{ $station['name'] ?? __('frontend.unknown_station') }}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <div class="text-muted">{{ __('frontend.no_tv_stations') }}</div>
-                                @endif
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
