@@ -32,6 +32,7 @@ use GeoIP;
 use Spatie\Image\Image;
 use Newsletter;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cookie;
 
 class Helper
 {
@@ -1645,22 +1646,61 @@ class Helper
         return in_array(Helper::currentLanguage()->code, $rtl_languages);
     }
 
-    static function getUserTimezone(): string
+
+
+    //     use Illuminate\Support\Facades\Http;
+    // use Illuminate\Support\Facades\Cookie;
+
+    static function detectAndStoreUserTimezone(): string
     {
-        // 1. من الكوكي
-        $tz = request()->cookie('user_timezone');
-
-        // 2. fallback إلى session
-        if (!$tz) {
-            $tz = session('user_timezone');
+        $existing = request()->cookie('user_timezone');
+        if (!empty($existing) && in_array($existing, timezone_identifiers_list(), true)) {
+            return $existing;
         }
 
-        // 3. fallback إلى النظام
-        if (!$tz) {
-            $tz = config('app.timezone');
+        $ip = request()->ip();
+
+        // لو local أو private IP
+        if (in_array($ip, ['127.0.0.1', '::1']) || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE) === false) {
+            $tz = 'Asia/Aden';
+            Cookie::queue('user_timezone', $tz, 60 * 24 * 30);
+            return $tz;
         }
+
+        try {
+            $response = Http::timeout(5)->get("http://ip-api.com/json/{$ip}");
+            $json = $response->json();
+
+            $tz = data_get($json, 'timezone');
+
+            if (empty($tz) || !in_array($tz, timezone_identifiers_list(), true)) {
+                $tz = 'Asia/Aden';
+            }
+        } catch (\Throwable $e) {
+            $tz = 'Asia/Aden';
+        }
+
+        Cookie::queue('user_timezone', $tz, 60 * 24 * 30);
 
         return $tz;
+    }
+
+    static function isValidTimezone(?string $tz): bool
+    {
+        if (empty($tz)) return false;
+
+        return in_array($tz, timezone_identifiers_list());
+    }
+
+    static function getUserTimezone(): string
+    {
+        $tz = request()->cookie('user_timezone');
+
+        if (!empty($tz) && self::isValidTimezone($tz)) {
+            return $tz;
+        }
+
+        return self::detectAndStoreUserTimezone();
     }
 
     static function getTeame($id)

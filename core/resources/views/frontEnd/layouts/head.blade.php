@@ -3,19 +3,10 @@
 <meta name="description" content="{{(@$PageDescription !="")? @$PageDescription:Helper::GeneralSiteSettings("site_desc_" . @Helper::currentLanguage()->code)}}"/>
 <meta name="keywords" content="{{(@$PageKeywords !="")? @$PageKeywords:Helper::GeneralSiteSettings("site_keywords_" . @Helper::currentLanguage()->code)}}"/>
 <meta name="author" content="{{ URL::to('') }}"/>
-
-<script>
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    fetch('{{route("set.timezone")}}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ timezone: timezone })
-    });
-</script>
+<?php if (!request()->hasCookie('user_timezone')) {
+        Helper::detectAndStoreUserTimezone();
+    }
+?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/all.min.css') }}?v={{ Helper::system_version() }}"  rel="stylesheet" media/>
