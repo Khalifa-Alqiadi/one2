@@ -43,7 +43,7 @@
 
                 <div class="d-flex align-items-center gap-2">
                     <div class="season-pill">
-                        <span class="muted">{{ $locale == 'ar' ? 'الموسم' : 'Season' }}</span>
+                        <span class="muted">{{ __('frontend.season') }}</span>
                         <strong>{{ __('frontend.current_season') }}</strong>
                     </div>
                 </div>

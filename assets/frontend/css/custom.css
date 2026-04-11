@@ -1746,4 +1746,12 @@
     .pagination{
         overflow: scroll;
     }
+
+    .mobile-menu li img{
+        width: 40px;
+    }
+
+    .mobile-menu li a{
+        font-size: 15px;
+    }
 }

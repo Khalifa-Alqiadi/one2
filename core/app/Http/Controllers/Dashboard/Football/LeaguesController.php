@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\League;
 use App\Models\WebmasterSection;
 use App\Services\ApiClientService;
+use App\Services\UpdatesLeaguesAndSeasonsServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -105,5 +106,11 @@ class LeaguesController extends Controller
             'doneMessage',
             __('backend.saveDone')
         );
+    }
+
+    public function update_api()
+    {
+        app(UpdatesLeaguesAndSeasonsServices::class)->loadLeagues();
+        return redirect()->action([LeaguesController::class, 'index'])->with('doneMessage', __('backend.saveDone'));
     }
 }

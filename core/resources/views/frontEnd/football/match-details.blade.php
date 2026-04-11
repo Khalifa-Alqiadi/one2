@@ -6,10 +6,9 @@
 @extends('frontEnd.layouts.master')
 
 @section('content')
-    <section id="content" class="football football-match" style="margin-top: 100px">
+    <section id="content" class="football football-match details-match" style="margin-top: 100px">
         <div class="container my-4" style="direction: {{ $isRtl ? 'rtl' : 'ltr' }};">
-
-            <div class="row justify-content-center">
+            <div class="row">
                 <div class="col-lg-12">
                     <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="league-header mb-3">
                         @if (data_get($fixture->league, 'image_path'))
@@ -20,102 +19,113 @@
                         <h4 class="mb-0 fw-bold">{{ data_get($fixture->league, $name_var, 'League') }}</h4>
                     </a>
                 </div>
-                <div class="col-lg-8">
+            </div>
+            <div class="row justify-content-center row-details">
+
+                {{-- Score --}}
+                @php
+                    $isFinished = (bool) $fixture->is_finished;
+                    $isTimeLive = false;
+                    if (!$isFinished && $fixture->starting_at) {
+                        try {
+                            $start = \Carbon\Carbon::parse($fixture->starting_at);
+                            $isTimeLive = now()->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
+                        } catch (\Throwable $e) {
+                        }
+                    }
+                    $status = $fx['status'] ?? 'NS';
+                    $state_code = $fx['state_code'] ?? 'NS';
+                    $startAt = $fx['starting_at'] ?? null;
+                    $dt = $startAt ? \Carbon\Carbon::parse($startAt)->timezone(Helper::getUserTimezone()) : null;
+                    $dateLabel = $dt ? $dt->translatedFormat('m/d') : '';
+                    $timeLabel = $dt ? $dt->format('H:i') : '';
+                @endphp
+
+                <div class="col-lg-8 mb-4">
                     {{-- Header Card --}}
                     <div class="card bg-dark text-light border-0 shadow-sm mb-3" style="border-radius:14px;">
                         <div class="card-body">
 
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                {{-- Home --}}
-                                <div class="">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <img src="{{ $fixture->homeTeam->image_path ?? '' }}"
-                                            style="width:54px;height:54px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.08);padding:4px;">
-                                        <h4 class="fw-bold">{{ $fixture->homeTeam->$name_var ?? '-' }}</h4>
-                                    </div>
-                                    @include('frontEnd.football.partials.top-events', [
-                                        'teamid' => $fixture->homeTeam->id,
-                                    ])
-                                </div>
-
-                                {{-- Score --}}
-                                @php
-                                    $isFinished = (bool) $fixture->is_finished;
-                                    $isTimeLive = false;
-                                    if (!$isFinished && $fixture->starting_at) {
-                                        try {
-                                            $start = \Carbon\Carbon::parse($fixture->starting_at);
-                                            $isTimeLive = now()->between(
-                                                $start->copy()->subMinutes(15),
-                                                $start->copy()->addHours(3),
-                                            );
-                                        } catch (\Throwable $e) {
-                                        }
-                                    }
-                                    $status = $fx['status'] ?? 'NS';
-                                    $state_code = $fx['state_code'] ?? 'NS';
-                                    $startAt = $fx['starting_at'] ?? null;
-                                    $dt = $startAt
-                                        ? \Carbon\Carbon::parse($startAt)->timezone(Helper::getUserTimezone())
-                                        : null;
-                                    $dateLabel = $dt ? $dt->translatedFormat('m/d') : '';
-                                    $timeLabel = $dt ? $dt->format('H:i') : '';
-                                @endphp
-
-                                {{-- Score / Kickoff --}}
-                                <div class="text-center">
-                                    {{-- ✅ Box: Score (LIVE/HT/FT) --}}
-                                    {{-- @if ($isFinished || $isTimeLive) --}}
-                                    <div class="js-scorebox"
-                                        style="font-size:28px;font-weight:800;letter-spacing:1px; display: {{ $state_code !== 'NS' ? 'flex' : 'none' }}; align-items:center; justify-content:center; gap:10px;">
-                                        <span class="js-home fw-bold fs-2">{{ $fixture->home_score ?? '-' }}</span>
-                                        <span style="opacity:.6;margin:0 10px;">-</span>
-                                        <span class="js-away fw-bold fs-2">{{ $fixture->away_score ?? '-' }}</span>
-                                    </div>
-                                    {{-- @endif --}}
-
-                                    {{-- ✅ Box: Not started (NS) --}}
-                                    <div class="js-kickoffbox">
-                                        <div class="fw-bold"
-                                            style="font-size:14px; opacity:.95;
-                                            display: {{ $state_code === 'NS' ? 'block' : 'none' }};">
-                                            {{ __('frontend.not_started') }}</div>
-                                    </div>
-
-                                    <div class="small mt-2">
-                                        <span class="badge bg-success js-status"
-                                            style="display: {{ $state_code === 'LIVE' || $state_code === 'INPLAY_2ND' || $state_code === 'INPLAY_1ST' ? 'inline-block' : 'none' }};">
-                                            {{ __('frontend.live') }}
-                                        </span>
-
-                                        <span class="badge fs-6 text-secondary js-ns"
-                                            style="display: {{ $state_code === 'NS' ? 'inline-block' : 'none' }};">{{ __('frontend.not_started') }}</span>
-
-                                        <span class="badge fs-6 text-secondary js-ht"
-                                            style="display: {{ $state_code === 'HT' ? 'inline-block' : 'none' }};">{{ __('frontend.half_time') }}</span>
-
-                                        <span class="badge fs-6 text-secondary js-ft"
-                                            style="display: {{ $state_code === 'FT' ? 'inline-block' : 'none' }};">{{ __('frontend.finished') }}</span>
-
-                                        <span class="text-success fw-bold js-minute">
-                                            {{ $status === 'LIVE' && !empty($fx['minute']) ? $fx['minute'] . "'" : '' }}
-                                        </span>
-                                    </div>
-                                    <div class="text-muted small mt-3">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="text-muted text-center small d-block d-md-none mb-3">
                                         <span>
                                             {!! Helper::day_name($dt, true) !!}
                                         </span>
                                     </div>
                                 </div>
+                                {{-- Home --}}
+                                <div class="col-5">
+                                    <div class="text-center gap-2 team-details">
+                                        <img src="{{ $fixture->homeTeam->image_path ?? '' }}"
+                                            class=" rounded-circle object-contain p-1">
+                                        <h4 class="fw-bold mt-4">{{ $fixture->homeTeam->$name_var ?? '-' }}</h4>
+                                    </div>
+                                    @include('frontEnd.football.partials.top-events', [
+                                        'teamid' => $fixture->homeTeam->id,
+                                        'textDiration' => 'text-start',
+                                    ])
+                                </div>
+
+
+
+                                {{-- Score / Kickoff --}}
+                                <div class="col-2">
+                                    <div class="text-center">
+                                        {{-- ✅ Box: Score (LIVE/HT/FT) --}}
+                                        {{-- @if ($isFinished || $isTimeLive) --}}
+                                        <div class="js-scorebox"
+                                            style="font-size:28px;font-weight:800;letter-spacing:1px; display: {{ $state_code !== 'NS' ? 'flex' : 'none' }}; align-items:center; justify-content:center; gap:10px;">
+                                            <span class="js-home fw-bold fs-2">{{ $fixture->home_score ?? '-' }}</span>
+                                            <span class="mx-0 mx-md-3" style="opacity:.6">-</span>
+                                            <span class="js-away fw-bold fs-2">{{ $fixture->away_score ?? '-' }}</span>
+                                        </div>
+                                        {{-- @endif --}}
+
+                                        {{-- ✅ Box: Not started (NS) --}}
+                                        <div class="js-kickoffbox">
+                                            <div class="fw-bold"
+                                                style="font-size:14px; opacity:.95;
+                                                display: {{ $state_code === 'NS' ? 'block' : 'none' }};">
+                                                {{ __('frontend.not_started') }}</div>
+                                        </div>
+
+                                        <div class="small mt-2">
+                                            <span class="badge bg-success js-status"
+                                                style="display: {{ $state_code === 'LIVE' || $state_code === 'INPLAY_2ND' || $state_code === 'INPLAY_1ST' ? 'inline-block' : 'none' }};">
+                                                {{ __('frontend.live') }}
+                                            </span>
+
+                                            <span class="badge fs-6 text-secondary js-ns"
+                                                style="display: {{ $state_code === 'NS' ? 'inline-block' : 'none' }};">{{ __('frontend.not_started') }}</span>
+
+                                            <span class="badge fs-6 text-secondary js-ht"
+                                                style="display: {{ $state_code === 'HT' ? 'inline-block' : 'none' }};">{{ __('frontend.half_time') }}</span>
+
+                                            <span class="badge fs-6 text-secondary js-ft"
+                                                style="display: {{ $state_code === 'FT' ? 'inline-block' : 'none' }};">{{ __('frontend.finished') }}</span>
+
+                                            <span class="text-success fw-bold js-minute">
+                                                {{ $status === 'LIVE' && !empty($fx['minute']) ? $fx['minute'] . "'" : '' }}
+                                            </span>
+                                        </div>
+                                        <div class="text-muted small d-none d-md-block mt-3">
+                                            <span>
+                                                {!! Helper::day_name($dt, true) !!}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                                 {{-- Away --}}
-                                <div>
-                                    <div class="d-flex align-items-center gap-2">
+                                <div class="col-5">
+                                    <div class="text-center gap-2 team-details">
                                         <img src="{{ $fixture->awayTeam->image_path ?? '' }}"
-                                            style="width:54px;height:54px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.08);padding:4px;">
-                                        <h4 class="fw-bold">{{ $fixture->awayTeam->$name_var ?? '-' }}</h4>
+                                            class=" rounded-circle object-contain p-1">
+                                        <h4 class="fw-bold mt-3">{{ $fixture->awayTeam->$name_var ?? '-' }}</h4>
                                     </div>
                                     @include('frontEnd.football.partials.top-events', [
                                         'teamid' => $fixture->awayTeam->id,
+                                        'textDiration' => 'text-end',
                                     ])
                                 </div>
                             </div>
@@ -198,7 +208,7 @@
                     @endif
                     {{-- @endif --}}
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-4 mb-4">
                     <div class="">
                         {{-- ✅ Box: TV Stations --}}
                         @if (!$isFinished)

@@ -8,6 +8,7 @@ use App\Models\League;
 use App\Models\Season;
 use App\Models\WebmasterSection;
 use App\Services\ApiClientService;
+use App\Services\UpdatesLeaguesAndSeasonsServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,49 +44,13 @@ class SeasonsController extends Controller
         return view('dashboard.football.seasons.list', compact('Seasons', 'League', 'tab', 'GeneralWebmasterSections', 'Season'));
     }
 
-    public function update(League $League_id)
+    public function update($League_id)
     {
-        $locale = Helper::currentLanguage()->code;
-        $token  = config('services.SPORTMONKS_TOKEN');
-
-        $page  = 1;
-        $saved = 0;
-        $League = $League_id;
-        do {
-            $url = "https://api.sportmonks.com/v3/football/seasons"
-                . "?api_token={$token}"
-                . "&page={$page}";
-
-            $res  = $this->apiClient->curlGet($url);
-            $json = data_get($res, 'json', []);
-            $data = data_get($json, 'data', []);
-
-            $seasons = collect($data)
-                ->filter(fn($s) => (int) data_get($s, 'league_id', 0) === (int) $League->id)
-                ->values();
-
-            foreach ($seasons as $season) {
-                Season::updateOrCreate(
-                    ['id' => $season['id']],
-                    [
-                        'league_id'   => $season['league_id'],
-                        'name'        => $season['name'],
-                        'starting_at' => $season['starting_at'],
-                        'ending_at'   => $season['ending_at'],
-                        'is_current'  => $season['is_current'],
-                    ]
-                );
-
-                $saved++;
-            }
-
-            $hasMore = (bool) data_get($json, 'pagination.has_more', false);
-            $page++;
-        } while ($hasMore);
+        app(UpdatesLeaguesAndSeasonsServices::class)->loadSeasons($League_id);
 
         return redirect()
-            ->action([SeasonsController::class, 'index'], ['league_id' => $League->id, 'tab' => 'seasons'])
-            ->with('doneMessage', __('backend.saveDone') . " | Updated: {$saved}");
+            ->action([SeasonsController::class, 'index'], ['league_id' => $League_id, 'tab' => 'seasons'])
+            ->with('doneMessage', __('backend.saveDone'));
     }
 
 }

@@ -54,7 +54,7 @@
                         $minute = is_numeric($match->minute) ? (int) $match->minute : null;
                         ?>
                         <div class="col mb-3">
-                            @include('frontEnd.layouts.match_card', [
+                            @include('frontEnd.football.partials.match', [
                                 'match' => $match,
                                 'isFinished' => $isFinished,
                                 'isTimeLive' => $isTimeLive,

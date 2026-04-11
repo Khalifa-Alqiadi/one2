@@ -23,7 +23,7 @@
     // $timeline = collect($events)->filter(fn($e) => is_array($e))->sortByDesc(fn($e) => $minuteToNumber($e))->values();
 @endphp
 
-<div class="mt-5">
+<div class="mt-2 mt-md-5 ">
 
     @foreach ($events as $e)
         @php
@@ -35,7 +35,7 @@
         {{-- GOAL CARD --}}
         @if ($teamid == $e['participant_id'])
             @if ($kind === 'goal')
-                <div class="badge text-secondary text-start d-block">
+                <div class="badge text-secondary {{$textDiration}} d-block">
                     {{ $scorerName ?: '-' }} {{ $minute ?: '' }}
                 </div>
             @endif
@@ -61,7 +61,7 @@
         {{-- GOAL CARD --}}
         @if ($teamid == $e['participant_id'])
             @if ($isRedCard)
-                <div class="badge text-secondary text-start d-block mt-3">
+                <div class="badge text-secondary {{$textDiration}} d-block mt-3">
                     {{ $playerName ?: '-' }} {{ $minute ?: '' }}: <span class="gx-icon">🟥</span>
                 </div>
             @endif

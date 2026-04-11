@@ -43,7 +43,7 @@
                                     <select name="country_id" id="" class="form-control c-select">
                                         <option value="">{{__('backend.selectCountry')}}</option>
                                         @foreach($countries as $country)
-                                            <option value="{{$country->sport_id}}" {{$League->country_id == $country->sport_id ? 'selected' : ''}}>{{$country->$title_var}}</option>
+                                            <option value="{{$country->id}}" {{$League->country_id == $country->id ? 'selected' : ''}}>{{$country->$title_var}}</option>
                                         @endforeach
                                     </select>
                                 </div>

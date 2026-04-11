@@ -1260,6 +1260,15 @@
 }
 
 
+/* Start details-match */
+.details-match .team-details img{
+    width:54px;
+    height:54px;
+    background:rgba(255,255,255,.08);
+}
+/* End details-match */
+
+
 /* ===== Responsive: على الشاشات الصغيرة نخلي سكرول ===== */
 @media (max-width: 992px) {
     .football .standings-table {
@@ -1276,7 +1285,98 @@
 }
 
 
+@media (max-width: 767px) {
+    .football .standings-wrap {
+        padding: 12px;
+    }
 
+    .football .standings-title {
+        font-size: 16px;
+    }
+
+    .football .standings-table {
+        min-width: 720px;
+    }
+
+    .matches-home .team span{
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .matches-home .card-body {
+        padding: 10px 0 0 !important;
+    }
+    .dark .card{
+        padding: 10px 4px;
+    }
+    .matches-home .gx-score{
+        font-size: 25px;
+    }
+    .matches-home .status{
+        font-size: 13px;
+    }
+
+    .matches-home .card-body a, .matches-home .js-minute{
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .football{
+        margin-top: 124px !important;
+    }
+
+    .details-match .team-details img{
+        width: 40px;
+        height: 40px;
+    }
+    .details-match .team-details h4{
+        font-size: 14px;
+        font-weight: 500 !important;
+    }
+    .details-match .card .card-body{
+        padding: 10px 0;
+    }
+
+    .details-match .dark .card,
+    .details-match .tab-content .card{
+        padding: 10px 0;
+    }
+
+    .details-match .js-scorebox .js-home,
+    .details-match .js-scorebox .js-away{
+        font-size: 14px !important;
+    }
+
+    .details-match .small .badge{
+        padding: 0;
+        font-size: 12px !important;
+    }
+
+    .football .league-pills{
+        flex-wrap: nowrap;
+        overflow: scroll;
+        padding: 0;
+        padding-bottom: 11px;
+    }
+
+    .football-match .gx-title{
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+    .football-match .gx-card-head,
+    .football-match .gx-card-body{
+        padding: 12px 6px;
+    }
+
+    .football-match .gx-player{
+        text-align: left;
+    }
+
+    .football-match .row-details{
+        /* flex-direction: column-reverse; */
+    }
+}
 
 @media (max-width: 575px) {
     .gx-fixtures-grid .gx-fixture-card .match {
@@ -1293,19 +1393,7 @@
     }
 }
 
-@media (max-width: 576px) {
-    .football .standings-wrap {
-        padding: 12px;
-    }
 
-    .football .standings-title {
-        font-size: 16px;
-    }
-
-    .football .standings-table {
-        min-width: 720px;
-    }
-}
 
 .standing-row.active,
 .standing-row.active td{

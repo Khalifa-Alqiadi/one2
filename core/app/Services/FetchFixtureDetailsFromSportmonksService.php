@@ -14,6 +14,291 @@ class FetchFixtureDetailsFromSportmonksService
         $this->apiClient = $apiClient;
         $this->handleMatchesService = $handleMatchesService;
     }
+
+    public function fetchFixtureDetailsFromSportmonksOld(int $fixtureId, string $token, string $locale): ?array
+    {
+        $url = "https://api.sportmonks.com/v3/football/fixtures/{$fixtureId}"
+            . "?api_token={$token}&locale={$locale}"
+            . "&include="
+            . implode(';', [
+                'state',
+                'participants',
+                'scores',
+                'events',
+                'events.player',
+                'events.type',
+                'lineups',
+                'lineups.player',
+                'lineups.position',
+                'statistics.type',
+                'metadata',
+                'odds',
+                'periods',
+                'venue',
+                'tvStations',
+                'sidelined',
+                'sidelined.player',
+                'sidelined.type',
+                'sidelined.sideline',
+                'comments',
+                'timeline',
+                'prematchNews',
+                'postmatchNews',
+            ]);
+
+        $res = $this->apiClient->curlGet($url);
+
+        if (!data_get($res, 'ok')) {
+            return null;
+        }
+
+        $match = data_get($res, 'json.data', []);
+        if (!$match || !is_array($match)) {
+            return null;
+        }
+
+        $fixture = Fixture::with(['league', 'homeTeam', 'awayTeam'])->find($fixtureId);
+
+        $participants = collect(data_get($match, 'participants', []));
+        $home = $participants->first(fn($p) => data_get($p, 'meta.location') === 'home');
+        $away = $participants->first(fn($p) => data_get($p, 'meta.location') === 'away');
+
+        $homeId = (int) $this->safeTeamId($home);
+        $awayId = (int) $this->safeTeamId($away);
+
+        $scoresArr = data_get($match, 'scores', []) ?? [];
+        [$homeScore, $awayScore] = $this->handleMatchesService->extractGoalsFromScores($scoresArr);
+
+        $stateName = (string) data_get($match, 'state.name', '');
+        $rawCode = data_get($match, 'state.short_code')
+            ?? data_get($match, 'state.code')
+            ?? data_get($match, 'state.developer_name');
+
+        $stateCode = $this->handleMatchesService->normalizeStateCode($rawCode, $stateName);
+
+        $resultInfo = (string) data_get($match, 'result_info', '');
+        $isFinished = $this->handleMatchesService->isFinishedState($stateCode, $stateName, $resultInfo);
+        $isHalf     = $this->handleMatchesService->isHalfTimeState($stateCode, $stateName);
+        $isLive     = $this->handleMatchesService->isLiveState($stateCode, $stateName);
+
+        $status = 'NS';
+        if ($isFinished) $status = 'FT';
+        elseif ($isHalf) $status = 'HT';
+        elseif ($isLive) $status = 'LIVE';
+        elseif ($stateCode === 'INPLAY_2ND') $status = 'LIVE';
+        elseif ($stateCode === 'INPLAY_1ST') $status = 'LIVE';
+
+        $minute =
+            data_get($match, 'time.minute')
+            ?? data_get($match, 'time.current_minute')
+            ?? data_get($match, 'time.added_time')
+            ?? null;
+
+        if (!is_numeric($minute)) {
+            $minute = $this->handleMatchesService->extractMinuteFromPeriods((array) data_get($match, 'periods', []));
+        }
+
+        if (!is_numeric($minute)) {
+            $minute = $this->handleMatchesService->extractMinuteFromEvents((array) data_get($match, 'events', []));
+        }
+
+        $minute = is_numeric($minute) ? (int) $minute : null;
+
+        // events
+        $eventsRaw = (array) data_get($match, 'events', []);
+        $events = $this->handleMatchesService->normalizeEvents($eventsRaw, $homeId, $awayId);
+
+        // lineups
+        $lineups = collect(data_get($match, 'lineups', []))->values()->all();
+
+        // statistics
+        $statsRaw = data_get($match, 'statistics', []);
+        $statsRaw = is_array($statsRaw) ? $statsRaw : [];
+        if (isset($statsRaw['data']) && is_array($statsRaw['data'])) {
+            $statsRaw = $statsRaw['data'];
+        }
+        $statsRows = $this->normalizeStats($statsRaw, $homeId, $awayId, $home, $away);
+
+        // probabilities from odds
+        $probabilities = null;
+        $odds = data_get($match, 'odds', []);
+        $odds = is_array($odds) ? $odds : [];
+
+        $ox = $this->extractOdds1X2FromFixtureOdds($odds);
+        if ($ox) {
+            $probabilities = $this->oddsToProbabilitiesFromValues(
+                (float) ($ox['home_value'] ?? 0),
+                (float) ($ox['draw_value'] ?? 0),
+                (float) ($ox['away_value'] ?? 0),
+            );
+        }
+
+        // venue
+        $venueRaw = data_get($match, 'venue', []);
+        $venue = [
+            'id'       => (int) data_get($venueRaw, 'id', 0),
+            'name'     => (string) data_get($venueRaw, 'name', ''),
+            'city'     => (string) data_get($venueRaw, 'city_name', ''),
+            'capacity' => (int) data_get($venueRaw, 'capacity', 0),
+            'image'    => (string) data_get($venueRaw, 'image_path', ''),
+        ];
+
+        // tv stations
+        $tvStationsRaw = data_get($match, 'tvStations', []);
+        if (isset($tvStationsRaw['data']) && is_array($tvStationsRaw['data'])) {
+            $tvStationsRaw = $tvStationsRaw['data'];
+        }
+        $tvStationsRaw = is_array($tvStationsRaw) ? $tvStationsRaw : [];
+        $tvStations = $this->normalizeTvStations($tvStationsRaw);
+
+        // sidelined -> injuries + suspensions
+        $sidelinedRaw = data_get($match, 'sidelined', []);
+        if (isset($sidelinedRaw['data']) && is_array($sidelinedRaw['data'])) {
+            $sidelinedRaw = $sidelinedRaw['data'];
+        }
+        $sidelinedRaw = is_array($sidelinedRaw) ? $sidelinedRaw : [];
+
+        $normalizedSidelined = $this->normalizeSidelined($sidelinedRaw);
+        $injuries = $this->extractInjuriesFromSidelined($normalizedSidelined);
+        $suspensions = $this->extractSuspensionsFromSidelined($normalizedSidelined);
+
+        // comments (text commentary-like)
+        $commentsRaw = data_get($match, 'comments', []);
+        if (isset($commentsRaw['data']) && is_array($commentsRaw['data'])) {
+            $commentsRaw = $commentsRaw['data'];
+        }
+        $commentsRaw = is_array($commentsRaw) ? $commentsRaw : [];
+
+        $comments = collect($commentsRaw)
+            ->filter(fn($row) => is_array($row))
+            ->map(function ($row) {
+                return [
+                    'id'           => data_get($row, 'id'),
+                    'minute'       => data_get($row, 'minute'),
+                    'extra_minute' => data_get($row, 'extra_minute'),
+                    'comment'      => (string) (data_get($row, 'comment') ?? ''),
+                    'is_goal'      => (bool) data_get($row, 'is_goal', false),
+                    'is_important' => (bool) data_get($row, 'is_important', false),
+                    'order'        => (int) data_get($row, 'order', 0),
+                ];
+            })
+            ->sortByDesc(fn($x) => ((int) ($x['minute'] ?? 0) * 1000) + (int) ($x['extra_minute'] ?? 0))
+            ->values()
+            ->all();
+
+        // timeline
+        $timelineRaw = data_get($match, 'timeline', []);
+        if (isset($timelineRaw['data']) && is_array($timelineRaw['data'])) {
+            $timelineRaw = $timelineRaw['data'];
+        }
+        $timelineRaw = is_array($timelineRaw) ? $timelineRaw : [];
+
+        // news
+        $prematchNewsRaw = data_get($match, 'prematchNews', []);
+        if (isset($prematchNewsRaw['data']) && is_array($prematchNewsRaw['data'])) {
+            $prematchNewsRaw = $prematchNewsRaw['data'];
+        }
+        $prematchNewsRaw = is_array($prematchNewsRaw) ? $prematchNewsRaw : [];
+
+        $postmatchNewsRaw = data_get($match, 'postmatchNews', []);
+        if (isset($postmatchNewsRaw['data']) && is_array($postmatchNewsRaw['data'])) {
+            $postmatchNewsRaw = $postmatchNewsRaw['data'];
+        }
+        $postmatchNewsRaw = is_array($postmatchNewsRaw) ? $postmatchNewsRaw : [];
+
+        $prematchNews = $this->normalizeNews($prematchNewsRaw);
+        $postmatchNews = $this->normalizeNews($postmatchNewsRaw);
+
+        // images you can use in UI
+        $mediaImages = [
+            'venue' => !empty($venue['image']) ? $venue['image'] : null,
+            'home_logo' => (string) data_get($home, 'image_path', ''),
+            'away_logo' => (string) data_get($away, 'image_path', ''),
+            'players' => collect($lineups)
+                ->map(fn($x) => data_get($x, 'player.image_path'))
+                ->filter()
+                ->unique()
+                ->take(20)
+                ->values()
+                ->all(),
+            'news_images' => collect($prematchNews)
+                ->merge($postmatchNews)
+                ->pluck('image')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all(),
+        ];
+
+        return [
+            'id' => (int) data_get($match, 'id'),
+            'starting_at' => data_get($match, 'starting_at'),
+            'status' => $status,
+            'state_code' => $stateCode,
+            'state_name' => $stateName,
+            'minute' => $minute,
+
+            'home' => [
+                'id' => $homeId,
+                'name' => data_get($home, 'name', ''),
+                'logo' => data_get($home, 'image_path', ''),
+            ],
+            'away' => [
+                'id' => $awayId,
+                'name' => data_get($away, 'name', ''),
+                'logo' => data_get($away, 'image_path', ''),
+            ],
+
+            'score' => [
+                'home' => $homeScore,
+                'away' => $awayScore,
+            ],
+
+            'events' => $events,
+            'fixture' => $fixture ?? null,
+            'locale' => $locale ?? 'ar',
+            'lineups' => $lineups,
+            'statistics_rows' => $statsRows,
+            'probabilities' => $probabilities,
+            'predictable' => data_get($match, 'metadata.predictable'),
+
+            'venue' => $venue,
+            'tv_stations' => $tvStations,
+            'injuries' => $injuries,
+            'suspensions' => $suspensions,
+            'comments' => $comments,
+            'timeline' => $timelineRaw,
+            'prematch_news' => $prematchNews,
+            'postmatch_news' => $postmatchNews,
+            'media_images' => $mediaImages,
+
+            // لا يوجد video/highlights واضح كـ include رسمي في fixture v3
+            'video_highlights' => [],
+        ];
+    }
+
+    private function normalizeNews(array $rows): array
+    {
+        return collect($rows)
+            ->filter(fn ($row) => is_array($row))
+            ->map(function ($row) {
+                return [
+                    'id' => data_get($row, 'id'),
+                    'title' => (string) (data_get($row, 'title') ?? ''),
+                    'short_title' => (string) (data_get($row, 'short_title') ?? ''),
+                    'image' => (string) (
+                        data_get($row, 'image_path')
+                        ?? data_get($row, 'image')
+                        ?? ''
+                    ),
+                    'url' => (string) (data_get($row, 'url') ?? ''),
+                    'published_at' => data_get($row, 'published_at'),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
     public function fetchFixtureDetailsFromSportmonks(int $fixtureId, string $token, string $locale): ?array
     {
         $url = "https://api.sportmonks.com/v3/football/fixtures/{$fixtureId}"
@@ -78,7 +363,6 @@ class FetchFixtureDetailsFromSportmonksService
         $minute = is_numeric($minute) ? (int) $minute : null;
 
         $eventsRaw = (array) data_get($match, 'events', []);
-        // dd($eventsRaw);
         $events = $this->handleMatchesService->normalizeEvents($eventsRaw, $homeId, $awayId);
 
         // $minute = data_get($match, 'time.minute') ?? data_get($match, 'time.current_minute');
@@ -172,7 +456,6 @@ class FetchFixtureDetailsFromSportmonksService
                 (float)($ox['away_value'] ?? 0),
             );
         }
-
 
 
         return [

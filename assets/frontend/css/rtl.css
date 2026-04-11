@@ -357,6 +357,9 @@ h6 {
         right: 37px;
         left: auto;
     }
-    
-    
+}
+@media (max-width: 767px){
+    .football-match .gx-player{
+        text-align: right;
+    }
 }

@@ -30,16 +30,16 @@
                             <div class="gx-label text-center">{{ $row['label'] ?? '-' }}</div>
                             <div class="row">
                                 @php($total_stats = $row['home'] + $row['away'])
-                                <div class="col-md-6">
+                                <div class="col-6">
                                     <div class="fw-bold text-start gx-ns-perc-val js-p-home2">
                                         {{ $row['home'] }}
                                     </div>
-                                    <div class="gx-ns-bar">
+                                    <div class="gx-ns-bar" dir="{{$locale == 'ar' ? 'ltr' : ''}}">
                                         <div class="gx-ns-bar-home2 js-bar-home2"
                                             style="width: {{ ($row['home'] / $total_stats) * 100 }}%"></div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-6">
                                     <div class="fw-bold text-end gx-ns-perc-val js-p-away2">
                                         {{ $row['away'] }}
                                     </div>
@@ -50,15 +50,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- <div class="gx-stat-row">
-
-                            <div class="gx-val gx-left">
-                                <span class="gx-pill gx-pill-home">{{ $row['home'] ?? '-' }}</span>
-                            </div>
-
-                            <div class="gx-val gx-right">
-                                <span class="gx-pill gx-pill-away">{{ $row['away'] ?? '-' }}</span>
-                            </div> --}}
                     @endforeach
                 </div>
             @endif

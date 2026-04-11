@@ -115,6 +115,7 @@ return [
     'today' => 'اليوم',
     'matches' => 'المباريات',
     'current_season' => 'الموسم الحالي',
+    'season' => 'الموسم',
     'groups' => 'المجموعة',
     'matchday_progress' => 'يوم المباراة :current من إجمالي :total',
     'statistics' => 'الإحصائيات',

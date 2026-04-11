@@ -464,19 +464,13 @@
         startLiveCommentary(true)
 
 
-        function loadCommentary(fixtureId) {
-            console.log(fixtureId)
-            fetch(`/fixture/${fixtureId}/commentary`)
-                .then(res => res.json())
-                .then(res => {
-
-                    if (!res.ok) return;
-                    console.log(res.data)
-                    renderCommentary(res.data);
-
-                })
-                .catch(console.error);
-        }
+//         async function loadCommentary(fixtureId) {
+//             const resCommentary = await fetch("{{ route('commentary', ['id' => $fixtureId]) }}");
+//             const data = await resCommentary.json();
+//
+//             // if (!resCommentary.ok) return;
+//             renderCommentary(data.data);
+//         }
 
         function renderCommentary(events) {
             const container = document.querySelector('.js-commentary');
@@ -506,11 +500,11 @@
             var fixtureId = `{{$fixtureId}}`;
             if (!isLive) return;
 
-            loadCommentary(fixtureId);
-
-            setInterval(() => {
-                loadCommentary(fixtureId);
-            }, 10000); // كل 10 ثواني
+//             loadCommentary(fixtureId);
+//
+//             setInterval(() => {
+//                 loadCommentary(fixtureId);
+//             }, 10000); // كل 10 ثواني
         }
     })();
 </script>

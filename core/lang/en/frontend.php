@@ -113,6 +113,7 @@ return [
     'today' => 'Today',
     'matches' => 'Matches',
     'current_season' => 'Current Season',
+    'season' => 'Season',
     'matchday_progress' => 'Matchday :current of :total',
     'statistics' => 'Statistics',
     'win_probability' => 'Win Probability',

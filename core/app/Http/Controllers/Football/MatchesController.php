@@ -89,7 +89,7 @@ class MatchesController extends Controller
             ->paginate(40)
             ->appends($request->query());
 
-        return view('frontEnd.custom.matches', [
+        return view('frontEnd.football.matches', [
             'locale'    => $locale,
             'matches'   => $fixtures,
             'activeTab' => $selectedDate,
@@ -446,6 +446,8 @@ class MatchesController extends Controller
                     $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
                 }
             }
+            // $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+            // dd($data);
             $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
 
         }
@@ -522,9 +524,10 @@ class MatchesController extends Controller
 
     public function commentary($id){
         $service = app(\App\Services\FetchCommentaryService::class);
-
-        return response()->json(
-            $service->getLiveCommentary($id, 'ar')
-        );
+        $data = $service->getLiveCommentary($id, 'ar');
+        return response()->json([
+            'ok' => $data['ok'],
+            'data'=> $data['data']
+        ]);
     }
 }

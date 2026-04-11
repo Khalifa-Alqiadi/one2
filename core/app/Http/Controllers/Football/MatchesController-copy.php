@@ -439,6 +439,7 @@ class MatchesController extends Controller
 
         $eventsRaw = (array) data_get($match, 'events', []);
         $events = $this->handleMatchesService->normalizeEvents($eventsRaw, $homeId, $awayId);
+        dd($events);
 
         // $minute = data_get($match, 'time.minute') ?? data_get($match, 'time.current_minute');
         // $minute = is_numeric($minute) ? (int)$minute : null;
