@@ -4,11 +4,14 @@
 @if (count($matches) > 0)
     <section class="matches matches-home py-5">
         <div class="container">
-            <div class="section-title text-start mb-4">
+            <div class="section-title d-flex justify-content-between align-items-center mb-0">
                 <h2 class="d-flex align-items-center gap-2">
                     <img src="{{ URL::to('uploads/settings/Vector.svg') }}" alt="">
                     {{ __('frontend.matches') }}
                 </h2>
+                <a href="{{route('matches')}}" class="section-title-btn">
+                    {{__('frontend.viewMore')}}
+                </a>
             </div>
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                 @foreach ($matches as $match)

@@ -37,7 +37,7 @@ if (@$TopicBlockContents->module_id) {
                 </div>
             @endif
 
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4">
+            {{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4">
                 @foreach ($BlockTopics as $Topic)
                     <?php
                     if ($Topic->$title_var != '') {
@@ -78,18 +78,13 @@ if (@$TopicBlockContents->module_id) {
                                         {!! $title !!}
                                     </a>
                                 </h4>
-                                {{-- @if (strip_tags($Topic->$details) != '')
-                                    <p class="card-text mb-auto">
-                                        {!! mb_substr(strip_tags($Topic->$details), 0, 120) . '...' !!}
-                                    </p>
-                                @endif --}}
                             </div>
                         </div>
                     </div>
                 @endforeach
-            </div>
-            {{-- <div class="row">
-                <div class="col-md-6">
+            </div> --}}
+            <div class="row">
+                <div class="col-md-6 mb-3">
                     <?php
                     $Topic = @$BlockTopics->first();
                     if (@$Topic->$title_var != '') {
@@ -109,35 +104,24 @@ if (@$TopicBlockContents->module_id) {
                     }
                     $Category = @$Topic->category(@$Topic->id);
                     ?>
-                    <div class="news-big border-0 p-0">
+                    <div class="news-big border-0 p-0 m-0">
                         @if (@$Topic->photo_file != '')
                             <a href="{{ $topic_link_url }}" class="col-auto d-lg-block">
-                                <div class="pic mb-3">
-                                    <img class="img-fluid" loading="lazy"
+                                <div class="pic">
+                                    {{-- <img class="img-fluid" loading="lazy"
                                         src="{{ route('fileView', ['path' => 'topics/' . @$Topic->photo_file]) }}?w=700&h=500&r=fit"
+                                        alt="{{ $title }}" /> --}}
+                                    <img class="img-fluid" loading="lazy"
+                                        src="{{ URL::to('uploads/topics/0c40e800-7479-4dad-a8e2-0284590b05d0.jpg') }}?w=700&h=500&r=fit"
                                         alt="{{ $title }}" />
                                 </div>
                             </a>
                         @endif
                         <div class="px-0">
-                            @if ($Category)
-                                <div class="text-muted fw-semibold text-decoration-none">
-                                    {{ @$Topic->category(@$Topic->id)->$title_var }}</div>
-                            @endif
                             <h3 class="fw-semibold my-2 ">
-                                <a class="text-decoration-none text-primary"
+                                <a class="text-decoration-none"
                                     href="{{ $topic_link_url }}">{!! $title !!}</a>
                             </h3>
-                            @include('frontEnd.topic.fields', [
-                                'cols' => 12,
-                                'Fields' => @$Topic->webmasterSection->customFields->where('in_listing', true),
-                            ])
-                            @if (strip_tags(@$Topic->$details) != '')
-                                <p class="mb-auto">
-                                    {!! mb_substr(strip_tags(@$Topic->$details), 0, 300) . '...' !!}
-                                    <a href="{{ $topic_link_url }}">{{ __('frontend.moreDetails') }}</a>
-                                </p>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -166,21 +150,24 @@ if (@$TopicBlockContents->module_id) {
                                 <div class="news-item mb-3">
                                     <div class="row">
                                         @if ($Topic->photo_file != '')
-                                            <a href="{{ $topic_link_url }}" class="col-12 col-md-5 d-lg-block">
+                                            <a href="{{ $topic_link_url }}" class="col-4 col-md-3 d-lg-block">
                                                 <div class="pic">
-                                                    <img class="img-fluid" loading="lazy"
+                                                    {{-- <img class="img-fluid" loading="lazy"
                                                         src="{{ route('fileView', ['path' => 'topics/' . $Topic->photo_file]) }}?w=140&h=140&r=fit"
+                                                        alt="{{ $title }}" /> --}}
+                                                    <img class="" loading="lazy"
+                                                        src="{{ URL::to('uploads/topics/0c40e800-7479-4dad-a8e2-0284590b05d0.jpg') }}?w=140&h=140&r=fit"
                                                         alt="{{ $title }}" />
                                                 </div>
                                             </a>
                                         @endif
-                                        <div class="col p-1 d-flex flex-column position-static">
+                                        <div class="col-8 col-md-9 p-1 d-flex flex-column position-static">
                                             @if ($Category)
                                                 <strong
                                                     class="d-inline-block mb-1 text-muted">{{ @$Topic->category($Topic->id)->$title_var }}</strong>
                                             @endif
                                             <a href="{{ $topic_link_url }}">
-                                                <h3 class="mb-2 text-primary item-title">{!! $title !!}</h3>
+                                                <h3 class="mb-2 item-title">{!! $title !!}</h3>
                                             </a>
                                             @include('frontEnd.topic.fields', [
                                                 'cols' => 12,
@@ -202,7 +189,7 @@ if (@$TopicBlockContents->module_id) {
                         @endforeach
                     </div>
                 </div>
-            </div> --}}
+            </div>
             @if (@$TopicBlock->more_btn_status)
                 <div class="row">
                     <div class="col-lg-12">

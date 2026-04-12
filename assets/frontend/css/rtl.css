@@ -76,6 +76,11 @@ h6 {
     left: 15px
 }
 
+.news .news-big h3{
+    right: 0;
+    left: auto;
+}
+
 .navbar .dropdown ul a .fa {
     margin-right: 0;
     margin-left: 5px

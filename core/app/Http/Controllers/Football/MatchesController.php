@@ -63,7 +63,7 @@ class MatchesController extends Controller
                         : ($date->isTomorrow()
                             ? __('frontend.tomorrow')
                             : $date->translatedFormat('l'))),
-                'date'     => $date->translatedFormat('M d'),
+                'date'     => $date->translatedFormat('d M'),
                 'is_today' => $date->isSameDay($todayLocal),
             ];
         }
