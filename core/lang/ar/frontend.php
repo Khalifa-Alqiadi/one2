@@ -164,6 +164,8 @@ return [
     ],
     'no_standings_data' => 'لا توجد بيانات ترتيب',
     'discussion' => 'المناقشة',
+    'deferred' => 'مؤجلة',
 ];
+
 
 ?>

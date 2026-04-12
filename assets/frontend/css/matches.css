@@ -456,6 +456,10 @@
     position: relative;
     display: block;
 }
+.football .gx-fixture-card.active {
+    background-color: #F1C40F33 !important;
+
+}
 .gx-fixtures-grid .gx-fixture-card p.league {
     color: #dbb41c;
     font-weight: 700;
@@ -1299,8 +1303,12 @@
     }
 
     .matches-home .team span{
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 500;
+    }
+
+    .matches-home .card-body span{
+        font-size: 13px;
     }
 
     .matches-home .card-body {
@@ -1322,12 +1330,17 @@
     }
 
     .football{
-        margin-top: 124px !important;
+        margin-top: 87px !important;
     }
 
     .details-match .team-details img{
         width: 40px;
         height: 40px;
+    }
+
+    .football .tab-item{
+        min-width: 64px;
+        font-size: 13px;
     }
     .details-match .team-details h4{
         font-size: 14px;
@@ -1371,10 +1384,6 @@
 
     .football-match .gx-player{
         text-align: left;
-    }
-
-    .football-match .row-details{
-        /* flex-direction: column-reverse; */
     }
 }
 

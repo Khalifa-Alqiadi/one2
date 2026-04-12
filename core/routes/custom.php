@@ -37,6 +37,8 @@ Route::get('/matches', [MatchesController::class, 'index'])
 Route::get('/matches/today-json', [FixturesController::class, 'todayJson'])
     ->name('matches.today.json');
 
+Route::post('/matches/filter', [MatchesController::class, 'filterAjax'])
+    ->name('matches.filter');
 
 // proxy live endpoint (يطلب SportMonks من السيرفر)
 Route::get('/fixtures/live-proxy', [LivescoresController::class, 'liveProxy'])

@@ -21,17 +21,26 @@
 
             <div class="tabs-wrapper d-flex mb-5">
                 @foreach ($dates as $day)
-                    <a href="{{ route('matches', ['date' => $day['key']]) }}"
+                    {{-- <a href="{{ route('matches', ['date' => $day['key']]) }}"
                         class="tab-item {{ $activeTab === $day['key'] ? 'active' : '' }}" data-date="{{ $day['key'] }}">
 
                         <div class="tab-label">{{ $day['label'] }}</div>
                         <div class="tab-date">{{ $day['date'] }}</div>
-                    </a>
+                    </a> --}}
+                    <button type="button"
+                        class="tab-item match-tab bg-transparent {{ $activeTab === $day['key'] ? 'active' : '' }}"
+                        data-date="{{ $day['key'] }}">
+
+                        <div class="tab-label">{{ $day['label'] }}</div>
+                        <div class="tab-date">{{ $day['date'] }}</div>
+                    </button>
                 @endforeach
             </div>
+            <div id="matches-container">
+                @include('frontEnd.football.partials.matches-list', ['matches' => $matches])
+            </div>
 
-
-            <div class="matches matches-home">
+            {{-- <div class="matches matches-home">
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                     @foreach ($matches as $match)
                         <?php
@@ -65,11 +74,68 @@
                         </div>
                     @endforeach
                 </div>
-            </div>
+            </div> --}}
         </div>
     </section>
 @endsection
 
-@push('after-scripts')
+{{-- @push('after-scripts')
     @include('frontEnd.layouts.match')
+@endpush --}}
+
+@push('after-scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabs = document.querySelectorAll('.match-tab');
+        const matchesContainer = document.getElementById('matches-container');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function () {
+                const date = this.dataset.date;
+
+                tabs.forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+
+                matchesContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <span>Loading...</span>
+                    </div>
+                `;
+
+                fetch("{{ route('matches.filter') }}", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: JSON.stringify({
+                        date: date
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status) {
+                        matchesContainer.innerHTML = result.html;
+                    } else {
+                        matchesContainer.innerHTML = `
+                            <div class="alert alert-danger">
+                                فشل في تحميل المباريات
+                            </div>
+                        `;
+                    }
+                })
+                .catch(() => {
+                    matchesContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            حصل خطأ أثناء تحميل البيانات
+                        </div>
+                    `;
+                });
+            });
+        });
+    });
+</script>
+
+@include('frontEnd.layouts.match')
 @endpush

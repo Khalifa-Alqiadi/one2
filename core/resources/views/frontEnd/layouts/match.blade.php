@@ -62,6 +62,8 @@
                     const lastAway = el.dataset.lastAway ?? "";
                     const lastMin = el.dataset.lastMin ?? "";
 
+
+
                     // scores: حدّث فقط إذا في قيمة رقمية/واضحة
                     if (fx.home_score !== null && fx.home_score !== undefined) {
                         setText(el, ".js-home-score", fx.home_score);
@@ -91,6 +93,25 @@
                         el.dataset.lastMin = "";
                         return;
                     }
+
+                    if (fx.state_code == "POSTP") {
+
+                        el.dataset.live = "0";
+                        setText(
+                            el,
+                            ".js-live-badge",
+                            "{{ __('frontend.deferred') }}",
+                            true,
+                        );
+                        setText(el, ".js-minute", "", true);
+                        setText(el, ".js-home-score", "", true);
+                        setText(el, ".js-away-score", "", true);
+                        el.dataset.lastMin = "";
+                        el.dataset.lastHome ?? "";
+                        el.dataset.lastAway ?? "";
+                        return;
+                    }
+
 
                     // منتصف المباراة
 

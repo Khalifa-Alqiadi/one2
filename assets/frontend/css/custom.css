@@ -268,7 +268,7 @@
 /* Start header */
 
 .navbar-mobile .mobile-nav-toggle {
-    top: 78px;
+    top: 57px;
 }
 
 .header-no-bg,
@@ -319,9 +319,9 @@
     color: var(--color-primary-gold) !important;
 }
 
-.header-scrolled .main-logo {
+/* .header-scrolled .main-logo {
     display: none !important;
-}
+} */
 
 .header-scrolled .scroll-logo {
     display: block !important;
@@ -354,7 +354,7 @@
 }
 
 #header .logo img {
-    width: 100%;
+    width: 40%;
     max-height: 100%;
     margin: 0;
 }
@@ -1491,6 +1491,10 @@
         display: block !important;
     }
 
+    .search-mobile{
+        display: flex !important;
+    }
+
     .search-mobile,
     .header-content {
         width: 50%;
@@ -1509,7 +1513,7 @@
         border: 0;
         padding-top: 0;
         padding-bottom: 0;
-        margin-top: 40px !important;
+        margin-top: 10px !important;
     }
 
     .search-mobile .header-search-btn {
@@ -1533,12 +1537,21 @@
         padding: 0 1rem;
     }
 
+    .section-title{
+        padding-bottom: 0;
+        margin-bottom: 10px !important;
+    }
+
     #header .logo {
         width: 37% !important;
     }
 
     .topic-page .image {
         padding: 0;
+    }
+
+    #header .logo img{
+        width: 32.79px;
     }
 
     .topic-page .article-body,
@@ -1549,7 +1562,7 @@
     }
 
     .search-mobile {
-        width: 45%;
+        width: 52%;
     }
 
     .header-content {
@@ -1597,7 +1610,8 @@
     }
 
     .section-title h2 {
-        font-size: 25px;
+        font-size: 20px;
+        padding-bottom: 4px;
     }
 
     .home-welcome h1 {

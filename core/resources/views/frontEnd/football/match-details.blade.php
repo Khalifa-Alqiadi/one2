@@ -104,6 +104,8 @@
 
                                             <span class="badge fs-6 text-secondary js-ft"
                                                 style="display: {{ $state_code === 'FT' ? 'inline-block' : 'none' }};">{{ __('frontend.finished') }}</span>
+                                            <span class="badge fs-6 text-secondary js-stop"
+                                                style="display: {{ $state_code === 'POSTP' ? 'inline-block' : 'none' }};">{{ __('frontend.deferred') }}</span>
 
                                             <span class="text-success fw-bold js-minute">
                                                 {{ $status === 'LIVE' && !empty($fx['minute']) ? $fx['minute'] . "'" : '' }}

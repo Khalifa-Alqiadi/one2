@@ -161,5 +161,6 @@ return [
     ],
     'no_standings_data' => 'No Standings Data',
     'discussion' => 'Discussion',
+    'deferred' => 'Deferred',
 ];
 ?>

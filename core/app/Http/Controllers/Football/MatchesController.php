@@ -423,7 +423,7 @@ class MatchesController extends Controller
         $dbStateCode = strtoupper((string) ($fixture->state_name ?? $dbStatus));
 
         $isLive = $this->shouldFetchLiveDetails($dbStatus, $dbStateCode);
-        if ($isTimeLive) {
+        if ($isTimeLive && $isLive) {
             $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
             // dd($data);
 
@@ -446,11 +446,12 @@ class MatchesController extends Controller
                     $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
                 }
             }
-            // $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-            // dd($data);
+
             $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
 
         }
+        // $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+        //     dd($data);
         // $service = app(\App\Services\FetchCommentaryService::class)->getLiveCommentary($id, $locale);
         // dd($service);
         $name_var = 'name_' . $locale;
@@ -528,6 +529,42 @@ class MatchesController extends Controller
         return response()->json([
             'ok' => $data['ok'],
             'data'=> $data['data']
+        ]);
+    }
+
+    public function filterAjax(\Illuminate\Http\Request $request)
+    {
+        $date = $request->input('date', 'today');
+
+        // $matches = $this->getMatchesByDateKey($date);
+        $selectedDate = $request->get('date', 'today');
+        $userTz    = Helper::getUserTimezone() ?: 'UTC';
+
+        // بداية ونهاية هذا اليوم بتوقيت المستخدم
+        $selectedStartLocal = Carbon::parse($selectedDate, $userTz)->startOfDay();
+        $selectedEndLocal   = Carbon::parse($selectedDate, $userTz)->endOfDay();
+
+        // نحولها إلى UTC للاستعلام من قاعدة البيانات
+        $selectedStartUtc = $selectedStartLocal->copy()->utc();
+        $selectedEndUtc   = $selectedEndLocal->copy()->utc();
+
+        $matches = Fixture::query()
+            ->whereBetween('starting_at', [$selectedStartUtc, $selectedEndUtc])
+            ->with(['homeTeam', 'awayTeam', 'league', 'season'])
+            ->whereHas('season', function ($q) {
+                $q->where('is_current', true);
+            })
+            ->orderBy('starting_at')
+            ->paginate(40)
+            ->appends($request->query());
+
+        $html = view('frontEnd.football.partials.matches-list', [
+            'matches' => $matches,
+        ])->render();
+
+        return response()->json([
+            'status' => true,
+            'html'   => $html,
         ]);
     }
 }

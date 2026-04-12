@@ -29,6 +29,14 @@
                     </script>
                 @endpush
             @endif
+            <div class="live-header mx-1">
+                {{-- @if(Helper::GeneralWebmasterSettings("football_live_status")) --}}
+                    <a href="{{ route('live.matches') }}" class="btn-header text-white bg-transparent d-flex align-items-center"
+                       style="color: #fff !important;">
+                        <img src="{{ URL::to('uploads/settings/live-icon-red1.svg') }}" alt="">
+                    </a>
+                {{-- @endif --}}
+            </div>
         </div>
         <div class="header-content d-flex align-items-center">
             <a class="logo" href="{{ Helper::homeURL() }}">
@@ -38,8 +46,8 @@
                 @else
                     <img alt="{{ Helper::GeneralSiteSettings("site_title_" . @Helper::currentLanguage()->code) }}" src="{{ route("fileView",["path" =>'settings/nologo.png' ]) }}" class="img-fluid" width="172" height="50">
                 @endif
-                <img src="{{URL::to('uploads/settings/one-two-logo-B.png')}}" class="scroll-logo d-none" alt="">
-                <img src="{{URL::to('uploads/settings/nofav2.png')}}" class="mobile-logo d-none" alt="">
+                {{-- <img src="{{URL::to('uploads/settings/one-two-logo-B.png')}}" class="scroll-logo d-none" alt=""> --}}
+                <img src="{{URL::to('uploads/settings/logo-website.png')}}" class="mobile-logo d-none" alt="">
             </a>
 
             @include('frontEnd.layouts.menu')

@@ -33,6 +33,7 @@
             const status = String(fx.status ?? 'NS').toUpperCase();
             const stateCode = String(fx.state_code ?? 'NS').toUpperCase();
 
+
             showBlock($('.js-scorebox'), status !== 'NS');
             showBlock($('.js-kickoffbox'), status === 'NS');
 
@@ -40,9 +41,10 @@
             setText('.js-away', fx.score?.away ?? '-');
 
             show($('.js-status'), status === 'LIVE');
-            show($('.js-ns'), status === 'NS');
+            show($('.js-ns'), stateCode === 'NS');
             show($('.js-ht'), stateCode === 'HT');
             show($('.js-ft'), status === 'FT');
+            show($('.js-stop'), stateCode === 'POSTP');
 
             setText('.js-minute', status === 'LIVE' && fx.minute ? (fx.minute + "'") : '');
 

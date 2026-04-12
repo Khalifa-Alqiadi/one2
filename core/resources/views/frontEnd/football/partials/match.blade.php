@@ -1,4 +1,7 @@
-<div class="card bg-transparent gx-fixture-card" id="fixture-{{ $match->id }}" data-live="{{ $isTimeLive ? 1 : 0 }}">
+@php
+    $name_var = 'name_' . @Helper::currentLanguage()->code;
+@endphp
+<div class="card bg-transparent gx-fixture-card {{$isTimeLive ? 'active' : ''}}" id="fixture-{{ $match->id }}" data-live="{{ $isTimeLive ? 1 : 0 }}">
     <div class="card-header d-flex align-items-center justify-content-between bg-transparent border-0 p-0 mb-3">
         @if ($match->league)
             <span>{{ $match->league->$name_var }}</span>
