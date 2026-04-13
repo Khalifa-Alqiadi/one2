@@ -7,7 +7,7 @@
         </a>
     </li>
     <li class="nav-item inline">
-        <a class="nav-link {{ $tab == 'matches' ? 'active' : '' }}" href="{{route('leaguesRounds', ['league_id' => $League->id, 'tab' => 'matches'])}}">
+        <a class="nav-link {{ $tab == 'matches' ? 'active' : '' }}" href="{{route('leaguesRounds', ['league_id' => $League->id])}}">
             <span class="text-md"><i class="material-icons">
                     &#xe8ed;</i> {{ __('backend.matches') }}</span>
         </a>

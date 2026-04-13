@@ -915,4 +915,5 @@ return array(
     'updateMatches' => 'تحديث المباريات',
     'live' => 'مباشر',
     'update_standings_table' => 'تحديث جدول الترتيب',
+    'live_now' => 'مباشر الآن',
 );

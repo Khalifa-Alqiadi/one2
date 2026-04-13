@@ -274,9 +274,11 @@ class RoundsController extends Controller
         $totalFiltered = (clone $matchesQuery)->count();
 
         // paginate + order
+        if ($limit > 0) {
+            $matchesQuery = $matchesQuery->offset($start)->limit($limit);
+        }
         $rows = $matchesQuery->orderBy($order, $dir)
             ->orderBy('starting_at', 'asc')
-            ->limit($limit > 0 ? $limit : 10)
             ->get();
 
         $data = [];

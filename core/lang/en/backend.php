@@ -913,4 +913,5 @@ return array(
     'updateMatches' => 'Update matches',
     'live' => 'Live',
     'update_standings_table' => 'Update Standings Table',
+    'live_now' => 'Live Now',
 );
