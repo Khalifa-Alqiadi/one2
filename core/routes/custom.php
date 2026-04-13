@@ -30,8 +30,10 @@ Route::get('/leagues/{id?}/rounds', [LeaguesController::class, 'rounds'])->name(
 Route::get('/club/{teamId}', [LeagueTabsController::class, 'show'])
     ->name('club.show');
 
-Route::get('/matches', [MatchesController::class, 'index'])
+Route::get('/مباريات-اليوم', [MatchesController::class, 'index'])
     ->name('matches');
+Route::get('/{lang?}/matches', [MatchesController::class, 'index'])
+    ->name('matchesLang');
 
 // JSON endpoint used by client-side polling to refresh today's matches
 Route::get('/matches/today-json', [FixturesController::class, 'todayJson'])

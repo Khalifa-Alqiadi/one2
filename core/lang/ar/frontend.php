@@ -117,7 +117,7 @@ return [
     'current_season' => 'الموسم الحالي',
     'season' => 'الموسم',
     'groups' => 'المجموعة',
-    'matchday_progress' => 'يوم المباراة :current من إجمالي :total',
+    'matchday_progress' => 'الجولة :current من إجمالي :total',
     'statistics' => 'الإحصائيات',
     'win_probability' => 'احتمال الفوز',
     'draw' => 'تعادل',
@@ -165,6 +165,14 @@ return [
     'no_standings_data' => 'لا توجد بيانات ترتيب',
     'discussion' => 'المناقشة',
     'deferred' => 'مؤجلة',
+    'won' => 'الفوز',
+    'draw' => 'التعادل',
+    'loss' => 'الخسارة',
+    'qualification_elimination' => 'التأهّل/الإقصاء',
+    'last_5_matches' => 'آخر 5 مباريات',
+    'all_competitions' => 'جميع المسابقات',
+    'no_matches_found' => 'لا توجد مباريات',
+    'no_tv_stations' => 'لا توجد قنوات تلفزيونية',
 ];
 
 

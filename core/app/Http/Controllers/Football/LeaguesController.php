@@ -40,6 +40,7 @@ class LeaguesController extends Controller
         $leagueId = (int) $id;
         $league = League::findOrFail($leagueId);
 
+
         $locale = Helper::currentLanguage()->code ?? 'ar';
         $locale = in_array($locale, ['ar', 'en']) ? $locale : 'ar';
 
@@ -126,7 +127,7 @@ class LeaguesController extends Controller
                     // المراحل الإقصائية كصفحة واحدة
                     $fixtures = $stage->rounds
                         ->flatMap(fn($round) => $round->fixtures)
-                        ->sortBy('starting_at')
+                        ->sortByDesc('starting_at')
                         ->values();
 
                     $pages->push([
@@ -224,9 +225,9 @@ class LeaguesController extends Controller
         Cache::forget($cacheKey);
         Cache::forget($metaKey);
 
-        if (!$hasStandings) {
+        // if ($hasStandings) {
             app(SportmonksStandingService::class)->syncSeasonStandings($seasonId, $locale);
-        }
+        // }
     }
 
     private function getStandingsCached(int $seasonId, string $locale, bool $forceRefresh = false): array
@@ -292,6 +293,15 @@ class LeaguesController extends Controller
                     $item['goals_against']   = data_get($item, 'goals_against', $row->goals_against);
                     $item['goal_difference'] = data_get($item, 'goal_difference', $row->goal_difference);
                     $item['group_name']      = data_get($item, 'group_name', $row->group_name);
+                    $item['rule'] = data_get($item, 'rule', []);
+
+                    $item['rule']['id'] = data_get($item, 'rule.id', $row->rule_id);
+                    $item['rule']['name'] = data_get($item, 'rule.name', $row->rule_name);
+
+                    $item['rule']['type'] = data_get($item, 'rule.type', []);
+                    $item['rule']['type']['id'] = data_get($item, 'rule.type.id', $row->rule_type_id);
+                    $item['rule']['type']['code'] = data_get($item, 'rule.type.code', $row->rule_type_code);
+                    $item['rule']['type']['name'] = data_get($item, 'rule.type.name', $row->rule_type_name);
 
                     // لو form مخزنة كنص W,D,L نحولها لمصفوفة بسيطة للواجهة
                     if ((!isset($item['form']) || !is_array($item['form'])) && !empty($row->form)) {

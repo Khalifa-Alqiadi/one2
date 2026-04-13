@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\App;
 
 class MatchesController extends Controller
 {
@@ -30,16 +31,18 @@ class MatchesController extends Controller
         ApiClientService $apiClient,
         LiveMatchesService $handleMatchesService,
         FetchFixtureDetailsFromSportmonksService $fetchFixtureDetailsFromSportmonks
-        )
-    {
+    ) {
         $this->apiClient = $apiClient;
         $this->handleMatchesService = $handleMatchesService;
         $this->fetchFixtureDetailsFromSportmonks = $fetchFixtureDetailsFromSportmonks;
     }
 
-    public function index(Request $request)
+    public function index(Request $request, $lang = null)
     {
         $this->website_status();
+        App::setLocale($lang);
+        session(['locale' => $lang]);
+        $leagues = League::where('status', 1)->get();
 
         $localeRaw = Helper::currentLanguage()->code ?? 'ar';
         $locale    = in_array($localeRaw, ['ar', 'en']) ? $localeRaw : 'en';
@@ -85,7 +88,7 @@ class MatchesController extends Controller
             ->whereHas('season', function ($q) {
                 $q->where('is_current', true);
             })
-            ->orderBy('starting_at')
+            ->orderBy('starting_at', 'desc')
             ->paginate(40)
             ->appends($request->query());
 
@@ -94,6 +97,7 @@ class MatchesController extends Controller
             'matches'   => $fixtures,
             'activeTab' => $selectedDate,
             'dates'     => $dates,
+            'leagues'   => $leagues,
         ]);
     }
 
@@ -307,6 +311,8 @@ class MatchesController extends Controller
             $json = data_get($res, 'json', []);
             $rows = data_get($json, 'data', []);
 
+            dd($rows);
+
             // خزّن وقت آخر تحديث
             Cache::put($metaKey, ['fetched_at' => now()->toDateTimeString()], 3600);
 
@@ -429,18 +435,17 @@ class MatchesController extends Controller
 
             if ($data) {
                 $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
-
             } else {
                 $data = $this->buildFixtureDetailsFromDatabase($fixture->fresh(['league', 'homeTeam', 'awayTeam']), $locale);
             }
         } else {
 
-            if(!$fixture->lineups_json && $isFinished == true){
+            if ((!$fixture->lineups_json || !$fixture->statistics_json || !$fixture->events_json) && $isFinished == true) {
                 $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
                 if ($data) {
                     $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
                 }
-            }elseif(!$fixture->lineups_json){
+            } elseif (!$fixture->lineups_json || !$fixture->statistics_json || !$fixture->events_json) {
                 $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
                 if ($data) {
                     $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
@@ -448,7 +453,6 @@ class MatchesController extends Controller
             }
 
             $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
-
         }
         // $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
         //     dd($data);
@@ -523,16 +527,17 @@ class MatchesController extends Controller
         ]);
     }
 
-    public function commentary($id){
+    public function commentary($id)
+    {
         $service = app(\App\Services\FetchCommentaryService::class);
         $data = $service->getLiveCommentary($id, 'ar');
         return response()->json([
             'ok' => $data['ok'],
-            'data'=> $data['data']
+            'data' => $data['data']
         ]);
     }
 
-    public function filterAjax(\Illuminate\Http\Request $request)
+    public function filterAjaxOld(\Illuminate\Http\Request $request)
     {
         $date = $request->input('date', 'today');
 
@@ -554,9 +559,46 @@ class MatchesController extends Controller
             ->whereHas('season', function ($q) {
                 $q->where('is_current', true);
             })
-            ->orderBy('starting_at')
+            ->orderBy('starting_at', 'desc')
             ->paginate(40)
             ->appends($request->query());
+
+        $html = view('frontEnd.football.partials.matches-list', [
+            'matches' => $matches,
+        ])->render();
+
+        return response()->json([
+            'status' => true,
+            'html'   => $html,
+        ]);
+    }
+
+    public function filterAjax(\Illuminate\Http\Request $request)
+    {
+        $selectedDate = $request->get('date', now()->toDateString());
+        $leagueId     = (int) $request->get('league_id', 0);
+        $userTz       = Helper::getUserTimezone() ?: 'UTC';
+
+        $selectedStartLocal = Carbon::parse($selectedDate, $userTz)->startOfDay();
+        $selectedEndLocal   = Carbon::parse($selectedDate, $userTz)->endOfDay();
+
+        $selectedStartUtc = $selectedStartLocal->copy()->utc();
+        $selectedEndUtc   = $selectedEndLocal->copy()->utc();
+
+        $query = Fixture::query()
+            ->whereBetween('starting_at', [$selectedStartUtc, $selectedEndUtc])
+            ->with(['homeTeam', 'awayTeam', 'league', 'season'])
+            ->whereHas('season', function ($q) {
+                $q->where('is_current', true);
+            });
+
+        if ($leagueId > 0) {
+            $query->where('league_id', $leagueId);
+        }
+
+        $matches = $query
+            ->orderBy('starting_at', 'desc')
+            ->paginate(40);
 
         $html = view('frontEnd.football.partials.matches-list', [
             'matches' => $matches,

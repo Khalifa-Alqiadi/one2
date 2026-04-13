@@ -28,6 +28,11 @@ class Standing extends Model
         'recent_form_points',
         'form',
         'payload_json',
+        'rule_id',
+        'rule_name',
+        'rule_type_id',
+        'rule_type_code',
+        'rule_type_name',
         'synced_at',
     ];
 

@@ -387,8 +387,8 @@ $style_color4 = Helper::GeneralSiteSettings("style_color4");
     }
 
     .dark .form-control:focus {
-        border-color: {{ Helper::GeneralSiteSettings("style_color2") }};
-        box-shadow: 0 0 0 0.25rem{{ Helper::GeneralSiteSettings("style_color1") }};
+        border-color: 0 !important;
+        box-shadow: none;
     }
 
     .dark .select2-container--default .select2-selection--multiple .select2-selection__choice,.dark .select2-container--default .select2-results__option--selected {

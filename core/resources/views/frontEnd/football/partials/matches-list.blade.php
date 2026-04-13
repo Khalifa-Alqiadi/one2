@@ -38,7 +38,7 @@
             </div>
         @empty
             <div class="col-12">
-                <div class="alert alert-info mb-0">
+                <div class="alert alert-dark mb-0">
                     {{ __('frontend.no_matches_found') }}
                 </div>
             </div>

@@ -1,7 +1,7 @@
 @php
     $name_var = 'name_' . @Helper::currentLanguage()->code;
 @endphp
-<div class="card bg-transparent gx-fixture-card {{$isTimeLive ? 'active' : ''}}" id="fixture-{{ $match->id }}" data-live="{{ $isTimeLive ? 1 : 0 }}">
+<div class="card bg-transparent h-100 gx-fixture-card {{$isTimeLive ? 'active' : ''}}" id="fixture-{{ $match->id }}" data-live="{{ $isTimeLive ? 1 : 0 }}">
     <div class="card-header d-flex align-items-center justify-content-between bg-transparent border-0 p-0 mb-3">
         @if ($match->league)
             <span>{{ $match->league->$name_var }}</span>
@@ -70,7 +70,7 @@
     </div>
     <div class="card-body border-top mt-3 pb-0 d-flex align-items-center justify-content-between">
         <span>
-            {!! Helper::day_name($dateLabel) !!}
+            {!! Helper::day_name($dt) !!}
             @if ($timeLabel)
                 • {{ $timeLabel }}
             @endif

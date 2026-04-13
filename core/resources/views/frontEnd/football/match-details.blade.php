@@ -66,11 +66,8 @@
                                         'textDiration' => 'text-start',
                                     ])
                                 </div>
-
-
-
                                 {{-- Score / Kickoff --}}
-                                <div class="col-2">
+                                <div class="col-2 p-0">
                                     <div class="text-center">
                                         {{-- ✅ Box: Score (LIVE/HT/FT) --}}
                                         {{-- @if ($isFinished || $isTimeLive) --}}
@@ -138,7 +135,7 @@
                         $status = $fx['status'] ?? 'NS';
                     @endphp
                     {{-- Tabs --}}
-                    <ul class="nav nav-tabs nav-fill mb-3 league-pills" role="tablist"
+                    <ul class="nav nav-tabs nav-fill mb-3 league-pills p-0 pb-3" role="tablist"
                         style="border-color: rgba(255,255,255,.08);">
                         @if ($state_code !== 'NS')
                             <li class="nav-item" role="presentation">

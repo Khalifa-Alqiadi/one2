@@ -1385,6 +1385,12 @@
     .football-match .gx-player{
         text-align: left;
     }
+
+    .football .league-pills .nav-link{
+        font-weight: 400;
+        font-size: 15px;
+        padding: 5px 13px;
+    }
 }
 
 @media (max-width: 575px) {

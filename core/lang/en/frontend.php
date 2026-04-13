@@ -114,7 +114,7 @@ return [
     'matches' => 'Matches',
     'current_season' => 'Current Season',
     'season' => 'Season',
-    'matchday_progress' => 'Matchday :current of :total',
+    'matchday_progress' => 'Round :current of :total',
     'statistics' => 'Statistics',
     'win_probability' => 'Win Probability',
     'draw' => 'Draw',
@@ -162,5 +162,13 @@ return [
     'no_standings_data' => 'No Standings Data',
     'discussion' => 'Discussion',
     'deferred' => 'Deferred',
+    'won' => 'Won',
+    'draw' => 'Draw',
+    'loss' => 'Loss',
+    'qualification_elimination' => 'Qualification / Elimination',
+    'last_5_matches' => 'Last 5 Matches',
+    'all_competitions' => 'All Competitions',
+    'no_matches_found' => 'No Matches Found',
+    'no_tv_stations' => 'No TV Stations',
 ];
 ?>
