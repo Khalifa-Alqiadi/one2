@@ -37,7 +37,7 @@ class MatchesController extends Controller
         $this->fetchFixtureDetailsFromSportmonks = $fetchFixtureDetailsFromSportmonks;
     }
 
-    public function index(Request $request, $lang = null)
+    public function index(Request $request, $lang = 'ar')
     {
         $this->website_status();
         App::setLocale($lang);
