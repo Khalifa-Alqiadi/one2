@@ -23,7 +23,7 @@
 
 <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v=2" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=75" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=8" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=9" rel="stylesheet"/>
 
 
 @if( @Helper::currentLanguage()->direction=="rtl")

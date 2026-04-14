@@ -20,7 +20,7 @@ Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['aut
 // Route::get('/custom-page', [CustomController::class, 'custom_page']);
 // Route::get('/ucl', [LeagueController::class, 'index'])->name('ucl');
 Route::get('/leagues', [LeaguesController::class, 'index'])->name('leagues');
-Route::get('/leagues/{id?}/rounds', [LeaguesController::class, 'rounds'])->name('league.rounds');
+Route::get('/leagues/{id?}/details', [LeaguesController::class, 'rounds'])->name('league.rounds');
 // Route::get('/round-odds/{roundId}', [LeagueController::class, 'round'])
     // ->name('round.odds');
 // Route::get('/standings/{standingsID}', [LeagueController::class, 'standings']);

@@ -24,7 +24,7 @@ use App\Http\Controllers\Dashboard\Football\RoundsController;
 use App\Http\Controllers\Dashboard\MatchesController;
 use App\Http\Controllers\Dashboard\TagController;
 use App\Http\Controllers\Dashboard\PopupController;
-use App\Http\Controllers\Dashboard\TeamsController;
+use App\Http\Controllers\Dashboard\Football\TeamsController;
 use Illuminate\Support\Facades\Route;
 
 Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['auth', 'LanguageSwitcher']], function () {

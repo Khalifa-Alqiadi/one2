@@ -31,63 +31,89 @@ class SyncSportmonksTeamsJob implements ShouldQueue
         do {
             $url = "https://api.sportmonks.com/v3/football/teams";
 
-            // الأفضل تستخدم Http بدل curl custom (أكثر استقرار + retries)
-            $response = Http::timeout(60)
+            $primaryResponse = Http::timeout(60)
                 ->retry(3, 1000)
                 ->get($url, [
                     'api_token' => $this->token,
-                    'locale'    => $this->locale,
+                    'locale'    => 'ar',
+                    'include'   => "coaches.coach;coaches.coach.trophies;statistics;trophies.trophy",
                     'page'      => $page,
                 ]);
 
-            if (!$response->successful()) {
-                // خلّيه يفشل عشان Laravel يعيد المحاولة حسب tries
+            $englishResponse = Http::timeout(60)
+                ->retry(3, 1000)
+                ->get($url, [
+                    'api_token' => $this->token,
+                    'locale'    => 'en',
+                    'page'      => $page,
+                ]);
+
+            if (!$primaryResponse->successful()) {
                 throw new \RuntimeException(
-                    "SportMonks request failed. Status: {$response->status()} Body: {$response->body()}"
+                    "SportMonks Arabic teams request failed. Status: {$primaryResponse->status()} Body: {$primaryResponse->body()}"
                 );
             }
 
-            $json  = $response->json();
-            $teams = $json['data'] ?? [];
+            if (!$englishResponse->successful()) {
+                throw new \RuntimeException(
+                    "SportMonks English teams request failed. Status: {$englishResponse->status()} Body: {$englishResponse->body()}"
+                );
+            }
 
-            foreach ($teams as $team) {
-                // تخطي الفرق بدون دولة
+            $primaryJson  = $primaryResponse->json();
+            $englishJson  = $englishResponse->json();
+
+            $primaryTeams = collect($primaryJson['data'] ?? []);
+
+            $englishTeams = collect($englishJson['data'] ?? []);
+
+            $englishMap = $englishTeams->keyBy('id');
+
+            foreach ($primaryTeams as $team) {
+                dd($team);
                 if (empty($team['country_id'])) {
                     continue;
                 }
-                if($team['id'] > 0){
-                    Team::updateOrCreate(
-                        ['id' => $team['id']], // استخدام id من SportMonks كـ primary key
-                        [
-                            'name_ar'    => $team['name'] ?? null,
-                            'image_path' => $team['image_path'] ?? null,
-                            'country_id' => $team['country_id'],
-                            'venue_id'   => $team['venue_id'] ?? null,
-                            'short_code' => $team['short_code'] ?? null,
-                            'sport_id'   => $team['id'] ?? null,
-                        ]
-                    );
+
+                $teamId = (int) ($team['id'] ?? 0);
+
+                if ($teamId <= 0) {
+                    continue;
                 }
-                // Team::updateOrCreate(
-                //     ['sport_id' => $team['id']],
-                //     [
-                //         'name_ar'    => $team['name'] ?? null,
-                //         'image_path' => $team['image_path'] ?? null,
-                //         'country_id' => $team['country_id'],
-                //         'venue_id'   => $team['venue_id'] ?? null,
-                //         'short_code' => $team['short_code'] ?? null,
-                //     ]
-                // );
+
+                $englishTeam = $englishMap->get($teamId, []);
+
+                $existTeam = Team::find($teamId);
+
+                if ($existTeam) {
+                    $existTeam->update([
+                        'name_en'    => $englishTeam['name'] ?? null,
+                        'image_path' => $team['image_path'] ?? null,
+                        'country_id' => $team['country_id'] ?? null,
+                        'venue_id'   => $team['venue_id'] ?? null,
+                        'short_code' => $team['short_code'] ?? null,
+                        'sport_id'   => $team['sport_id'] ?? null,
+                    ]);
+                } else {
+                    Team::create([
+                        'id'         => $teamId,
+                        'name_ar'    => $team['name'] ?? null,
+                        'name_en'    => $englishTeam['name'] ?? null,
+                        'image_path' => $team['image_path'] ?? null,
+                        'country_id' => $team['country_id'] ?? null,
+                        'venue_id'   => $team['venue_id'] ?? null,
+                        'short_code' => $team['short_code'] ?? null,
+                        'sport_id'   => $team['sport_id'] ?? null,
+                    ]);
+                }
 
                 $saved++;
             }
 
-            $hasMore = (bool) data_get($json, 'pagination.has_more', false);
+            $hasMore = (bool) data_get($primaryJson, 'pagination.has_more', false);
             $page++;
-
         } while ($hasMore);
 
-        // إذا تحب تسجل النتيجة في log
         // \Log::info("SportMonks Teams Sync Done", ['saved' => $saved]);
     }
 
