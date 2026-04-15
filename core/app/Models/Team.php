@@ -29,4 +29,9 @@ class Team extends Model
     {
         return $this->belongsTo(Country::class, 'country_id', 'id');
     }
+
+    public function trophies()
+    {
+        return $this->morphMany(Trophy::class, 'awardable');
+    }
 }
