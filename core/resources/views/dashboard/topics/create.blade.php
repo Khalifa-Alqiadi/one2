@@ -1,6 +1,7 @@
 @extends('dashboard.layouts.master')
 <?php
 $title_var = "title_".@Helper::currentLanguage()->code;
+$name_var = "name_".@Helper::currentLanguage()->code;
 $title_var2 = "title_".config('smartend.default_language');
 if ($WebmasterSection->$title_var != "") {
     $WebmasterSectionTitle = $WebmasterSection->$title_var;
@@ -240,6 +241,9 @@ $PhoneFieldsIds = [];
                         @else
                             <input type="hidden" name="section_id" id="cat_ids" value="0" ui-jp="select2" ui-options="{theme: 'bootstrap'}">
                         @endif
+
+                        @include('dashboard.topics.fields.leagues-select')
+                        @include('dashboard.topics.fields.teams-select')
 
                         @if($WebmasterSection->title_status)
                             @foreach(Helper::languagesList() as $ActiveLanguage)

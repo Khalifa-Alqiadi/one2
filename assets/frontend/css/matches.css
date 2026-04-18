@@ -30,17 +30,30 @@
 }
 
 .football .league-pills .nav-link {
-    background: #2a2d33;
+    background: transparent;
     color: #fff;
     border-radius: 999px;
-    padding: 0.55rem 1.1rem;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    font-weight: 600;
+    padding: 0 0 10px;
+    border: 0;
+    font-weight: 400;
+    text-align: left;
+    width: fit-content;
+    position: relative;
 }
 
-.football .league-pills .nav-link.active {
-    background: #3a3d44;
-    border-color: rgba(255, 255, 255, 0.1);
+.football .league-pills .nav-link::after{
+    content: "";
+    width: 0;
+    height: 2px;
+    background-color: var(--color-primary-gold);
+    bottom: 0;
+    left: 0;
+    transition: all .6s ease-in-out;
+    position: absolute;
+}
+
+.football .league-pills .nav-link.active::after {
+    width: 100%;
 }
 
 /* ====== Fixtures Board (مثل الصورة) ====== */
@@ -602,10 +615,10 @@
 }
 
 .football-match .gx-team-ic {
-    width: 26px;
-    height: 26px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, .08);
+    /* background: rgba(255, 255, 255, .08); */
     padding: 3px;
     object-fit: contain;
 }
@@ -1127,8 +1140,8 @@
 }
 
 .football-match .gx-badge {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 999px;
     display: flex;
     align-items: center;
@@ -1138,13 +1151,17 @@
     box-shadow: 0 0 0 2px rgba(255, 255, 255, .18) inset;
 }
 
+.football-match .gx-badge img{
+
+}
+
 .football-match .gx-home {
-    background: #b01257;
+    background: #fff;
 }
 
 /* لون صاحب الأرض */
 .football-match .gx-away {
-    background: #0f4aa5;
+    background: #fff;
 }
 
 /* لون الضيف */
@@ -1395,29 +1412,45 @@
     color: #dce6f5;
     font-size: 15px;
     font-weight: 400;
-    padding: 12px 10px;
+    padding: 10px 5px;
     border-bottom: 1px solid rgba(255, 255, 255, .06);
     white-space: nowrap;
 }
 
 .standings-wrap-v2 .standings-table-v2 tbody td {
-    padding: 14px 10px;
+    padding: 4px 2px;
     white-space: nowrap;
     vertical-align: middle;
     font-weight: 400;
     color: #edf3fb;
 }
 
+.details-match .standings-wrap-v2 .standings-table-v2{
+    min-width: auto;
+}
+
 .standings-wrap-v2 .club-col {
     min-width: 160px;
+}
+
+.details-match .standings-wrap-v2 .club-col{
+    min-width: auto;
 }
 
 .standings-wrap-v2 .stat-col {
     min-width: 55px;
 }
 
+.details-match .standings-wrap-v2 .stat-col{
+    min-width: auto;
+}
+
 .standings-wrap-v2 .form-col {
     min-width: 160px;
+}
+
+.details-match .standings-wrap-v2 .form-col{
+    min-width: auto;
 }
 
 .standings-wrap-v2 .club-cell-v2 {

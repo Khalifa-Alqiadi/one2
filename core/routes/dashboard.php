@@ -161,12 +161,14 @@ Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['aut
 
 
     Route::get('/teams', [TeamsController::class, 'index'])->name('teams');
+    Route::get('/country/{country_id?}/teams', [TeamsController::class, 'index'])->name('countryTeams');
     Route::post('teams-list', [TeamsController::class, 'list'])->name('teams.list');
     Route::get('teams/edit/{id}', [TeamsController::class, 'edit'])->name('teams.edit');
     Route::post('/teams/teamsUpdateAll', [TeamsController::class, 'updateAll'])->name('teamsUpdateAll');
     Route::post('/teams/update/{id}', [TeamsController::class, 'update'])->name('teamsUpdate');
     Route::get('/teams/teams-update/API', [TeamsController::class, 'updateAPI'])->name('teamsUpdateAPI');
     Route::get('/teams/destroy/{id?}', [TeamsController::class, 'destroy'])->name('teamsDestroy');
+    Route::get('/teams/update-players/{id?}', [TeamsController::class, 'updatePlayers'])->name('update.players');
 // Topics
     Route::get('/{webmasterId}/topics', [TopicsController::class, 'index'])->name('topics');
     Route::post('/topics-list', [TopicsController::class, 'list'])->name('topicsList');
@@ -258,6 +260,9 @@ Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['aut
         [TopicsController::class, 'mapsUpdateAll'])->name('topicsMapsUpdateAll');
 
     Route::post('/table-columns-update', [TopicsController::class, 'update_table_columns'])->name('tableColumnsUpdate');
+
+    Route::post('/topics/leagues/teams', [TopicsController::class, 'getLeagueTeams'])
+    ->name('topics.leagues.teams');
 
 // keditor
     Route::get('/keditor/{topic_id?}', [TopicsController::class, 'keditor'])->name('keditor');
@@ -380,6 +385,8 @@ Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['aut
     Route::get('/countries/destroy/{id?}', [\App\Http\Controllers\Dashboard\CountriesController::class, 'destroy'])->name('countriesDestroy');
     Route::post('/countries/updateAll', [\App\Http\Controllers\Dashboard\CountriesController::class, 'updateAll'])->name('countriesUpdateAll');
     Route::get('/countries/update/api', [\App\Http\Controllers\Dashboard\CountriesController::class, 'update_api'])->name('countriesUpdateAPI');
+    Route::get('/countries/{country_id}/update-teams/api', [\App\Http\Controllers\Dashboard\CountriesController::class, 'updateTeamsByCountry'])->name('updateTeamsByCountry');
+    Route::get('/countries/{country_id}/update-players/api', [\App\Http\Controllers\Dashboard\CountriesController::class, 'updatePlayersByCountry'])->name('updatePlayersByCountry');
 
 // popups
     Route::get('/popups', [PopupController::class, 'index'])->name('popups');

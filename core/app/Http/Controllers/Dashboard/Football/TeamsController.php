@@ -20,11 +20,11 @@ class TeamsController extends Controller
         $this->apiClient = $apiClient;
         $this->middleware('auth');
     }
-    public function index()
+    public function index($country_id = 0)
     {
         $GeneralWebmasterSections = WebmasterSection::where('status', '=', '1')->orderby('row_no', 'asc')->get();
         $countries = \App\Models\Country::where('status', 1)->orderBy('sport_id')->get();
-        return view('dashboard.football.teams.list', compact('GeneralWebmasterSections', 'countries'));
+        return view('dashboard.football.teams.list', compact('GeneralWebmasterSections', 'countries', 'country_id'));
     }
 
     public function list(Request $request)
@@ -109,6 +109,9 @@ class TeamsController extends Controller
                 $options .= '<a class="dropdown-item" href="' . route("teams.edit", [
                     "id" => $team->id
                 ]) . '"><i class="material-icons">&#xe3c9;</i> ' . __('backend.edit') . '</a>';
+                $options .= '<a class="dropdown-item" href="' . route("update.players", [
+                    "id" => $team->id
+                ]) . '"><i class="material-icons">&#xe3c9;</i> ' . __('backend.update_players') . '</a>';
             }
             if (@Auth::user()->permissionsGroup->delete_status) {
                 $options .= '<a class="dropdown-item text-danger" onclick="DeleteTeam(\'' . $team->id . '\')"><i class="material-icons">&#xe872;</i> ' . __('backend.delete') . '</a>';
@@ -211,6 +214,19 @@ class TeamsController extends Controller
         // شغّلها في الخلفية
         SyncSportmonksTeamsJob::dispatch($token, $locale)
             ->onQueue('sportmonks');
+
+        return redirect()
+            ->action([TeamsController::class, 'index'])
+            ->with('doneMessage', __('backend.saveDone') . ' (Sync started in background)');
+    }
+    public function updatePlayers($id)
+    {
+        $locale = Helper::currentLanguage()->code;
+        $token  = config('services.SPORTMONKS_TOKEN');
+
+        $seasonId = Helper::currentSeason();
+        $service = app(\App\Services\PlayerSyncService::class);
+        $result = $service->syncByTeam(teamId: $id, seasonId: $seasonId);
 
         return redirect()
             ->action([TeamsController::class, 'index'])

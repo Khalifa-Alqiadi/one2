@@ -110,7 +110,9 @@
 
                                 <div class="gx-player">
                                     <div class="gx-badge gx-away">
-                                        <span class="gx-num">{{ $num }}</span>
+                                        <img src="{{ $img }}" alt="station Image" class=""
+                                            style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
+                                        {{-- <span class="gx-num">{{ $num }}</span> --}}
                                     </div>
                                     <div class="gx-name">{{ $name }}</div>
                                 </div>
@@ -133,7 +135,9 @@
 
                                 <div class="gx-player">
                                     <div class="gx-badge gx-home">
-                                        <span class="gx-num">{{ $num }}</span>
+                                        {{-- <span class="gx-num">{{ $num }}</span> --}}
+                                        <img src="{{ $img }}" alt="station Image" class=""
+                                            style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
                                     </div>
                                     <div class="gx-name">{{ $name }}</div>
                                 </div>

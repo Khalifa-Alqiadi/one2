@@ -48,8 +48,8 @@
                             <th>{{ __('backend.country') }}</th>
                             <th style="width:120px;">{{ __('backend.countryCode') }}</th>
                             <th style="width:120px;">{{ __('backend.countryTel') }}</th>
-                            {{-- <th style="width:160px;">{{ __('backend.createdAt') }}</th> --}}
-                            {{-- <th class="text-center" style="width:60px;">{{ __('backend.options') }}</th> --}}
+                            <th style="width:160px;">{{ __('backend.number_teams') }}</th>
+                            <th class="text-center" style="width:60px;">{{ __('backend.options') }}</th>
                             </thead>
                             <tbody>
                                     <?php
@@ -80,10 +80,12 @@
                                         <td class="text-center">
                                             {{ $country->tel }}
                                         </td>
-                                        {{-- <td class="text-center">
-                                            {{ $country->created_at->format('Y-m-d') }}
-                                        </td> --}}
-                                        {{-- <td class="text-center">
+                                        <td class="text-center">
+                                            <a href="{{route('countryTeams', ['country_id' => $country->id])}}">
+                                                {{ $country->teams->count() }}
+                                            </a>
+                                        </td>
+                                        <td class="text-center">
                                             <div class="dropdown {{ (($x+1) >= count($countries))?"dropup":"" }}">
                                                 <button type="button" class="btn btn-sm light dk dropdown-toggle"
                                                         data-toggle="dropdown"><i class="material-icons">&#xe5d4;</i>
@@ -92,13 +94,17 @@
                                                 <div class="dropdown-menu pull-right">
                                                     @if(@Auth::user()->permissionsGroup->edit_status)
                                                         <a class="dropdown-item"
-                                                           href="{{ route("countriesEdit",["id"=>$country->id]) }}"><i
-                                                                class="material-icons">&#xe3c9;</i> {{ __('backend.edit') }}
+                                                           href="{{ route("updateTeamsByCountry",["country_id"=>$country->id]) }}"><i
+                                                                class="material-icons">&#xe3c9;</i> {{ __('backend.update_teams') }}
+                                                        </a>
+                                                        <a class="dropdown-item"
+                                                           href="{{ route("updatePlayersByCountry",["country_id"=>$country->id]) }}"><i
+                                                                class="material-icons">&#xe3c9;</i> {{ __('backend.update_players') }}
                                                         </a>
                                                     @endif
                                                 </div>
                                             </div>
-                                        </td> --}}
+                                        </td>
                                     </tr>
                                 @endforeach
 

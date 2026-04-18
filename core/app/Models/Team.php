@@ -34,4 +34,21 @@ class Team extends Model
     {
         return $this->morphMany(Trophy::class, 'awardable');
     }
+
+    public function players()
+    {
+        return $this->belongsToMany(Player::class, 'team_players')
+            ->withPivot([
+                'season_id',
+                'position_id',
+                'detailed_position_id',
+                'jersey_number',
+                'from_date',
+                'to_date',
+                'is_current',
+                'is_captain',
+                'transfer_id',
+            ])
+            ->withTimestamps();
+    }
 }

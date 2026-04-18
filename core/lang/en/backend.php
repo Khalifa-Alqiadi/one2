@@ -914,4 +914,9 @@ return array(
     'live' => 'Live',
     'update_standings_table' => 'Update Standings Table',
     'live_now' => 'Live Now',
+    'update_teams' => 'Update Teams',
+    'update_players' => 'Update Players',
+    'number_teams' => 'Number Teams',
+    'includes_sportmonks' => 'Includes SportMonks',
+    'without_sportmonks' => 'Without SportMonks',
 );

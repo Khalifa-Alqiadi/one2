@@ -11,6 +11,7 @@ use App\Models\AttachFile;
 use App\Models\Comment;
 use App\Models\Map;
 use App\Models\Photo;
+use App\Models\League;
 use App\Models\RelatedTopic;
 use App\Models\Section;
 use App\Models\Tag;
@@ -653,6 +654,8 @@ class TopicsController extends Controller
                 '0'
             )->orderby('row_no', 'asc')->get();
 
+            $leagues = League::where('status', 1)->orderby('row_no', 'asc')->get();
+
             $allowed_file_types = $this->allowed_file_types;
             return view(
                 "dashboard.topics.create",
@@ -661,6 +664,7 @@ class TopicsController extends Controller
                     "WebmasterSection",
                     "fatherSections",
                     "TagsList",
+                    "leagues",
                     "allowed_file_types"
                 )
             );
@@ -3462,5 +3466,39 @@ class TopicsController extends Controller
             return view("dashboard.topics.custom_fields", compact("WebmasterSection", "Topic", "cat_ids", "oldInputs"));
         }
         return "";
+    }
+
+    public function getLeagueTeams(Request $request)
+    {
+        $lang = app()->getLocale();
+        $leagueId     = (int) $request->get('league_id', 0);
+
+        $teamIds = \App\Models\Fixture::query()
+            ->where('league_id', $leagueId)
+            ->pluck('home_team_id')
+            ->merge(
+                \App\Models\Fixture::query()
+                    ->where('league_id', $leagueId)
+                    ->pluck('away_team_id')
+            )
+            ->filter()
+            ->unique()
+            ->values();
+
+        $teams = \App\Models\Team::query()
+            ->whereIn('id', $teamIds)
+            ->get(['id', 'name_ar', 'name_en']);
+
+        $teams = $teams->map(function ($team) use ($lang) {
+            return [
+                'id'   => $team->id,
+                'name' => $lang === 'en' ? $team->name_en : $team->name_ar,
+            ];
+        })->sortBy('name')->values();
+
+        return response()->json([
+            'ok'    => true,
+            'teams' => $teams,
+        ]);
     }
 }

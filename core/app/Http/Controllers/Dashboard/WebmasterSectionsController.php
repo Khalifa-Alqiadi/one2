@@ -96,6 +96,7 @@ class WebmasterSectionsController extends Controller
         }
         $WebmasterSection->type = $request->type;
         $WebmasterSection->sections_status = $request->sections_status;
+        $WebmasterSection->sportmonks_status = $request->sportmonks_status;
         if ($request->type == 10) {
             $WebmasterSection->title_status = 1;
             $WebmasterSection->case_status = 1;
@@ -248,6 +249,7 @@ class WebmasterSectionsController extends Controller
             }
             $WebmasterSection->type = $request->type;
             $WebmasterSection->sections_status = $request->sections_status;
+            $WebmasterSection->sportmonks_status = $request->sportmonks_status;
             if ($request->type == 10) {
                 $WebmasterSection->title_status = 1;
                 $WebmasterSection->case_status = 1;

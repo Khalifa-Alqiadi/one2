@@ -916,4 +916,9 @@ return array(
     'live' => 'مباشر',
     'update_standings_table' => 'تحديث جدول الترتيب',
     'live_now' => 'مباشر الآن',
+    'update_teams' => 'تحديث الفرق',
+    'update_players' => 'تحديث اللاعبين',
+    'number_teams' => 'عدد الفرق',
+    'includes_sportmonks' => 'يشمل SportMonks',
+    'without_sportmonks' => 'بدون SportMonks',
 );

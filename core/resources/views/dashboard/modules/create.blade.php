@@ -1,6 +1,7 @@
 @extends('dashboard.layouts.master')
 @section('title', __('backend.siteSectionsSettings'))
 @section('content')
+
     <div class="padding">
         <div class="box">
             <div class="box-header dker">
@@ -178,6 +179,42 @@
                                         <input type="radio" name="sections_status" value="2" class="has-value" id="sections_status3">
                                         <i class="primary"></i>
                                         {{ __('backend.mainAndSubCategories') }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="sportmonks_status1"
+                               class="col-sm-2 form-control-label">{!!  __('backend.includes_sportmonks') !!}</label>
+                        <div class="col-sm-10">
+                            <div class="radio b-a p-a">
+                                <div>
+                                    <label class="md-check">
+                                        <input type="radio" name="sportmonks_status" value="0" class="has-value" checked id="sportmonks_status1">
+                                        <i class="primary"></i>
+                                        {{ __('backend.without_sportmonks') }}
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="md-check">
+                                        <input type="radio" name="sportmonks_status" value="1" class="has-value" id="sportmonks_status2">
+                                        <i class="primary"></i>
+                                        {{ __('backend.leagues') }}
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="md-check">
+                                        <input type="radio" name="sportmonks_status" value="2" class="has-value" id="sportmonks_status3">
+                                        <i class="primary"></i>
+                                        {{ __('backend.teams') }}
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="md-check">
+                                        <input type="radio" name="sportmonks_status" value="3" class="has-value" id="sportmonks_status4">
+                                        <i class="primary"></i>
+                                        {{ __('backend.matches') }}
                                     </label>
                                 </div>
                             </div>

@@ -80,12 +80,12 @@
                                         {{-- @endif --}}
 
                                         {{-- ✅ Box: Not started (NS) --}}
-                                        <div class="js-kickoffbox">
+                                        {{-- <div class="js-kickoffbox">
                                             <div class="fw-bold"
                                                 style="font-size:14px; opacity:.95;
                                                 display: {{ $state_code === 'NS' ? 'block' : 'none' }};">
                                                 {{ __('frontend.not_started') }}</div>
-                                        </div>
+                                        </div> --}}
 
                                         <div class="small mt-2">
                                             <span class="badge bg-success js-status"
@@ -135,7 +135,7 @@
                         $status = $fx['status'] ?? 'NS';
                     @endphp
                     {{-- Tabs --}}
-                    <ul class="nav nav-tabs nav-fill mb-3 league-pills p-0 pb-3" role="tablist"
+                    <ul class="nav nav-tabs nav-fill mb-3 league-pills p-0" role="tablist"
                         style="border-color: rgba(255,255,255,.08);">
                         @if ($state_code !== 'NS')
                             <li class="nav-item" role="presentation">
@@ -223,21 +223,19 @@
                                     @endphp
 
                                     @if ($stations->isNotEmpty())
-                                        <ul class="list-unstyled mb-0 px-2">
+                                        <ul class="list-unstyled d-flex flex-wrap mb-0 px-2">
                                             @foreach ($stations as $station)
                                                 @if (!empty($station['url']))
-                                                    <li class="mb-2 border-bottom pb-2 border-secondary">
+                                                    <li class="mb-2">
                                                         <a href="{{ $station['url'] }}" target="_blank">
                                                             @if (!empty($station['image']))
                                                                 <img src="{{ $station['image'] }}" alt="station Image"
                                                                     class="ms-2"
-                                                                    style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+                                                                    style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
                                                             @else
                                                                 <i class="fas fa-tv me-2"
                                                                     style="color:rgba(255,255,255,.6);"></i>
                                                             @endif
-
-                                                            {{ $station['name'] ?? __('frontend.unknown_station') }}
                                                         </a>
                                                     </li>
                                                 @endif

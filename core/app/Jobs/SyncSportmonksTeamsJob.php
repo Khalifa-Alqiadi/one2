@@ -22,12 +22,15 @@ class SyncSportmonksTeamsJob implements ShouldQueue
     public function __construct(
         public string $token,
         public string $locale = 'en',
+        public int $country_id = 0,
     ) {}
 
     public function handleOld(): void
     {
         $page = 1;
         $saved = 0;
+
+        dd($this->country_id);
 
         do {
             $url = "https://api.sportmonks.com/v3/football/teams";
@@ -123,8 +126,13 @@ class SyncSportmonksTeamsJob implements ShouldQueue
         $page = 1;
         $saved = 0;
 
+        // dd($this->country_id);
+
         do {
             $url = "https://api.sportmonks.com/v3/football/teams";
+            if($this->country_id > 0){
+                $url = "https://api.sportmonks.com/v3/football/teams/countries/{$this->country_id}";
+            }
 
             $primaryResponse = Http::timeout(60)
                 ->retry(3, 1000)
@@ -164,6 +172,7 @@ class SyncSportmonksTeamsJob implements ShouldQueue
 
             $englishMap = $englishTeams->keyBy('id');
 
+
             foreach ($primaryTeams as $team) {
                 if (empty($team['country_id'])) {
                     continue;
@@ -178,31 +187,37 @@ class SyncSportmonksTeamsJob implements ShouldQueue
                 $englishTeam = $englishMap->get($teamId, []);
 
                 $teamModel = Team::find($teamId);
-
-                if ($teamModel) {
-                    $teamModel->update([
-                        'name_en'    => data_get($englishTeam, 'name'),
-                        'image_path' => data_get($team, 'image_path'),
-                        'country_id' => data_get($team, 'country_id'),
-                        'venue_id'   => data_get($team, 'venue_id'),
-                        'short_code' => data_get($team, 'short_code'),
-                        'sport_id'   => data_get($team, 'sport_id'),
-                    ]);
-                } else {
-                    $teamModel = Team::create([
-                        'id'         => $teamId,
-                        'name_ar'    => data_get($team, 'name'),
-                        'name_en'    => data_get($englishTeam, 'name'),
-                        'image_path' => data_get($team, 'image_path'),
-                        'country_id' => data_get($team, 'country_id'),
-                        'venue_id'   => data_get($team, 'venue_id'),
-                        'short_code' => data_get($team, 'short_code'),
-                        'sport_id'   => data_get($team, 'sport_id'),
-                    ]);
+                if((bool) ($team['placeholder'] == false)){
+                    if ($teamModel) {
+                        $teamModel->update([
+                            'name_en'    => data_get($englishTeam, 'name'),
+                            'image_path' => data_get($team, 'image_path'),
+                            'country_id' => data_get($team, 'country_id'),
+                            'venue_id'   => data_get($team, 'venue_id'),
+                            'short_code' => data_get($team, 'short_code'),
+                            'sport_id'   => data_get($team, 'sport_id'),
+                        ]);
+                    } else {
+                        $teamModel = Team::create([
+                            'id'         => $teamId,
+                            'name_ar'    => data_get($team, 'name'),
+                            'name_en'    => data_get($englishTeam, 'name'),
+                            'image_path' => data_get($team, 'image_path'),
+                            'country_id' => data_get($team, 'country_id'),
+                            'venue_id'   => data_get($team, 'venue_id'),
+                            'short_code' => data_get($team, 'short_code'),
+                            'sport_id'   => data_get($team, 'sport_id'),
+                        ]);
+                    }
+                    // $this->syncTeamTrophies($teamModel, $team);
+                }else{
+                    if($teamModel){
+                        $teamModel->delete();
+                    }
                 }
 
                 // جوائز الفريق
-                $this->syncTeamTrophies($teamModel, $team);
+
 
                 // المدربين + جوائزهم
                 // $this->syncTeamCoachesAndTrophies($team);
@@ -230,6 +245,7 @@ class SyncSportmonksTeamsJob implements ShouldQueue
 
             Trophy::updateOrCreate(
                 [
+                    'id'                   => data_get($trophy, 'id'),
                     'awardable_type'       => $teamModel->getMorphClass(),
                     'awardable_id'         => $teamModel->id,
                     'sportmonks_trophy_id' => $sportmonksTrophyId,

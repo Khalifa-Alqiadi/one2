@@ -30,7 +30,7 @@ Route::get('/leagues/{id?}/rounds', [LeaguesController::class, 'rounds'])->name(
 Route::get('/club/{teamId}', [LeagueTabsController::class, 'show'])
     ->name('club.show');
 
-Route::get('/مباريات-اليوم', [MatchesController::class, 'index'])
+Route::get('/today-matches', [MatchesController::class, 'index'])
     ->name('matches');
 Route::get('/{lang?}/matches', [MatchesController::class, 'index'])
     ->name('matchesLang');

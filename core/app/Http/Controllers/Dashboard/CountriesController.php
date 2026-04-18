@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncSportmonksTeamsJob;
 use App\Models\Country;
 use App\Models\WebmasterSection;
 use App\Services\ApiClientService;
@@ -263,5 +264,25 @@ class CountriesController extends Controller
         return redirect()
             ->action([CountriesController::class, 'index'])
             ->with('doneMessage', __('backend.saveDone') . " | Saved: {$saved}");
+    }
+
+    public function updateTeamsByCountry($country_id){
+        $token = config('services.SPORTMONKS_TOKEN');
+        $locale = Helper::currentLanguage()->code;
+        // شغّلها في الخلفية
+        SyncSportmonksTeamsJob::dispatch($token, $locale, $country_id)
+            ->onQueue('sportmonks');
+        return redirect()
+            ->action([CountriesController::class, 'index'])
+            ->with('doneMessage', __('backend.saveDone'));
+    }
+    public function updatePlayersByCountry($country_id){
+        $token = config('services.SPORTMONKS_TOKEN');
+        $locale = Helper::currentLanguage()->code;
+        $service = app(\App\Services\PlayerSyncService::class);
+        $result = $service->syncByCountry(countryId: $country_id);
+        return redirect()
+            ->action([CountriesController::class, 'index'])
+            ->with('doneMessage', __('backend.saveDone') . ' ' . $result['saved']);
     }
 }

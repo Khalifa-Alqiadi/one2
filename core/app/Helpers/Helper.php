@@ -22,6 +22,7 @@ use App\Models\TopicCategory;
 use App\Models\Webmail;
 use App\Models\Team;
 use App\Models\Language;
+use App\Models\Season;
 use App\Models\WebmasterSection;
 use App\Models\WebmasterSetting;
 use Illuminate\Support\Carbon;
@@ -1706,5 +1707,10 @@ class Helper
     static function getTeame($id)
     {
         return Team::find($id);
+    }
+
+    static function currentSeason()
+    {
+        return Season::where('is_current', true)->value('id');
     }
 }

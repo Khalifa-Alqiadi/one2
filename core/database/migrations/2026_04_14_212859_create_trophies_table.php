@@ -31,8 +31,6 @@ return new class extends Migration
             $table->json('payload_json')->nullable();
 
             $table->timestamps();
-
-            $table->index(['awardable_type', 'awardable_id']);
         });
     }
 

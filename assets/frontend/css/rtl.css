@@ -80,7 +80,13 @@ h6 {
     right: 0;
     left: auto;
 }
-
+.football .league-pills .nav-link{
+    text-align: right;
+}
+.football .league-pills .nav-link::after{
+    left: auto;
+    right: 0;
+}
 .navbar .dropdown ul a .fa {
     margin-right: 0;
     margin-left: 5px
