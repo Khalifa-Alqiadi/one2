@@ -18,7 +18,7 @@
                 $locale = $locale ?? 'ar';
                 $activeTab = $activeTab ?? 'today';
             @endphp
-            <div class="mb-4 mb-md-5 row">
+            <div class="mb-4 mb-md-5 row row-filter">
                 <div class="col-md-8">
                     <div class="tabs-wrapper d-flex">
                         @foreach ($dates as $day)

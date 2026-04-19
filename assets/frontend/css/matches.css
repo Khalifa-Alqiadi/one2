@@ -427,6 +427,24 @@
     overflow-x: auto;
 }
 
+.football .tabs-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.football .tabs-wrapper::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+}
+
+.football .tabs-wrapper::-webkit-scrollbar-thumb {
+    background: #d4af37;
+    border-radius: 20px;
+}
+
+.football .tabs-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #c39f2f;
+}
+
 .football .tab-item {
     color: #aaa;
     cursor: pointer;
@@ -626,7 +644,10 @@
 .football-match .gx-stats-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 10px;    
+}
+.football-match .gx-stats-list .card {
+    padding: 4px 10px;   
 }
 
 .football-match .gx-stat-row {
@@ -646,7 +667,6 @@
     text-align: center;
     color: #b7c1cc;
     font-size: 13px;
-    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1679,7 +1699,7 @@
 
     .details-match .dark .card,
     .details-match .tab-content .card {
-        padding: 10px 0;
+        padding: 5px 0;
     }
 
     .details-match .js-scorebox .js-home,
@@ -1717,6 +1737,31 @@
         font-weight: 400;
         font-size: 15px;
         padding: 5px 13px;
+    }
+
+    .football .standings-title{
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    .football .standings-title h4{
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    .football .season-pill{
+        font-size: 15px;
+    }
+    .football .season-pill strong{
+        font-weight: 500;
+    }
+
+    .football .row-filter{
+        flex-direction: column-reverse;
+    }
+
+    .football .league-pills .nav-link::after{
+        height: 5px;
     }
 }
 

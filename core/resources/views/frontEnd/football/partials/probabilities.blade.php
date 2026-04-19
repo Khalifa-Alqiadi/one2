@@ -15,17 +15,17 @@
         <div class="card-header border-0 p-0">
             <div class="row">
                 <div class="col-4">
-                    <div class="fw-bold text-center">
+                    <div class=" text-center">
                         {{$fx['away']['name'] ?? 'الضيوف'}}
                     </div>
                 </div>
                 <div class="col-4 border-start border-end" style="border-color:rgb(58, 58, 58) !important">
-                    <div class="fw-bold text-center">
+                    <div class=" text-center">
                         {{__('frontend.draw')}}
                     </div>
                 </div>
                 <div class="col-4">
-                    <div class="fw-bold text-center">
+                    <div class=" text-center">
                         {{$fx['home']['name'] ?? 'المضيف'}}
                     </div>
                 </div>
@@ -34,7 +34,7 @@
         <div class="card-body position-relative px-0 pt-0">
             <div class="row">
                 <div class="col-4 pt-3">
-                    <div class="fw-bold text-center gx-ns-perc-val js-p-away">
+                    <div class=" text-center gx-ns-perc-val js-p-away">
                         {{ $pAway }}%
                     </div>
                     <div class="gx-ns-bar">
@@ -42,7 +42,7 @@
                     </div>
                 </div>
                 <div class="col-4 border-start border-end pt-3" style="border-color:rgb(58, 58, 58) !important">
-                    <div class="fw-bold text-center gx-ns-perc-val js-p-draw">
+                    <div class="text-center gx-ns-perc-val js-p-draw">
                         {{ $pDraw }}%
                     </div>
                     <div class="gx-ns-bar">
@@ -50,7 +50,7 @@
                     </div>
                 </div>
                 <div class="col-4 pt-3">
-                    <div class="fw-bold text-center gx-ns-perc-val js-p-home">
+                    <div class="text-center gx-ns-perc-val js-p-home">
                         {{ $pHome }}%
                     </div>
                     <div class="gx-ns-bar">

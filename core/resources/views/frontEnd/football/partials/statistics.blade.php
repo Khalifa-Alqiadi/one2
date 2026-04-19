@@ -1,6 +1,6 @@
 {{-- STATS --}}
 <div class="tab-pane fade show active" id="t-stats" role="tabpanel">
-    <div class="card bg-dark text-light border-0" style="border-radius:14px;">
+    <div class="card px-0 bg-dark text-light border-0" style="border-radius:14px;">
         @php
             $status = $fx['status'] ?? 'NS';
             $p = $fx['probabilities'] ?? null;
@@ -26,7 +26,7 @@
             @else
                 <div class="gx-stats-list">
                     @foreach ($stats as $row)
-                        <div class="mb-3 card border-0">
+                        <div class="mb-2 card border-0">
                             <div class="gx-label text-center">{{ $row['label'] ?? '-' }}</div>
                             <div class="row">
                                 @php($total_stats = $row['home'] + $row['away'])

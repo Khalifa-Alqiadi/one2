@@ -262,7 +262,7 @@
                                         </div>
                                     @endif
                                     <div>
-                                        <div class="fw-bold">
+                                        <div class="">
                                             {{ data_get($fixture->league, $name_var, 'League') ?? __('frontend.unknown_venue') }}
                                             - {{ __('frontend.round') }} {{ $fixture->round->name ?? '' }}
                                         </div>
@@ -274,7 +274,7 @@
                                         <i class="fas fa-calendar" style="color:rgba(255,255,255,.6);"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold">
+                                        <div class="">
                                             <span>
                                                 {!! Helper::day_name($dt) !!}
                                                 @if ($timeLabel)
@@ -295,7 +295,7 @@
                                         </div>
                                     @endif
                                     <div>
-                                        <div class="fw-bold">{{ $fx['venue']['name'] ?? __('frontend.unknown_venue') }}
+                                        <div class="">{{ $fx['venue']['name'] ?? __('frontend.unknown_venue') }}
                                         </div>
                                         <div class="text-muted" dir="{{ Helper::currentLanguage()->direction }}"
                                             style="font-size:14px;">

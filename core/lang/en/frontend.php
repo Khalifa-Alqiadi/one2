@@ -170,5 +170,7 @@ return [
     'all_competitions' => 'All Competitions',
     'no_matches_found' => 'No Matches Found',
     'no_tv_stations' => 'No TV Stations',
+    'modern_sports_platform' => 'A modern sports platform for news, matches, and live streaming',
+    'luxury_footer_design_description' => 'A more elegant and calm design than the current footer, with clearer sections, better spacing, and prominently displayed store links so the visitor feels the platform is a complete application and product, not just a website.',
 ];
 ?>

@@ -1,112 +1,165 @@
 <?php
-$bg_color = Helper::GeneralSiteSettings("style_color2");
-$footer_style = "background: ".$bg_color;
-if (Helper::GeneralSiteSettings("style_footer_bg") != "") {
-    $bg_file = route("fileView", ["path" => 'settings/'.Helper::GeneralSiteSettings("style_footer_bg")]);
+$bg_color = Helper::GeneralSiteSettings('style_color2');
+$footer_style = 'background: ' . $bg_color;
+if (Helper::GeneralSiteSettings('style_footer_bg') != '') {
+    $bg_file = route('fileView', ['path' => 'settings/' . Helper::GeneralSiteSettings('style_footer_bg')]);
     $footer_style = "style='background-image: url($bg_file);'";
 }
-if (Helper::GeneralSiteSettings("style_footer") != 1) {
-    $footer_style = "style=padding:0";
+if (Helper::GeneralSiteSettings('style_footer') != 1) {
+    $footer_style = 'style=padding:0';
 }
 $contacts_cols = 3;
-if (!Helper::GeneralSiteSettings("style_subscribe")) {
+if (!Helper::GeneralSiteSettings('style_subscribe')) {
     $contacts_cols = 3;
 }
 ?>
-<footer id="footer" {!!  $footer_style !!}>
-    @if(Helper::GeneralSiteSettings("style_footer")==1)
-        <div class="footer-top">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-3 col-md-6 mb-4">
-                        <div class="footer-logo mb-1 text-center">
-                            <img alt="{{ Helper::GeneralSiteSettings("site_title_" . @Helper::currentLanguage()->code) }}" src="{{ URL::to('uploads/settings/logo-website.png') }}" class="">
+<footer id="footer" {!! $footer_style !!}>
+    @if (Helper::GeneralSiteSettings('style_footer') == 1)
+        <div class="container">
+            <div class="footer-wrap">
+                <div class="footer-top ">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            {{-- <div class="footer-logo mb-1 text-center">
+                                <img alt="{{ Helper::GeneralSiteSettings('site_title_' . @Helper::currentLanguage()->code) }}"
+                                    src="{{ URL::to('uploads/settings/logo-website.png') }}" class="">
+                            </div>
+                            @include('frontEnd.layouts.social', ['tt_position' => 'top']) --}}
+                            <div class="px-4 ">
+                                <div class="brand-row ">
+                                    <div class="brand-mark">
+                                        <img alt="{{ Helper::GeneralSiteSettings('site_title_' . @Helper::currentLanguage()->code) }}"
+                                            src="{{ URL::to('uploads/settings/logo-website.png') }}" class="">
+                                    </div>
+                                    <div>
+                                        <h2 class="brand-title">ONE TWO</h2>
+                                        <p class="brand-sub">{{__('frontend.modern_sports_platform')}}</p>
+                                    </div>
+                                </div>
+                                <p class="brand-desc">
+                                    {{__('frontend.luxury_footer_design_description')}}
+                                </p>
+                            </div>
                         </div>
-                        @include("frontEnd.layouts.social",["tt_position"=>"top"])
-                    </div>
-                    @if(Helper::GeneralWebmasterSettings("footer_menu_id") >0)
+                        @if (Helper::GeneralWebmasterSettings('footer_menu_id') > 0)
                             <?php
                             // Get list of footer menu links by group Id
-                            $MenuLinks = \App\Helpers\SiteMenu::List(Helper::GeneralWebmasterSettings("footer_menu_id"));
+                            $MenuLinks = \App\Helpers\SiteMenu::List(Helper::GeneralWebmasterSettings('footer_menu_id'));
                             $max_menu_cols = 2;
                             $fixed_cols = 0;
-                            if (!Helper::GeneralSiteSettings("style_subscribe")) {
+                            if (!Helper::GeneralSiteSettings('style_subscribe')) {
                                 $max_menu_cols = 4;
                                 $fixed_cols = 3;
                             }
                             $mi = 0;
                             ?>
-                        @if(count($MenuLinks) <= $max_menu_cols)
-                            @foreach($MenuLinks as $MenuLink)
-                                <div class="col-lg-{{($fixed_cols >0)?$fixed_cols:(($mi==0)?3:2)}} col-md-6 col-6 footer-links">
-                                    <div class="footer-title">
-                                        <h3>{{ @$MenuLink->title }}</h3>
-                                    </div>
-                                    @if(@$MenuLink->sub)
-                                        <ul>
-                                            @foreach($MenuLink->sub as $SubLink)
-                                                <li><a class="nav-link" href="{{ @$SubLink->url }}"
-                                                       target="{{ @$SubLink->target }}">{!! (@$SubLink->icon)?"<i class='".@$SubLink->icon."'></i> ":"" !!} {{ @$SubLink->title }}
-                                                    </a>
-                                                </li>
-                                                @if(@$SubLink->sub)
-                                                    @foreach($SubLink->sub as $SubLink2)
-                                                        <li><a
-                                                                class="nav-link"
-                                                                href="{{ @$SubLink2->url }}"
-                                                                target="{{ @$SubLink2->target }}">
-                                                                &nbsp;&nbsp; {!! (@Helper::currentLanguage()->direction=="rtl")?"&#8617;":"&#8618;" !!} {!! (@$SubLink2->icon)?"<i class='".@$SubLink2->icon."'></i> ":"" !!} {{ @$SubLink2->title }}</a>
-                                                        </li>
-                                                    @endforeach
-                                                @endif
-                                            @endforeach
-                                        </ul>
-                                    @endif
-                                </div>
-                                @php($mi++)
-                            @endforeach
-                        @elseif(count($MenuLinks) > $max_menu_cols)
-                            <div class="col-lg-3 col-md-6 footer-links">
-                                <div class="footer-title">
-                                    <h3>{{ __('frontend.quickLinks') }}</h3>
-                                </div>
-                                <ul>
-                                    @foreach($MenuLinks as $MenuLink)
-                                        <li><a class="nav-link" href="{{ @$MenuLink->url }}"
-                                               target="{{ @$MenuLink->target }}">{!! (@$MenuLink->icon)?"<i class='".@$MenuLink->icon."'></i> ":"" !!} {{ @$MenuLink->title }}
-                                            </a>
-                                        </li>
-                                        @if(@$MenuLink->sub)
-                                            @foreach($MenuLink->sub as $SubLink)
-                                                <li><a
-                                                        class="nav-link"
-                                                        href="{{ @$SubLink->url }}"
-                                                        target="{{ @$SubLink->target }}">
-                                                        &nbsp;&nbsp; {!! (@Helper::currentLanguage()->direction=="rtl")?"&#8617;":"&#8618;" !!} {!! (@$SubLink->icon)?"<i class='".@$SubLink->icon."'></i> ":"" !!} {{ @$SubLink->title }}</a>
-                                                </li>
-                                            @endforeach
+                            @if (count($MenuLinks) <= $max_menu_cols)
+                                @foreach ($MenuLinks as $MenuLink)
+                                    <div
+                                        class="col-lg-{{ $fixed_cols > 0 ? $fixed_cols : ($mi == 0 ? 3 : 2) }} col-md-6 col-6 footer-links">
+                                        <div class="footer-title">
+                                            <h3>{{ @$MenuLink->title }}</h3>
+                                        </div>
+                                        @if (@$MenuLink->sub)
+                                            <ul>
+                                                @foreach ($MenuLink->sub as $SubLink)
+                                                    <li><a class="nav-link" href="{{ @$SubLink->url }}"
+                                                            target="{{ @$SubLink->target }}">{!! @$SubLink->icon ? "<i class='" . @$SubLink->icon . "'></i> " : '' !!}
+                                                            {{ @$SubLink->title }}
+                                                        </a>
+                                                    </li>
+                                                    @if (@$SubLink->sub)
+                                                        @foreach ($SubLink->sub as $SubLink2)
+                                                            <li><a class="nav-link" href="{{ @$SubLink2->url }}"
+                                                                    target="{{ @$SubLink2->target }}">
+                                                                    &nbsp;&nbsp; {!! @Helper::currentLanguage()->direction == 'rtl' ? '&#8617;' : '&#8618;' !!}
+                                                                    {!! @$SubLink2->icon ? "<i class='" . @$SubLink2->icon . "'></i> " : '' !!}
+                                                                    {{ @$SubLink2->title }}</a>
+                                                            </li>
+                                                        @endforeach
+                                                    @endif
+                                                @endforeach
+                                            </ul>
                                         @endif
-                                    @endforeach
-                                </ul>
-                            </div>
+                                    </div>
+                                    @php($mi++)
+                                @endforeach
+                            @elseif(count($MenuLinks) > $max_menu_cols)
+                                <div class="col-lg-3 col-md-6 footer-links">
+                                    <div class="footer-title">
+                                        <h3>{{ __('frontend.quickLinks') }}</h3>
+                                    </div>
+                                    <ul>
+                                        @foreach ($MenuLinks as $MenuLink)
+                                            <li><a class="nav-link" href="{{ @$MenuLink->url }}"
+                                                    target="{{ @$MenuLink->target }}">{!! @$MenuLink->icon ? "<i class='" . @$MenuLink->icon . "'></i> " : '' !!}
+                                                    {{ @$MenuLink->title }}
+                                                </a>
+                                            </li>
+                                            @if (@$MenuLink->sub)
+                                                @foreach ($MenuLink->sub as $SubLink)
+                                                    <li><a class="nav-link" href="{{ @$SubLink->url }}"
+                                                            target="{{ @$SubLink->target }}">
+                                                            &nbsp;&nbsp; {!! @Helper::currentLanguage()->direction == 'rtl' ? '&#8617;' : '&#8618;' !!}
+                                                            {!! @$SubLink->icon ? "<i class='" . @$SubLink->icon . "'></i> " : '' !!} {{ @$SubLink->title }}</a>
+                                                    </li>
+                                                @endforeach
+                                            @endif
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         @endif
-                    @endif
-                    @include('frontEnd.layouts.subscribe')
-                    <div class="col-md-12">
-                        <div class="pt-4 mt-4">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="me-md-auto text-center">
-                                        <div class="copyright">
-                                            <?php
-                                            $site_title_var = "site_title_".@Helper::currentLanguage()->code;
-                                            ?>
-                                            {{ __('frontend.AllRightsReserved') }} &copy; <?php echo date("Y") ?>
-                                            . {{Helper::GeneralSiteSettings($site_title_var)}}
+                        <div class="col-lg-3 col-md-6">
+                            <div class="footer-title">
+                                <h3>{{ __('frontend.followUs') }}</h3>
+                            </div>
+                            @include('frontEnd.layouts.social', ['tt_position' => 'top'])
+                            <div class="contact-box">
+                                {{ __('frontend.address') }}:
+                                {{ Helper::GeneralSiteSettings('contact_t1_' . @Helper::currentLanguage()->code) }}<br />
+                                {{ __('frontend.callUs') }}: {{ Helper::GeneralSiteSettings('contact_t3') }}<br />
+                                {{ __('frontend.email') }}: {{ Helper::GeneralSiteSettings('contact_t6') }}
+                            </div>
+                        </div>
+                        @include('frontEnd.layouts.subscribe')
+                        {{-- <div class="col-md-12">
+                            <div class="pt-4 mt-4">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="me-md-auto text-center">
+                                            <div class="copyright">
+                                                <?php
+                                                $site_title_var = 'site_title_' . @Helper::currentLanguage()->code;
+                                                ?>
+                                                {{ __('frontend.AllRightsReserved') }} &copy; <?php echo date('Y'); ?>
+                                                . {{ Helper::GeneralSiteSettings($site_title_var) }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div> --}}
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <div>
+                        <?php
+                        $site_title_var = 'site_title_' . @Helper::currentLanguage()->code;
+                        ?>
+                        {{ __('frontend.AllRightsReserved') }} &copy; <?php echo date('Y'); ?>
+                        . {{ Helper::GeneralSiteSettings($site_title_var) }}
+                    </div>
+                    <div class="legal-links">
+                        <div class="app-badges">
+                            <a href="#" class="badge">
+                                <span></span>
+                                <span><small>حمّل من</small><strong>App Store</strong></span>
+                            </a>
+                            <a href="#" class="badge">
+                                <span>▶</span>
+                                <span><small>حمّل من</small><strong>Google Play</strong></span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -114,17 +167,17 @@ if (!Helper::GeneralSiteSettings("style_subscribe")) {
         </div>
     @endif
 </footer>
-@if(Helper::GeneralSiteSettings('whatsapp_no') !="")
-    <a href="https://wa.me/{{Helper::GeneralSiteSettings('whatsapp_no')}}" class="whatsapp_float" target="_blank" aria-label="Whatsapp"
-       rel="noopener noreferrer">
+@if (Helper::GeneralSiteSettings('whatsapp_no') != '')
+    <a href="https://wa.me/{{ Helper::GeneralSiteSettings('whatsapp_no') }}" class="whatsapp_float" target="_blank"
+        aria-label="Whatsapp" rel="noopener noreferrer">
         <i class="fa fa-whatsapp"></i>
     </a>
 @endif
 @if (@Auth::check())
-    @if(!Helper::GeneralSiteSettings("site_status"))
+    @if (!Helper::GeneralSiteSettings('site_status'))
         <div class="text-center alert alert-warning m-0">
             <div class="h6 mb-0">
-                {{__('backend.websiteClosedForVisitors')}}
+                {{ __('backend.websiteClosedForVisitors') }}
             </div>
         </div>
     @endif
