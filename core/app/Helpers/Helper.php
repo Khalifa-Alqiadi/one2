@@ -1713,4 +1713,41 @@ class Helper
     {
         return Season::where('is_current', true)->value('id');
     }
+    static function leagueTeams($leagueId)
+    {
+        $lang = app()->getLocale();
+        $teamIds = \App\Models\Fixture::query()
+            ->where('league_id', $leagueId)
+            ->orderBy('starting_at', 'desc')
+            ->pluck('home_team_id')
+            ->merge(
+                \App\Models\Fixture::query()
+                    ->where('league_id', $leagueId)
+                    ->orderBy('starting_at', 'asc')
+                    ->pluck('away_team_id')
+            )
+            ->filter()
+            ->unique()
+            ->values();
+
+        $teams = \App\Models\Team::query()
+            ->whereIn('id', $teamIds)
+            ->get(['id', 'name_ar', 'name_en']);
+
+        return $teams;
+    }
+    static function leagueTeamMatches($leagueId, $teamId)
+    {
+        $matches = \App\Models\Fixture::query()
+            ->with(['homeTeam:id,name_ar,name_en', 'awayTeam:id,name_ar,name_en'])
+            ->where('league_id', $leagueId)
+            ->where(function ($q) use ($teamId) {
+                $q->where('home_team_id', $teamId)
+                    ->orWhere('away_team_id', $teamId);
+            })
+            ->orderByDesc('starting_at')
+            ->get();
+
+        return $matches;
+    }
 }

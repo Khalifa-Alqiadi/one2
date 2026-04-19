@@ -60,6 +60,46 @@
                             </div>
                         </div>
                     @endif
+                    @if ($WebmasterSection->sportmonks_status == 1 || $WebmasterSection->sportmonks_status == 2 || $WebmasterSection->sportmonks_status == 3)
+                        <div class="col-md-3 col-xs-6 m-b-5p">
+                            <div class="form-group m-b-0">
+                                <select name="league_id" id="league_id" class="form-control select2"
+                                        ui-jp="select2"
+                                        ui-options="{theme: 'bootstrap'}">
+                                    <option value="">{{ __('backend.leagues') }} ( {{ __('backend.all') }} )</option>
+                                        <?php
+                                        $t_arrow = "&raquo;";
+                                        ?>
+                                    @foreach ($leagues as $league)
+                                        <option
+                                            value="{{ $league->id  }}">{{ $league->$name_var }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    @endif
+                    @if ($WebmasterSection->sportmonks_status == 2 || $WebmasterSection->sportmonks_status == 3)
+                        <div class="col-md-3 col-xs-6 m-b-5p">
+                            <div class="form-group m-b-0">
+                                <select name="team_id" id="team_id" class="form-control select2"
+                                        ui-jp="select2"
+                                        ui-options="{theme: 'bootstrap'}">
+                                    <option value="">{{ __('backend.teams') }} ( {{ __('backend.all') }} )</option>
+                                </select>
+                            </div>
+                        </div>
+                    @endif
+                    @if ($WebmasterSection->sportmonks_status == 3)
+                        <div class="col-md-3 col-xs-6 m-b-5p">
+                            <div class="form-group m-b-0">
+                                <select name="match_id" id="match_id" class="form-control select2"
+                                        ui-jp="select2"
+                                        ui-options="{theme: 'bootstrap'}">
+                                    <option value="">{{ __('backend.matches') }} ( {{ __('backend.all') }} )</option>
+                                </select>
+                            </div>
+                        </div>
+                    @endif
                     @if($WebmasterSection->date_status)
                         <div class="col-md-3 col-xs-6 m-b-5p">
                             <div class="form-group m-b-0">
@@ -228,3 +268,4 @@
         </form>
     </div>
 </div>
+@include('dashboard.topics.fields.script')

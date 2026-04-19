@@ -264,6 +264,9 @@ Route::Group(['prefix' => config('smartend.backend_path'), 'middleware' => ['aut
     Route::post('/topics/leagues/teams', [TopicsController::class, 'getLeagueTeams'])
     ->name('topics.leagues.teams');
 
+    Route::post('/topics/leagues/team/matches', [TopicsController::class, 'getLeagueTeamMatches'])
+    ->name('topics.leagues.team.matches');
+
 // keditor
     Route::get('/keditor/{topic_id?}', [TopicsController::class, 'keditor'])->name('keditor');
     Route::get('/keditor-snippets', [TopicsController::class, 'keditor_snippets'])->name('keditorSnippets');

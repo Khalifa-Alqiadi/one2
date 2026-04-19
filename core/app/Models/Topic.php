@@ -52,6 +52,18 @@ class Topic extends Model implements Feedable
     {
         return $this->belongsTo('App\Models\Section', 'section_id');
     }
+    public function league()
+    {
+        return $this->belongsTo('App\Models\League', 'league_id');
+    }
+    public function team()
+    {
+        return $this->belongsTo('App\Models\Team', 'team_id');
+    }
+    public function match()
+    {
+        return $this->belongsTo('App\Models\Fixture', 'fixture_id');
+    }
 
     public function categories()
     {

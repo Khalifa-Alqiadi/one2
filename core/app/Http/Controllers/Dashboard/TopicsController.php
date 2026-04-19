@@ -103,9 +103,10 @@ class TopicsController extends Controller
                 '0'
             )->orderby('row_no', 'asc')->get();
             $UsersList = User::all();
+            $leagues = League::where('status', 1)->orderby('row_no', 'asc')->get();
             return view(
                 "dashboard.topics.list",
-                compact("GeneralWebmasterSections", "WebmasterSection", "statics", "UsersList", "fatherSections")
+                compact("GeneralWebmasterSections", "WebmasterSection", "statics", "UsersList", "fatherSections", "leagues")
             );
         } else {
             return redirect()->route('NotFound');
@@ -116,6 +117,7 @@ class TopicsController extends Controller
     {
 
         $title_var = "title_" . @Helper::currentLanguage()->code;
+        $name_var = "name_" . @Helper::currentLanguage()->code;
         $title_var2 = "title_" . config('smartend.default_language');
 
         $limit = $request->input('length');
@@ -132,6 +134,9 @@ class TopicsController extends Controller
         $q = $request->input('find_q');
         $find_date = $request->input('find_date');
         $section_id = $request->input('section_id');
+        $league_id = $request->input('league_id');
+        $team_id = $request->input('team_id');
+        $match_id = $request->input('match_id');
         $created_by = $request->input('created_by');
 
         if (@Auth::user()->permissionsGroup->view_status) {
@@ -155,6 +160,15 @@ class TopicsController extends Controller
         if ($section_id > 0) {
             $category_topics = TopicCategory::where('section_id', $section_id)->pluck("topic_id")->toarray();
             $Topics = $Topics->whereIn('id', $category_topics);
+        }
+        if ($league_id > 0) {
+            $Topics = $Topics->where('league_id', $league_id);
+        }
+        if ($team_id > 0) {
+            $Topics = $Topics->where('team_id', $team_id);
+        }
+        if ($match_id > 0) {
+            $Topics = $Topics->where('fixture_id', $match_id);
         }
         if ($created_by > 0) {
             $Topics = $Topics->where("created_by", $created_by);
@@ -404,6 +418,18 @@ class TopicsController extends Controller
                             if ($section == "") {
                                 $section = "<span style='color: orangered'><i>" . __('backend.topicDeletedSection') . "</i></span>";
                             }
+                        }
+                        if ($WebmasterSection->sportmonks_status == 1) {
+                            $cat_title = $Topic?->league?->$name_var;
+                            $section .= "<span class='label dker b-a text-sm m-t-sm'>" . $cat_title . "</span> ";
+                        }
+                        if ($WebmasterSection->sportmonks_status == 2) {
+                            $cat_title = $Topic?->team?->$name_var;
+                            $section .= "<span class='label dker b-a text-sm m-t-sm'>" . $cat_title . "</span> ";
+                        }
+                        if ($WebmasterSection->sportmonks_status == 3) {
+                            $cat_title = $Topic?->match?->homeTeam?->$name_var . ' vs ' . $Topic?->match?->awayTeam?->$name_var;
+                            $section .= "<span class='label dker b-a text-sm m-t-sm'>" . $cat_title . "</span> ";
                         }
 
                         //comments
@@ -821,6 +847,15 @@ class TopicsController extends Controller
             $Topic->icon = $request->icon;
             $Topic->video_type = $request->video_type;
             $Topic->webmaster_id = $webmasterId;
+            if($WebmasterSection->sportmonks_status == 1 || $WebmasterSection->sportmonks_status == 2 || $WebmasterSection->sportmonks_status == 3){
+                $Topic->league_id = $request->league_id;
+            }
+            if($WebmasterSection->sportmonks_status == 2 || $WebmasterSection->sportmonks_status == 3){
+                $Topic->team_id = $request->team_id;
+            }
+            if($WebmasterSection->sportmonks_status == 3){
+                $Topic->fixture_id = $request->match_id;
+            }
             $Topic->created_by = Auth::user()->id;
             $Topic->visits = 0;
             $Topic->section_id = 0;
@@ -1018,6 +1053,15 @@ class TopicsController extends Controller
                 )->orderby('row_no', 'asc')->get();
 
                 $TagsList = Tag::where("status", 1)->get();
+                $leagues = League::where('status', 1)->orderby('row_no', 'asc')->get();
+                $teams = [];
+                $matches = [];
+                if($WebmasterSection->sportmonks_status == 2 || $WebmasterSection->sportmonks_status == 3){
+                    $teams = Helper::leagueTeams($Topic->league_id);
+                }
+                if($WebmasterSection->sportmonks_status == 3){
+                    $matches = Helper::leagueTeamMatches($Topic->league_id, $Topic->team_id);
+                }
 
                 $allowed_file_types = $this->allowed_file_types;
 
@@ -1029,7 +1073,10 @@ class TopicsController extends Controller
                         "WebmasterSection",
                         "fatherSections",
                         "TagsList",
-                        "allowed_file_types"
+                        "allowed_file_types",
+                        'leagues',
+                        'teams',
+                        'matches',
                     )
                 );
             } else {
@@ -1213,6 +1260,15 @@ class TopicsController extends Controller
                 }
                 $Topic->form_id = $request->page_form_id;
                 $Topic->popup_id = $request->popup_id;
+                if($WebmasterSection->sportmonks_status == 1 || $WebmasterSection->sportmonks_status == 2 || $WebmasterSection->sportmonks_status == 3){
+                    $Topic->league_id = $request->league_id;
+                }
+                if($WebmasterSection->sportmonks_status == 2 || $WebmasterSection->sportmonks_status == 3){
+                    $Topic->team_id = $request->team_id;
+                }
+                if($WebmasterSection->sportmonks_status == 3){
+                    $Topic->fixture_id = $request->match_id;
+                }
                 $Topic->updated_by = Auth::user()->id;
                 $Topic->save();
 
@@ -3499,6 +3555,46 @@ class TopicsController extends Controller
         return response()->json([
             'ok'    => true,
             'teams' => $teams,
+        ]);
+    }
+    public function getLeagueTeamMatches(Request $request)
+    {
+        $lang = app()->getLocale();
+        $leagueId = (int) $request->get('league_id', 0);
+        $teamId   = (int) $request->get('team_id', 0);
+
+        if ($leagueId <= 0 || $teamId <= 0) {
+            return response()->json([
+                'ok' => false,
+                'matches' => [],
+            ]);
+        }
+
+        $nameColumn = $lang === 'ar' ? 'name_ar' : 'name_en';
+
+        $matches = \App\Models\Fixture::query()
+            ->with(['homeTeam:id,name_ar,name_en', 'awayTeam:id,name_ar,name_en'])
+            ->where('league_id', $leagueId)
+            ->where(function ($q) use ($teamId) {
+                $q->where('home_team_id', $teamId)
+                    ->orWhere('away_team_id', $teamId);
+            })
+            ->orderByDesc('starting_at')
+            ->get()
+            ->map(function ($match) use ($nameColumn) {
+                $homeName = $match->homeTeam?->{$nameColumn} ?: $match->homeTeam?->name_en ?: $match->homeTeam?->name_ar ?: '-';
+                $awayName = $match->awayTeam?->{$nameColumn} ?: $match->awayTeam?->name_en ?: $match->awayTeam?->name_ar ?: '-';
+
+                return [
+                    'id'   => $match->id,
+                    'name' => $homeName . ' vs ' . $awayName,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'ok' => true,
+            'matches' => $matches,
         ]);
     }
 }

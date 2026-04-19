@@ -242,8 +242,10 @@ $PhoneFieldsIds = [];
                             <input type="hidden" name="section_id" id="cat_ids" value="0" ui-jp="select2" ui-options="{theme: 'bootstrap'}">
                         @endif
 
-                        @include('dashboard.topics.fields.leagues-select')
-                        @include('dashboard.topics.fields.teams-select')
+                        @include('dashboard.topics.fields.leagues-select', ['type' => 'add'])
+                        @include('dashboard.topics.fields.teams-select', ['type' => 'add'])
+                        @include('dashboard.topics.fields.matches', ['type' => 'add'])
+                        @include('dashboard.topics.fields.script')
 
                         @if($WebmasterSection->title_status)
                             @foreach(Helper::languagesList() as $ActiveLanguage)

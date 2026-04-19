@@ -2,6 +2,7 @@
 <?php
 $title_var = "title_".@Helper::currentLanguage()->code;
 $title_var2 = "title_".config('smartend.default_language');
+$name_var = "name_".@Helper::currentLanguage()->code;
 if ($WebmasterSection->$title_var != "") {
     $WebmasterSectionTitle = $WebmasterSection->$title_var;
 } else {
@@ -374,6 +375,9 @@ if ($WebmasterSection->$title_var != "") {
                         data.find_q = $('#find_q').val();
                         data.find_date = $('#find_date').val();
                         data.section_id = $('#find_section_id').val();
+                        data.league_id = $('#league_id').val();
+                        data.team_id = $('#team_id').val();
+                        data.match_id = $('#match_id').val();
                         data.created_by = $('#find_created_by').val();
                         data.webmaster_id = '{{ $WebmasterSection->id }}';
                         @foreach($WebmasterSection->customFields->whereNotIn("type",[99]) as $customField)
