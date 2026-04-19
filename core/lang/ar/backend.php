@@ -758,6 +758,7 @@ return array(
     'category' => 'التصنيف',
     'leagues' => 'الدوري',
     'teams' => 'الفرق',
+    'team' => 'الفريق',
     'details' => 'التفاصيل',
     'rounds' => 'الجولات',
     'apiId' => 'معرّف API',

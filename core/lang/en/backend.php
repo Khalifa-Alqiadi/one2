@@ -273,6 +273,7 @@ return array(
     'details' => 'Details',
     'rounds' => 'Rounds',
     'teams' => 'Teams',
+    'team' => 'Team',
     'inbox' => 'Inbox',
     'sent' => 'Sent',
     'draft' => 'Draft',
