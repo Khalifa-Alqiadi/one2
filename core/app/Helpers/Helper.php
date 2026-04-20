@@ -15,6 +15,7 @@ use App\Models\Event;
 use App\Models\Fixture;
 use App\Models\Menu;
 use App\Models\Section;
+use App\Models\League;
 use App\Models\Setting;
 use App\Models\Topic;
 use App\Models\Tag;
@@ -1707,6 +1708,23 @@ class Helper
     static function getTeame($id)
     {
         return Team::find($id);
+    }
+
+    static function isHomeLeagues(){
+        return League::with('matches')->where('is_home', 1)
+            ->where('status', 1)
+            ->get();
+    }
+    static function matchesLeague($league_id, $limit = 3){
+        return Fixture::with(['homeTeam', 'awayTeam'])
+            ->where('league_id', $league_id)
+            ->where('is_finished', 0)
+            ->whereHas('season', function ($q) {
+                $q->where('is_current', true);
+            })
+            ->orderBy('starting_at', 'asc')
+            ->limit($limit)
+            ->get();
     }
 
     static function currentSeason()

@@ -32,6 +32,7 @@
                     (data_get($p, 'player.name') ?? (data_get($p, 'player_name') ?? '-'));
 
                 $pNum = fn($p) => data_get($p, 'jersey_number') ?? '';
+                $pId = fn($p) => data_get($p, 'player.id') ?? '';
 
                 $pImg = fn($p) => data_get($p, 'player.image_path') ?? '';
 
@@ -90,7 +91,9 @@
                         {{ $awayFormation ?: '' }}
                     </div>
                     <div class="gx-team">
-                        {{ $fixture->awayTeam->$name_var ?? '' }}
+                        <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}">
+                            {{ $fixture->awayTeam->$name_var ?? '' }}
+                        </a>
                     </div>
                 </div>
 
@@ -105,16 +108,19 @@
                                     $name = $pName($p);
                                     $num = $pNum($p);
                                     $img = $pImg($p);
+                                    $id = $pId($p);
                                     $initial = trim($name) ? mb_substr(trim($name), 0, 1) : '?';
                                 @endphp
 
                                 <div class="gx-player">
-                                    <div class="gx-badge gx-away">
-                                        <img src="{{ $img }}" alt="station Image" class=""
-                                            style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
-                                        {{-- <span class="gx-num">{{ $num }}</span> --}}
-                                    </div>
-                                    <div class="gx-name">{{ $name }}</div>
+                                    <a href="{{route('players.details', ['id' => $id])}}">
+                                        <div class="gx-badge gx-away">
+                                            <img src="{{ $img }}" alt="station Image" class=""
+                                                style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
+                                            {{-- <span class="gx-num">{{ $num }}</span> --}}
+                                        </div>
+                                        <div class="gx-name">{{ $name }}</div>
+                                    </a>
                                 </div>
                             @endforeach
                         </div>
@@ -130,16 +136,19 @@
                                     $name = $pName($p);
                                     $num = $pNum($p);
                                     $img = $pImg($p);
+                                    $id = $pId($p);
                                     $initial = trim($name) ? mb_substr(trim($name), 0, 1) : '?';
                                 @endphp
 
                                 <div class="gx-player">
-                                    <div class="gx-badge gx-home">
-                                        {{-- <span class="gx-num">{{ $num }}</span> --}}
-                                        <img src="{{ $img }}" alt="station Image" class=""
-                                            style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
-                                    </div>
-                                    <div class="gx-name">{{ $name }}</div>
+                                    <a href="{{route('players.details', ['id' => $id])}}">
+                                        <div class="gx-badge gx-home">
+                                            {{-- <span class="gx-num">{{ $num }}</span> --}}
+                                            <img src="{{ $img }}" alt="station Image" class=""
+                                                style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
+                                        </div>
+                                        <div class="gx-name">{{ $name }}</div>
+                                    </a>
                                 </div>
                             @endforeach
                         </div>
@@ -149,7 +158,9 @@
                 {{-- عنوان سفلي --}}
                 <div class="gx-bottomline">
                     <div class="gx-team">
-                        {{ $fixture->homeTeam->$name_var ?? '' }}
+                        <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}">
+                            {{ $fixture->homeTeam->$name_var ?? '' }}
+                        </a>
                     </div>
                     <div class="gx-formation">
                         {{ $homeFormation ?: '' }}
@@ -159,14 +170,20 @@
                 {{-- البدلاء --}}
                 <div class="row g-3 mt-4">
                     <div class="col-lg-6">
-                        <div class="fw-bold mb-2">{{ $fixture->homeTeam->$name_var ?? '' }} -
-                            البدلاء</div>
+                        <div class="fw-bold mb-2">
+                            <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}">
+                                {{ $fixture->homeTeam->$name_var ?? '' }} -
+                                البدلاء
+                            </a>
+                        </div>
                         <ul class="list-group list-group-flush">
                             @forelse($homeBench as $p)
                                 <li
                                     class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
-                                    <span>{{ $pName($p) }}</span>
-                                    <span class="text-muted small">#{{ $pNum($p) }}</span>
+                                    <a href="{{route('players.details', ['id' => $pId($p)])}}">
+                                        <span>{{ $pName($p) }}</span>
+                                        <span class="text-muted small">#{{ $pNum($p) }}</span>
+                                    </a>
                                 </li>
                             @empty
                                 <li class="list-group-item bg-dark text-muted border-secondary">
@@ -177,14 +194,20 @@
                     </div>
 
                     <div class="col-lg-6">
-                        <div class="fw-bold mb-2">{{ $fixture->awayTeam->$name_var ?? '' }} -
-                            البدلاء</div>
+                        <div class="fw-bold mb-2">
+                            <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}">
+                                {{ $fixture->awayTeam->$name_var ?? '' }} -
+                                البدلاء
+                            </a>
+                        </div>
                         <ul class="list-group list-group-flush">
                             @forelse($awayBench as $p)
                                 <li
                                     class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
-                                    <span>{{ $pName($p) }}</span>
-                                    <span class="text-muted small">#{{ $pNum($p) }}</span>
+                                    <a href="{{route('players.details', ['id' => $pId($p)])}}">
+                                        <span>{{ $pName($p) }}</span>
+                                        <span class="text-muted small">#{{ $pNum($p) }}</span>
+                                    </a>
                                 </li>
                             @empty
                                 <li class="list-group-item bg-dark text-muted border-secondary">

@@ -39,6 +39,7 @@
                         $media = (array) ($e['media'] ?? []);
 
                         $playerName = (string) ($e['player_name'] ?? '');
+                        $playerId = (string) ($e['player_id'] ?? '');
                         $playerImage = (string) ($e['player_image'] ?? '');
                         $playerInitial = trim($playerName) ? mb_substr(trim($playerName), 0, 1) : '?';
 
@@ -105,27 +106,31 @@
                                 <div class="gx-minute">{{ $minute }}</div>
                                 <div class="d-flex">
                                     @if($fixture->homeTeam->id == $e['participant_id'])
-                                        <img src="{{ $fx['home']['logo'] ?? '' }}" class="gx-team-ic" alt="">
-                                        <div class="gx-title mx-2">
-                                            {{$fixture->homeTeam->$name_var}}
-                                        </div>
+                                        <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}" class="d-flex">
+                                            <img src="{{ $fx['home']['logo'] ?? '' }}" class="gx-team-ic" alt="">
+                                            <div class="gx-title mx-2">
+                                                {{$fixture->homeTeam->$name_var}}
+                                            </div>
+                                        </a>
                                     @else
-                                        <img src="{{ $fx['away']['logo'] ?? '' }}" class="gx-team-ic" alt="">
-                                        <div class="gx-title mx-2">
-                                            {{$fixture->awayTeam->$name_var}}
-                                        </div>
+                                        <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}" class="d-flex">
+                                            <img src="{{ $fx['away']['logo'] ?? '' }}" class="gx-team-ic" alt="">
+                                            <div class="gx-title mx-2">
+                                                {{$fixture->awayTeam->$name_var}}
+                                            </div>
+                                        </a>
                                     @endif
                                 </div>
                                 <div class="gx-title">
                                     <span class="gx-icon">🔁</span>
-                                    تبديل لاعب
+                                    {{__('frontend.substitute_player')}}
                                 </div>
                             </div>
 
                             <div class="gx-card-body">
                                 {{-- OUT أولاً --}}
                                 <div class="gx-row">
-                                    <div class="gx-tag gx-out">خرج</div>
+                                    <div class="gx-tag gx-out">{{__('frontend.subbed_out')}}</div>
 
                                     <div class="gx-player">
                                         <div class="gx-name">{{ $outName ?: '-' }}</div>
@@ -211,15 +216,19 @@
                                         @endif
                                         <div class="d-flex">
                                             @if($fixture->homeTeam->id == $e['participant_id'])
-                                                <img src="{{ $fx['home']['logo'] ?? '' }}" class="gx-team-ic" alt="">
-                                                <div class="gx-title mx-2">
-                                                    {{$fixture->homeTeam->$name_var}}
-                                                </div>
+                                                <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}" class="d-flex">
+                                                    <img src="{{ $fx['home']['logo'] ?? '' }}" class="gx-team-ic" alt="">
+                                                    <div class="gx-title mx-2">
+                                                        {{$fixture->homeTeam->$name_var}}
+                                                    </div>
+                                                </a>
                                             @else
-                                                <img src="{{ $fx['away']['logo'] ?? '' }}" class="gx-team-ic" alt="">
-                                                <div class="gx-title mx-2">
-                                                    {{$fixture->awayTeam->$name_var}}
-                                                </div>
+                                                <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}" class="d-flex">
+                                                    <img src="{{ $fx['away']['logo'] ?? '' }}" class="gx-team-ic" alt="">
+                                                    <div class="gx-title mx-2">
+                                                        {{$fixture->awayTeam->$name_var}}
+                                                    </div>
+                                                </a>
                                             @endif
                                         </div>
                                     </div>

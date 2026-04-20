@@ -56,11 +56,13 @@
                                 </div>
                                 {{-- Home --}}
                                 <div class="col-5">
-                                    <div class="text-center gap-2 team-details">
-                                        <img src="{{ $fixture->homeTeam->image_path ?? '' }}"
-                                            class=" rounded-circle object-contain p-1">
-                                        <h4 class="fw-bold mt-4">{{ $fixture->homeTeam->$name_var ?? '-' }}</h4>
-                                    </div>
+                                    <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}">
+                                        <div class="text-center gap-2 team-details">
+                                            <img src="{{ $fixture->homeTeam->image_path ?? '' }}"
+                                                class=" rounded-circle object-contain p-1">
+                                            <h4 class="fw-bold mt-4">{{ $fixture->homeTeam->$name_var ?? '-' }}</h4>
+                                        </div>
+                                    </a>
                                     @include('frontEnd.football.partials.top-events', [
                                         'teamid' => $fixture->homeTeam->id,
                                         'textDiration' => 'text-start',
@@ -117,11 +119,13 @@
                                 </div>
                                 {{-- Away --}}
                                 <div class="col-5">
-                                    <div class="text-center gap-2 team-details">
-                                        <img src="{{ $fixture->awayTeam->image_path ?? '' }}"
-                                            class=" rounded-circle object-contain p-1">
-                                        <h4 class="fw-bold mt-3">{{ $fixture->awayTeam->$name_var ?? '-' }}</h4>
-                                    </div>
+                                    <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}">
+                                        <div class="text-center gap-2 team-details">
+                                            <img src="{{ $fixture->awayTeam->image_path ?? '' }}"
+                                                class=" rounded-circle object-contain p-1">
+                                            <h4 class="fw-bold mt-3">{{ $fixture->awayTeam->$name_var ?? '-' }}</h4>
+                                        </div>
+                                    </a>
                                     @include('frontEnd.football.partials.top-events', [
                                         'teamid' => $fixture->awayTeam->id,
                                         'textDiration' => 'text-end',

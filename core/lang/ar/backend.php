@@ -922,4 +922,6 @@ return array(
     'number_teams' => 'عدد الفرق',
     'includes_sportmonks' => 'يشمل SportMonks',
     'without_sportmonks' => 'بدون SportMonks',
+    'major_competitions' => 'أهم البطولات',
+    'major_national_teams' => 'أهم المنتخبات',
 );

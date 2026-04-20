@@ -172,5 +172,13 @@ return [
     'no_tv_stations' => 'No TV Stations',
     'modern_sports_platform' => 'A modern sports platform for news, matches, and live streaming',
     'luxury_footer_design_description' => 'A more elegant and calm design than the current footer, with clearer sections, better spacing, and prominently displayed store links so the visitor feels the platform is a complete application and product, not just a website.',
+    'overview' => 'Overview',
+    'news' => 'News',
+    'players_list' => 'Players List',
+    'details' => 'Details',
+    'substitute_player' => 'Substitute Player',
+    'subbed_out' => 'Subbed Out',
+    'major_competitions' => 'Major Competitions',
+    'major_national_teams' => 'Major National Teams',
 ];
 ?>

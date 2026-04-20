@@ -920,4 +920,6 @@ return array(
     'number_teams' => 'Number Teams',
     'includes_sportmonks' => 'Includes SportMonks',
     'without_sportmonks' => 'Without SportMonks',
+    'major_competitions' => 'Major Competitions',
+    'major_national_teams' => 'Major National Teams',
 );

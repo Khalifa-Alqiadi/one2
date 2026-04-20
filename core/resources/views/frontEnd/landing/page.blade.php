@@ -24,6 +24,8 @@
     $slider_exists = true;
     ?>
     <div class="landing-page">
+        @include('frontEnd.homepage.leagues')
+        @include('frontEnd.homepage.matches')
 
         @if($Topic->topicBlocks->where("status",1)->count() >0)
             @foreach($Topic->topicBlocks->where("status",1) as $TopicBlock)
@@ -57,7 +59,7 @@
                         {{--Banners--}}
                         @if(@$TopicBlockContents->banner_area_id >0 && @$TopicBlockContents->banner_style !="")
                             @include('frontEnd.layouts.'.@$TopicBlockContents->banner_style,["BannersSettingsId"=>@$TopicBlockContents->banner_area_id])
-                            @include('frontEnd.homepage.matches')
+
                         @endif
                     @elseif($TopicBlock->type == 1)
                         {{--Custom Code--}}
@@ -85,7 +87,7 @@
 @endif
 @if($slider_exists == true)
     @push('after-styles')
-        <style>
+        {{-- <style>
             .header-no-bg, .header-no-bg a, .topbar-no-bg, .topbar-no-bg a, .header-no-bg .navbar a, .topbar-no-bg .header-dropdown .btn{
                 color: var(--color-primary-blue) !important;
             }
@@ -93,7 +95,7 @@
                 margin-top: 120px !important;
             }
         </style>
-    @endpush
+    @endpush --}}
 @endif
 @if($custom_body_code !="")
     @push('before-footer')

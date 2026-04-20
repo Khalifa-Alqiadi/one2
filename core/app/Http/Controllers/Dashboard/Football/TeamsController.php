@@ -165,6 +165,8 @@ class TeamsController extends Controller
             'name_en'    => 'nullable|string|max:255',
             'country_id' => 'required|exists:countries,sport_id',
             'status'     => 'required|boolean',
+            'major_competitions' => 'required|boolean',
+            'major_national_teams' => 'required|boolean',
         ]);
 
         $team->update($data);

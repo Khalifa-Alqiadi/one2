@@ -1,4 +1,4 @@
-@php($matches = Helper::getMatchHome(8))
+@php($matches = Helper::getMatchHome(3))
 @php($name_var = 'name_' . @Helper::currentLanguage()->code)
 @php($locale = @Helper::currentLanguage()->code)
 @if (count($matches) > 0)
@@ -6,7 +6,7 @@
         <div class="container">
             <div class="section-title d-flex justify-content-between align-items-center mb-0">
                 <h2 class="d-flex align-items-center gap-2">
-                    <img src="{{ URL::to('uploads/settings/Vector.svg') }}" alt="">
+                    <img src="{{ URL::to('uploads/settings/Vector.svg') }}"  alt="">
                     {{ __('frontend.matches') }}
                 </h2>
                 <a href="{{route('matches')}}" class="section-title-btn">

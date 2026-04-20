@@ -71,6 +71,25 @@
                             </div>
 
                             <div class="form-group row">
+                                <label for="is_home1" class="col-sm-2 form-control-label">{{ __('backend.is_home') }}</label>
+                                <div class="col-sm-10">
+                                    <div class="radio">
+                                        <label class="md-check">
+                                            <input type="radio" name="is_home" value="1" class="has-value" {{ ($League->is_home==1)?"checked":"" }} id="is_home1">
+                                            <i class="primary"></i>
+                                            {{ __('backend.active') }}
+                                        </label>
+                                        &nbsp; &nbsp;
+                                        <label class="md-check">
+                                            <input type="radio" name="is_home" value="0" class="has-value" {{ ($League->is_home==0)?"checked":"" }} id="is_home2">
+                                            <i class="danger"></i>
+                                            {{ __('backend.notActive') }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
                                 <label for="status1" class="col-sm-2 form-control-label">{{ __('backend.status') }}</label>
                                 <div class="col-sm-10">
                                     <div class="radio">

@@ -37,7 +37,7 @@
                 ])
             </div>
         @empty
-            <div class="col-12">
+            <div class="col w-50">
                 <div class="text-center mb-0">
                     {{ __('frontend.no_matches_found') }}
                 </div>

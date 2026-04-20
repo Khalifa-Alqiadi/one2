@@ -6,6 +6,8 @@ use App\Http\Controllers\Custom\LeagueTabsController;
 use App\Http\Controllers\Football\FixturesController;
 use App\Http\Controllers\Football\MatchesController;
 use App\Http\Controllers\Football\LivescoresController;
+use App\Http\Controllers\Football\PlayersController;
+use App\Http\Controllers\Football\TeamsController;
 use App\Http\Controllers\TimezoneController;
 use Illuminate\Support\Facades\Route;
 
@@ -60,6 +62,11 @@ Route::get('/live-matches', [LivescoresController::class, 'index'])
 
 Route::get('/fixture/{id}/commentary', [MatchesController::class, 'commentary'])->name('commentary');
 Route::post('/set-timezone', [TimezoneController::class, 'set'])->name('set.timezone');
+
+// Teams
+Route::get('/teams/{id}/details', [TeamsController::class, 'show'])->name('team.details');
+Route::get('/players/{id}/details', [PlayersController::class, 'show'])->name('players.details');
+
 
 
 

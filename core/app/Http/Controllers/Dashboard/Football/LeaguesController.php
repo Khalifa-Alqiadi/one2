@@ -70,7 +70,8 @@ class LeaguesController extends Controller
             }
             $League->country_id = $request->country_id;
             $League->status = $request->status;
-            $League->updated_by = Auth::user()->id;
+            $League->is_home = $request->is_home;
+            // $League->updated_by = Auth::user()->id;
             $League->save();
 
             return redirect()->action([LeaguesController::class, 'index'])->with('doneMessage', __('backend.saveDone'));
