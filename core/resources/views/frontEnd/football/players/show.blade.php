@@ -6,7 +6,7 @@
 @endphp
 @extends('frontEnd.layouts.master')
 @section('content')
-    <section id="content" class="football football-match details-match player-details" style="margin-top: 100px">
+    <section id="content" class="football football-match details-match player-details">
         <div class="container my-4">
             <div class="row">
                 <div class="col-lg-12 mb-5">
