@@ -16,7 +16,9 @@
             <div class="row">
                 <div class="col-4">
                     <div class=" text-center">
-                        {{$fx['away']['name'] ?? 'الضيوف'}}
+                        <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}">
+                            {{$fixture->awayTeam->$name_var ?? 'الضيوف'}}
+                        </a>
                     </div>
                 </div>
                 <div class="col-4 border-start border-end" style="border-color:rgb(58, 58, 58) !important">
@@ -26,7 +28,9 @@
                 </div>
                 <div class="col-4">
                     <div class=" text-center">
-                        {{$fx['home']['name'] ?? 'المضيف'}}
+                        <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}">
+                            {{$fixture->homeTeam->$name_var ?? 'المضيف'}}
+                        </a>
                     </div>
                 </div>
             </div>
@@ -35,6 +39,7 @@
             <div class="row">
                 <div class="col-4 pt-3">
                     <div class=" text-center gx-ns-perc-val js-p-away">
+
                         {{ $pAway }}%
                     </div>
                     <div class="gx-ns-bar">

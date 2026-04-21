@@ -5,7 +5,7 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
 @extends('frontEnd.layouts.master')
 
 @section('content')
-    <section id="content" class="football" style="margin-top: 200px">
+    <section id="content" class="football" >
 
         <div class="container">
 

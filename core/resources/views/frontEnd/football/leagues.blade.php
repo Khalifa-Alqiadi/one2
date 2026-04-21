@@ -6,7 +6,7 @@ $title_var = 'title_' . @Helper::currentLanguage()->code;
 
 @section('content')
     <div>
-        <section id="content" style="margin-top: 200px">
+        <section id="content">
             <div class="container">
                 <div class="row">
                     @forelse($leagues as $league)

@@ -15,9 +15,13 @@
             @endphp
 
             <div class="gx-stats-head mb-3">
-                <img src="{{ $fx['home']['logo'] ?? '' }}" class="gx-team-ic" alt="">
+                <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}">
+                    <img src="{{ $fixture->homeTeam->image_path ?? '' }}" class="gx-team-ic" alt="">
+                </a>
                 <div class="gx-stats-title">{{ __('frontend.team_statistics') }}</div>
-                <img src="{{ $fx['away']['logo'] ?? '' }}" class="gx-team-ic" alt="">
+                <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}">
+                    <img src="{{ $fixture->awayTeam->image_path ?? '' }}" class="gx-team-ic" alt="">
+                </a>
             </div>
 
 

@@ -6,7 +6,7 @@
 @extends('frontEnd.layouts.master')
 
 @section('content')
-    <section id="content" class="football" style="margin-top: 200px">
+    <section id="content" class="football">
         <div class="container">
             <div class="section-title text-start mb-4">
                 <h2 class="d-flex align-items-center gap-2">

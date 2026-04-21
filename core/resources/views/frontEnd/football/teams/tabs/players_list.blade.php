@@ -11,7 +11,7 @@
                         </div>
                         <div class="mx-3">
                             <h4 class="mb-1">{{$player->$name_var}}</h4>
-                            <span>{{$player->country->$title_var}}</span>
+                            <span>{{$player->country?->$title_var}}</span>
                         </div>
                     </a>
                 </div>

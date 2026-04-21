@@ -6,7 +6,7 @@
 @extends('frontEnd.layouts.master')
 
 @section('content')
-    <section id="content" class="football football-match details-match" style="margin-top: 100px">
+    <section id="content" class="football football-match details-match" >
         <div class="container my-4" style="direction: {{ $isRtl ? 'rtl' : 'ltr' }};">
             <div class="row">
                 <div class="col-lg-12">
@@ -160,11 +160,11 @@
                                 {{ __('frontend.standings') }}
                             </button>
                         </li>
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-commentary" type="button">
                                 {{ __('frontend.discussion') }}
                             </button>
-                        </li>
+                        </li> --}}
                     </ul>
 
                     <div class="tab-content">
@@ -183,7 +183,7 @@
                             'awayID' => $fixture->awayTeam->id,
                         ])
 
-                        @include('frontEnd.football.partials.discussion')
+                        {{-- @include('frontEnd.football.partials.discussion') --}}
 
                     </div>
 
@@ -255,7 +255,7 @@
                         <div class="card bg-dark text-light shadow-sm mb-3" style="border-radius:14px;">
                             <div class="card-body">
                                 <h5 class="card-title mb-3">{{ __('frontend.match_info') }}</h5>
-                                <div class="d-flex align-items-center gap-3 mb-3 border-bottom pb-3">
+                                <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="d-flex align-items-center gap-3 mb-3 border-bottom pb-3">
                                     @if (!empty($fixture->league->image_path))
                                         <img src="{{ $fixture->league->image_path }}" alt="League Image " class="p-1 "
                                             style="width:50px;height:50px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,.1)">
@@ -271,7 +271,7 @@
                                             - {{ __('frontend.round') }} {{ $fixture->round->name ?? '' }}
                                         </div>
                                     </div>
-                                </div>
+                                </a>
                                 <div class="d-flex align-items-center gap-3 mb-3 border-bottom pb-3">
                                     <div
                                         style="width:50px;height:50px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;">
