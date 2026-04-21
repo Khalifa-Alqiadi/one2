@@ -252,6 +252,10 @@
     font-weight: 800;
     font-size: 18px;
 }
+.football .standings-title h4 {
+    font-weight: 400;
+    font-size: 16px;
+}
 
 .football .season-pill {
     background: #24262b;

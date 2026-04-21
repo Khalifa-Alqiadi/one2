@@ -22,22 +22,22 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
 
             {{-- Tabs --}}
             <ul class="nav nav-pills league-pills mb-4 px-0" role="tablist">
-                <li class="nav-item">
+                <li class="nav-item mx-4">
                     <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-fixtures" type="button">
                         {{ $locale == 'ar' ? 'المباريات' : 'Fixtures' }}
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item mx-4">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-players" type="button">
                         {{ $locale == 'ar' ? 'اللاعبون' : 'Players' }}
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item mx-4">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-standings" type="button">
                         {{ $locale == 'ar' ? 'الترتيب' : 'Standings' }}
                     </button>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item mx-4">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-stats" type="button">
                         {{ $locale == 'ar' ? 'الإحصائيات' : 'Statistics' }}
                     </button>

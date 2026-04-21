@@ -56,15 +56,18 @@
                                         <div class="col-4">
                                             <div class="team d-flex flex-column align-items-center">
                                                 @if ($match->homeTeam)
-                                                    @if ($match->homeTeam->image_path)
-                                                        <div
-                                                            class="image d-flex align-items-center justify-content-center">
-                                                            <img src="{{ $match->homeTeam->image_path }}"
-                                                                style="height:30px" alt="">
-                                                        </div>
-                                                    @endif
-                                                    <span
-                                                        class="mt-2 text-center">{{ $match->homeTeam->$name_var }}</span>
+                                                    <a class="d-flex flex-column align-items-center"
+                                                        href="{{ route('team.details', ['id' => $match->homeTeam->id]) }}">
+                                                        @if ($match->homeTeam->image_path)
+                                                            <div
+                                                                class="image d-flex align-items-center justify-content-center">
+                                                                <img src="{{ $match->homeTeam->image_path }}"
+                                                                    style="height:30px" alt="">
+                                                            </div>
+                                                        @endif
+                                                        <span
+                                                            class="mt-2 text-center">{{ $match->homeTeam->$name_var }}</span>
+                                                    </a>
                                                 @endif
                                             </div>
                                         </div>
@@ -102,15 +105,18 @@
                                         <div class="col-4">
                                             <div class="team d-flex flex-column align-items-center">
                                                 @if ($match->awayTeam)
-                                                    @if ($match->awayTeam->image_path)
-                                                        <div
-                                                            class="image d-flex align-items-center justify-content-center">
-                                                            <img src="{{ $match->awayTeam->image_path }}"
-                                                                style="height:30px" alt="">
-                                                        </div>
-                                                    @endif
-                                                    <span
-                                                        class="mt-2 text-center">{{ $match->awayTeam->$name_var }}</span>
+                                                    <a class="d-flex flex-column align-items-center"
+                                                        href="{{ route('team.details', ['id' => $match->awayTeam->id]) }}">
+                                                        @if ($match->awayTeam->image_path)
+                                                            <div
+                                                                class="image d-flex align-items-center justify-content-center">
+                                                                <img src="{{ $match->awayTeam->image_path }}"
+                                                                    style="height:30px" alt="">
+                                                            </div>
+                                                        @endif
+                                                        <span
+                                                            class="mt-2 text-center">{{ $match->awayTeam->$name_var }}</span>
+                                                    </a>
                                                 @endif
                                             </div>
                                         </div>
