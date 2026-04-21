@@ -77,13 +77,13 @@
                                 <div class="col-sm-10">
                                     <div class="radio">
                                         <label class="md-check">
-                                            <input type="radio" name="major_competitions" value="1" class="has-value" {{ ($match->major_competitions==1)?"checked":"" }} id="major_competitions1">
+                                            <input type="radio" name="major_competitions" value="1" class="has-value" {{ ($team->major_competitions==1)?"checked":"" }} id="major_competitions1">
                                             <i class="primary"></i>
                                             {{ __('backend.active') }}
                                         </label>
                                         &nbsp; &nbsp;
                                         <label class="md-check">
-                                            <input type="radio" name="major_competitions" value="0" class="has-value" {{ ($match->major_competitions==0)?"checked":"" }} id="major_competitions2">
+                                            <input type="radio" name="major_competitions" value="0" class="has-value" {{ ($team->major_competitions==0)?"checked":"" }} id="major_competitions2">
                                             <i class="danger"></i>
                                             {{ __('backend.notActive') }}
                                         </label>
@@ -95,13 +95,13 @@
                                 <div class="col-sm-10">
                                     <div class="radio">
                                         <label class="md-check">
-                                            <input type="radio" name="major_national_teams" value="1" class="has-value" {{ ($match->major_national_teams==1)?"checked":"" }} id="major_national_teams1">
+                                            <input type="radio" name="major_national_teams" value="1" class="has-value" {{ ($team->major_national_teams==1)?"checked":"" }} id="major_national_teams1">
                                             <i class="primary"></i>
                                             {{ __('backend.active') }}
                                         </label>
                                         &nbsp; &nbsp;
                                         <label class="md-check">
-                                            <input type="radio" name="major_national_teams" value="0" class="has-value" {{ ($match->major_national_teams==0)?"checked":"" }} id="major_national_teams2">
+                                            <input type="radio" name="major_national_teams" value="0" class="has-value" {{ ($team->major_national_teams==0)?"checked":"" }} id="major_national_teams2">
                                             <i class="danger"></i>
                                             {{ __('backend.notActive') }}
                                         </label>

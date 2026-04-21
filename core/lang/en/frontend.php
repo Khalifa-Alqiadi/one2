@@ -170,8 +170,8 @@ return [
     'all_competitions' => 'All Competitions',
     'no_matches_found' => 'No Matches Found',
     'no_tv_stations' => 'No TV Stations',
-    'modern_sports_platform' => 'A modern sports platform for news, matches, and live streaming',
-    'luxury_footer_design_description' => 'A more elegant and calm design than the current footer, with clearer sections, better spacing, and prominently displayed store links so the visitor feels the platform is a complete application and product, not just a website.',
+    'modern_sports_platform' => 'One Two Media Platform',
+    'luxury_footer_design_description' => 'Your comprehensive gateway to everything related to the world of football, with accurate statistics, in-depth analysis, and real-time coverage of the biggest international and local leagues.',
     'overview' => 'Overview',
     'news' => 'News',
     'players_list' => 'Players List',
@@ -180,5 +180,8 @@ return [
     'subbed_out' => 'Subbed Out',
     'major_competitions' => 'Major Competitions',
     'major_national_teams' => 'Major National Teams',
+    'ad_space' => 'Ad Space',
+    'mobile_app' => 'Mobile App',
+    'be_the_first_to_know' => 'كن أول من يعلم بكل جديد عبر تطبيقنا',
 ];
 ?>

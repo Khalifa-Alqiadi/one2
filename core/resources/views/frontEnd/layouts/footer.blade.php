@@ -26,19 +26,20 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
                             </div>
                             @include('frontEnd.layouts.social', ['tt_position' => 'top']) --}}
                             <div class="px-4 ">
-                                <div class="brand-row ">
+                                <div class="brand-row">
                                     <div class="brand-mark">
                                         <img alt="{{ Helper::GeneralSiteSettings('site_title_' . @Helper::currentLanguage()->code) }}"
-                                            src="{{ URL::to('uploads/settings/logo-website.png') }}" class="">
+                                            src="{{ URL::to('uploads/settings/footer-logo3.png') }}" class="">
                                     </div>
                                     <div>
-                                        <h2 class="brand-title">ONE TWO</h2>
-                                        <p class="brand-sub">{{__('frontend.modern_sports_platform')}}</p>
+                                        <h2 class="brand-title">{{__('frontend.modern_sports_platform')}}</h2>
                                     </div>
+
                                 </div>
                                 <p class="brand-desc">
                                     {{__('frontend.luxury_footer_design_description')}}
                                 </p>
+                                @include('frontEnd.layouts.social', ['tt_position' => 'top'])
                             </div>
                         </div>
                         @if (Helper::GeneralWebmasterSettings('footer_menu_id') > 0)
@@ -110,16 +111,19 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
                                 </div>
                             @endif
                         @endif
-                        <div class="col-lg-3 col-md-6">
+                        <div class="col-lg-3 col-md-6 mobile_app">
                             <div class="footer-title">
-                                <h3>{{ __('frontend.followUs') }}</h3>
+                                <h3>{{ __('frontend.mobile_app') }}</h3>
                             </div>
-                            @include('frontEnd.layouts.social', ['tt_position' => 'top'])
-                            <div class="contact-box">
-                                {{ __('frontend.address') }}:
-                                {{ Helper::GeneralSiteSettings('contact_t1_' . @Helper::currentLanguage()->code) }}<br />
-                                {{ __('frontend.callUs') }}: {{ Helper::GeneralSiteSettings('contact_t3') }}<br />
-                                {{ __('frontend.email') }}: {{ Helper::GeneralSiteSettings('contact_t6') }}
+
+                            <p>{{__('frontend.be_the_first_to_know')}}</p>
+                            <div class="apps">
+                                <div class="mb-3">
+                                    <img src="{{URL::to('uploads/settings/app-store.svg')}}" alt="">
+                                </div>
+                                <div class="mb-3">
+                                    <img src="{{URL::to('uploads/settings/app-play.svg')}}" alt="">
+                                </div>
                             </div>
                         </div>
                         @include('frontEnd.layouts.subscribe')
@@ -142,7 +146,7 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
                         </div> --}}
                     </div>
                 </div>
-                <div class="footer-bottom">
+                {{-- <div class="footer-bottom">
                     <div>
                         <?php
                         $site_title_var = 'site_title_' . @Helper::currentLanguage()->code;
@@ -162,7 +166,7 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
                             </a>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     @endif

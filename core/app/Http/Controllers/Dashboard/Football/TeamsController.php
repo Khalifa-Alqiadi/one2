@@ -163,7 +163,7 @@ class TeamsController extends Controller
         $data = $request->validate([
             'name_ar'    => 'required|string|max:255',
             'name_en'    => 'nullable|string|max:255',
-            'country_id' => 'required|exists:countries,sport_id',
+            'country_id' => 'required|exists:countries,id',
             'status'     => 'required|boolean',
             'major_competitions' => 'required|boolean',
             'major_national_teams' => 'required|boolean',

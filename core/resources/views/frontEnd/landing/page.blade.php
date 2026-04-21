@@ -24,6 +24,8 @@
     $slider_exists = true;
     ?>
     <div class="landing-page">
+        @include('frontEnd.homepage.ads-top')
+        @include('frontEnd.homepage.teams')
         @include('frontEnd.homepage.leagues')
         @include('frontEnd.homepage.matches')
 

@@ -1727,6 +1727,27 @@ class Helper
             ->get();
     }
 
+    static function majorCompetitionsTeams($limit = 0){
+        $teams = Team::where('major_competitions', 1)
+            ->where('status', 1);
+        if($limit > 0){
+            $teams = $teams->limit($limit);
+        }
+
+        $teams = $teams->get();
+        return $teams;
+    }
+    static function majorNationalTeams($limit = 0){
+        $teams = Team::where('major_national_teams', 1)
+            ->where('status', 1);
+        if($limit > 0){
+            $teams = $teams->limit($limit);
+        }
+
+        $teams = $teams->get();
+        return $teams;
+    }
+
     static function currentSeason()
     {
         return Season::where('is_current', true)->value('id');

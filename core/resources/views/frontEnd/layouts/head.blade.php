@@ -22,12 +22,12 @@
 <link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.theme.default.min.css') }}?v={{ Helper::system_version() }}">
 
 <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v=2" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=79" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=12" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=80" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=13" rel="stylesheet"/>
 
 
 @if( @Helper::currentLanguage()->direction=="rtl")
-<link href="{{ URL::asset('assets/frontend/css/rtl.css') }}?v=13" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/rtl.css') }}?v=14" rel="stylesheet"/>
 @endif
 
 <!-- Favicon and Touch Icons -->
