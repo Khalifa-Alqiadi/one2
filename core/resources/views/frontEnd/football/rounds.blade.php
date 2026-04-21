@@ -83,19 +83,3 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
 @push('after-scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 @endpush
-@push('after-styles')
-    <style>
-        /* ====== Theme ====== */
-        #content {
-            margin-top: 140px !important;
-        }
-
-        @media (max-width: 992px) {
-            #content {
-                margin-top: 120px !important;
-            }
-        }
-
-
-    </style>
-@endpush
