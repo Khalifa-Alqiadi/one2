@@ -273,6 +273,10 @@
 
 /* End Hero */
 
+#content{
+    padding: 30px 0;
+}
+
 /* Start header */
 
 .navbar-mobile .mobile-nav-toggle {
@@ -357,12 +361,12 @@
 }
 
 #header .logo {
-    width: 80%;
+    width: 100%;
     margin-right: 30px;
 }
 
 #header .logo img {
-    width: 100%;
+    width: 67%;
     max-height: 100%;
     margin: 0;
 }

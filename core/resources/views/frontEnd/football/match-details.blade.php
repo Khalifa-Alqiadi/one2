@@ -258,7 +258,7 @@
                                 <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="d-flex align-items-center gap-3 mb-3 border-bottom pb-3">
                                     @if (!empty($fixture->league->image_path))
                                         <img src="{{ $fixture->league->image_path }}" alt="League Image " class="p-1 "
-                                            style="width:50px;height:50px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,.1)">
+                                            style="width:50px;height:50px;border-radius:8px;object-fit:cover;background: #fff">
                                     @else
                                         <div
                                             style="width:50px;height:50px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;">
