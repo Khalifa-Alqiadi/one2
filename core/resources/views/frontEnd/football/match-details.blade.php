@@ -156,11 +156,13 @@
                                 <button class="nav-link " data-bs-toggle="tab" data-bs-target="#t-lineups" type="button"
                                     role="tab">{{ __('frontend.lineups') }}</button>
                             </li>
-                            <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-standings" type="button">
-                                    {{ __('frontend.standings') }}
-                                </button>
-                            </li>
+                            @if(count($standings) > 0)
+                                <li class="nav-item">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-standings" type="button">
+                                        {{ __('frontend.standings') }}
+                                    </button>
+                                </li>
+                            @endif
                             {{-- <li class="nav-item">
                                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-commentary" type="button">
                                     {{ __('frontend.discussion') }}
@@ -177,12 +179,13 @@
 
                             {{-- LINEUPS --}}
                             @include('frontEnd.football.partials.lineups')
-
-                            @include('frontEnd.football.rounds-tabs.standings', [
-                                'standings' => $standings,
-                                'homeID' => $fixture->homeTeam->id,
-                                'awayID' => $fixture->awayTeam->id,
-                            ])
+                            @if(count($standings) > 0)
+                                @include('frontEnd.football.rounds-tabs.standings', [
+                                    'standings' => $standings,
+                                    'homeID' => $fixture->homeTeam->id,
+                                    'awayID' => $fixture->awayTeam->id,
+                                ])
+                            @endif
 
                             {{-- @include('frontEnd.football.partials.discussion') --}}
 
