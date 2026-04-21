@@ -1611,7 +1611,7 @@
 /* End Topic Page */
 
 /* Start ads-top-home */
-.ads-top-home .card{
+.ads2top-home .card{
     background-color: var(--color-primary-gold) !important;
     min-height: 92px;
     display: flex;
@@ -1619,7 +1619,7 @@
     justify-content: center;
     border-radius: 0;
 }
-.ads-top-home .card h4{
+.ads2top-home .card h4{
     font-weight: 700;
     font-size: 18px;
     line-height: 28px;
