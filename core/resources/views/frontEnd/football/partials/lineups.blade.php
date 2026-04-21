@@ -113,14 +113,14 @@
                                 @endphp
 
                                 <div class="gx-player">
-                                    <a href="{{route('players.details', ['id' => $id])}}">
+                                    {{-- <a href="{{route('players.details', ['id' => $id])}}"> --}}
                                         <div class="gx-badge gx-away">
                                             <img src="{{ $img }}" alt="station Image" class=""
                                                 style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
                                             {{-- <span class="gx-num">{{ $num }}</span> --}}
                                         </div>
                                         <div class="gx-name">{{ $name }}</div>
-                                    </a>
+                                    {{-- </a> --}}
                                 </div>
                             @endforeach
                         </div>
@@ -141,14 +141,14 @@
                                 @endphp
 
                                 <div class="gx-player">
-                                    <a href="{{route('players.details', ['id' => $id])}}">
+                                    {{-- <a href="{{route('players.details', ['id' => $id])}}"> --}}
                                         <div class="gx-badge gx-home">
                                             {{-- <span class="gx-num">{{ $num }}</span> --}}
                                             <img src="{{ $img }}" alt="station Image" class=""
                                                 style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
                                         </div>
                                         <div class="gx-name">{{ $name }}</div>
-                                    </a>
+                                    {{-- </a> --}}
                                 </div>
                             @endforeach
                         </div>
@@ -180,10 +180,10 @@
                             @forelse($homeBench as $p)
                                 <li
                                     class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
-                                    <a href="{{route('players.details', ['id' => $pId($p)])}}">
+                                    {{-- <a href="{{route('players.details', ['id' => $pId($p)])}}"> --}}
                                         <span>{{ $pName($p) }}</span>
                                         <span class="text-muted small">#{{ $pNum($p) }}</span>
-                                    </a>
+                                    {{-- </a> --}}
                                 </li>
                             @empty
                                 <li class="list-group-item bg-dark text-muted border-secondary">
@@ -204,10 +204,10 @@
                             @forelse($awayBench as $p)
                                 <li
                                     class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
-                                    <a href="{{route('players.details', ['id' => $pId($p)])}}">
+                                    {{-- <a href="{{route('players.details', ['id' => $pId($p)])}}"> --}}
                                         <span>{{ $pName($p) }}</span>
                                         <span class="text-muted small">#{{ $pNum($p) }}</span>
-                                    </a>
+                                    {{-- </a> --}}
                                 </li>
                             @empty
                                 <li class="list-group-item bg-dark text-muted border-secondary">

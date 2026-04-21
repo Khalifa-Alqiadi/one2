@@ -402,76 +402,80 @@ class MatchesController extends Controller
         $locale = Helper::currentLanguage()->code ?? 'ar';
 
         $fixture = Fixture::with(['league', 'homeTeam', 'awayTeam'])->findOrFail($id);
+        if ($fixture) {
 
-        if ($request->boolean('refresh_standings')) {
-            app(SportmonksStandingService::class)->refreshStandingsCache($fixture->season_id, $locale);
-        }
-
-        $standingsPack = null;
-        $standingsErr = null;
-
-        $standingsData = app(SportmonksStandingService::class)->getStandingsCached($fixture->season_id, $locale);
-
-        $standings = $standingsData['standings'] ?? [];
-        $standingsUpdatedAt = $standingsData['fetched_at'] ?? null;
-
-        $isFinished = (bool) $fixture->is_finished;
-        $isTimeLive = false;
-        if (!$isFinished && $fixture->starting_at) {
-            try {
-                $start = \Carbon\Carbon::parse($fixture->starting_at);
-                $isTimeLive = now()
-                    ->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
-            } catch (\Throwable $e) {
+            if ($request->boolean('refresh_standings')) {
+                app(SportmonksStandingService::class)->refreshStandingsCache($fixture->season_id, $locale);
             }
-        }
-        $dbStatus = strtoupper((string) ($fixture->state_code ?? 'NS'));
-        $dbStateCode = strtoupper((string) ($fixture->state_name ?? $dbStatus));
 
-        $isLive = $this->shouldFetchLiveDetails($dbStatus, $dbStateCode);
-        if ($isTimeLive && $isLive) {
-            $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-            // dd($data);
+            $standingsPack = null;
+            $standingsErr = null;
 
-            if ($data) {
-                $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
+            $standingsData = app(SportmonksStandingService::class)->getStandingsCached($fixture->season_id, $locale);
+
+            $standings = $standingsData['standings'] ?? [];
+            $standingsUpdatedAt = $standingsData['fetched_at'] ?? null;
+
+            $isFinished = (bool) $fixture->is_finished;
+            $isTimeLive = false;
+            if (!$isFinished && $fixture->starting_at) {
+                try {
+                    $start = \Carbon\Carbon::parse($fixture->starting_at);
+                    $isTimeLive = now()
+                        ->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
+                } catch (\Throwable $e) {
+                }
+            }
+            $dbStatus = strtoupper((string) ($fixture->state_code ?? 'NS'));
+            $dbStateCode = strtoupper((string) ($fixture->state_name ?? $dbStatus));
+
+            $isLive = $this->shouldFetchLiveDetails($dbStatus, $dbStateCode);
+            if ($isTimeLive && $isLive) {
+                $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+                // dd($data);
+
+                if ($data) {
+                    $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
+                } else {
+                    $data = $this->buildFixtureDetailsFromDatabase($fixture->fresh(['league', 'homeTeam', 'awayTeam']), $locale);
+                }
             } else {
-                $data = $this->buildFixtureDetailsFromDatabase($fixture->fresh(['league', 'homeTeam', 'awayTeam']), $locale);
-            }
-        } else {
 
-            if ((!$fixture->lineups_json || !$fixture->statistics_json || !$fixture->events_json) && $isFinished == true) {
-                $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-                if ($data) {
-                    $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
+                if ((!$fixture->lineups_json || !$fixture->statistics_json || !$fixture->events_json) && $isFinished == true) {
+                    $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+                    if ($data) {
+                        $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
+                    }
+                } elseif (!$fixture->lineups_json || !$fixture->statistics_json || !$fixture->events_json) {
+                    $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+                    if ($data) {
+                        $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
+                    }
                 }
-            } elseif (!$fixture->lineups_json || !$fixture->statistics_json || !$fixture->events_json) {
-                $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-                if ($data) {
-                    $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
-                }
-            }
 
-            $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
+                $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
+            }
+            // $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
+            //     dd($data);
+            // $service = app(\App\Services\FetchCommentaryService::class)->getLiveCommentary($id, $locale);
+            // dd($service);
+            $name_var = 'name_' . $locale;
+            $PageTitle = $fixture->homeTeam->$name_var . ' vs ' . $fixture->awayTeam->$name_var . ' - ' . ($fixture->league->$name_var ?? '');
+
+            return view('frontEnd.football.match-details', [
+                'fixtureId' => $id,
+                'locale'    => $locale,
+                'fx'        => $data,
+                'fixture'   => $fixture->fresh(['league', 'homeTeam', 'awayTeam']),
+                'err'       => null,
+                'PageTitle' => $PageTitle,
+                'standings' => $standings,
+                'standingsErr' => $standingsErr,
+                'standingsUpdatedAt' => $standingsUpdatedAt,
+            ]);
+        }else{
+            return $this->page_404();
         }
-        // $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-        //     dd($data);
-        // $service = app(\App\Services\FetchCommentaryService::class)->getLiveCommentary($id, $locale);
-        // dd($service);
-        $name_var = 'name_' . $locale;
-        $PageTitle = $fixture->homeTeam->$name_var . ' vs ' . $fixture->awayTeam->$name_var . ' - ' . ($fixture->league->$name_var ?? '');
-
-        return view('frontEnd.football.match-details', [
-            'fixtureId' => $id,
-            'locale'    => $locale,
-            'fx'        => $data,
-            'fixture'   => $fixture->fresh(['league', 'homeTeam', 'awayTeam']),
-            'err'       => null,
-            'PageTitle' => $PageTitle,
-            'standings' => $standings,
-            'standingsErr' => $standingsErr,
-            'standingsUpdatedAt' => $standingsUpdatedAt,
-        ]);
     }
 
     public function liveFixtureDetails(int $id)
