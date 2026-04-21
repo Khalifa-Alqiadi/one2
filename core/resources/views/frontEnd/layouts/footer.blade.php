@@ -120,8 +120,8 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
                                 {{ __('frontend.callUs') }}: {{ Helper::GeneralSiteSettings('contact_t3') }}<br />
                                 {{ __('frontend.email') }}: {{ Helper::GeneralSiteSettings('contact_t6') }}
                             </div>
-                            <div class="footer-title mt-3 mb-2">
-                                <h3>{{ __('frontend.mobile_app') }}</h3>
+                            <div class="footer-title mt-4">
+                                <h3 class="mb-2 pb-0">{{ __('frontend.mobile_app') }}</h3>
                             </div>
 
                             <div class="legal-links">
