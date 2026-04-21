@@ -445,7 +445,7 @@ $style_color4 = Helper::GeneralSiteSettings("style_color4");
         color: {{ Helper::GeneralSiteSettings("style_color3") }};
     }
 
-    .ads-top-home .card{
+    .ads2top-home .card{
         background-color: #F1C40FC7 !important;
     }
     .dark .list-group-item{
