@@ -599,6 +599,10 @@ class MatchesController extends Controller
                 ->orderBy('starting_at', 'desc')
                 ->get();
 
+            if($date === 'key_matches'){
+                $matches = Helper::getMatchHome();
+            }
+
             $html = view('frontEnd.football.partials.matches-list', [
                 'matches' => $matches,
             ])->render();
