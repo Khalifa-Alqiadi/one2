@@ -1,326 +1,316 @@
 @php
     $isRtl = ($locale ?? 'ar') === 'ar';
     $name_var = 'name_' . @Helper::currentLanguage()->code;
-
 @endphp
+
 @extends('frontEnd.layouts.master')
 
 @section('content')
-    @if($fixture)
-        <section id="content" class="football football-match details-match" >
-            <div class="container my-4" style="direction: {{ $isRtl ? 'rtl' : 'ltr' }};">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="league-header mb-3">
-                            @if (data_get($fixture->league, 'image_path'))
-                                <div class="logo rounded-circle bg-white">
-                                    <img src="{{ data_get($fixture->league, 'image_path') }}" alt="">
-                                </div>
-                            @endif
-                            <h4 class="mb-0 fw-bold">{{ data_get($fixture->league, $name_var, 'League') }}</h4>
-                        </a>
-                    </div>
-                </div>
-                <div class="row justify-content-center row-details">
+    @if ($fixture)
+        @php
+            $isFinished = (bool) $fixture->is_finished;
+            $status = $fx['status'] ?? 'NS';
+            $state_code = $fx['state_code'] ?? 'NS';
+            $shouldLoadLiveScript =
+                in_array(strtoupper((string) $status), ['LIVE'], true) ||
+                in_array(strtoupper((string) $state_code), ['LIVE', 'INPLAY_1ST', 'INPLAY_2ND', 'HT'], true);
+            $startAt = $fx['starting_at'] ?? null;
+            $dt = $startAt ? \Carbon\Carbon::parse($startAt)->timezone(Helper::getUserTimezone()) : null;
+            $timeLabel = $dt ? $dt->format('H:i') : '';
+            $roundName = $fixture->round->name ?? '';
+            $venueName = $fx['venue']['name'] ?? __('frontend.unknown_venue');
+            $venueCity = $fx['venue']['city'] ?? '';
+            $venueCapacity = !empty($fx['venue']['capacity']) ? number_format($fx['venue']['capacity']) : null;
+            $stations = collect($fx['tv_stations'] ?? [])
+                ->filter(fn($station) => is_array($station))
+                ->unique(fn($station) => strtolower(trim($station['name'] ?? '')))
+                ->values();
+        @endphp
 
-                    {{-- Score --}}
-                    @php
-                        $isFinished = (bool) $fixture->is_finished;
-                        $isTimeLive = false;
-                        if (!$isFinished && $fixture->starting_at) {
-                            try {
-                                $start = \Carbon\Carbon::parse($fixture->starting_at);
-                                $isTimeLive = now()->between($start->copy()->subMinutes(15), $start->copy()->addHours(3));
-                            } catch (\Throwable $e) {
-                            }
-                        }
-                        $status = $fx['status'] ?? 'NS';
-                        $state_code = $fx['state_code'] ?? 'NS';
-                        $startAt = $fx['starting_at'] ?? null;
-                        $dt = $startAt ? \Carbon\Carbon::parse($startAt)->timezone(Helper::getUserTimezone()) : null;
-                        $dateLabel = $dt ? $dt->translatedFormat('m/d') : '';
-                        $timeLabel = $dt ? $dt->format('H:i') : '';
-                    @endphp
-
-                    <div class="col-lg-8 mb-4">
-                        {{-- Header Card --}}
-                        <div class="card bg-dark text-light border-0 shadow-sm mb-3" style="border-radius:14px;">
-                            <div class="card-body">
-
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="text-muted text-center small d-block d-md-none mb-3">
-                                            <span>
-                                                {!! Helper::day_name($dt, true) !!}
-                                            </span>
+        <section id="content" class="football football-match details-match match-details-page">
+            <div class="match-details-shell">
+                <div class="container" style="direction: {{ $isRtl ? 'rtl' : 'ltr' }};">
+                    <div class="row justify-content-center row-details g-4">
+                        <div class="col-lg-8">
+                            <div class="match-hero-top d-flex d-md-none">
+                                <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="league-header bg-transparent p-0 border-0">
+                                    @if (data_get($fixture->league, 'image_path'))
+                                        <div class="logo">
+                                            <img src="{{ data_get($fixture->league, 'image_path') }}" alt="">
                                         </div>
+                                    @endif
+                                    <div>
+                                        <h4 class="mb-0 fw-bold">{{ data_get($fixture->league, $name_var, 'League') }}</h4>
+                                        <span class="league-subtitle">
+                                            {{ __('frontend.round') }} {{ $roundName ?: '-' }}
+                                        </span>
                                     </div>
-                                    {{-- Home --}}
-                                    <div class="col-5">
-                                        <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}">
-                                            <div class="text-center gap-2 team-details">
-                                                <img src="{{ $fixture->homeTeam->image_path ?? '' }}"
-                                                    class=" rounded-circle object-contain p-1">
-                                                <h4 class="fw-bold mt-4">{{ $fixture->homeTeam->$name_var ?? '-' }}</h4>
+                                </a>
+
+                                {{-- The date is shown above the score so the top area stays focused on the league. --}}
+                            </div>
+                            <div class="match-card match-hero">
+                                <div class="match-hero-inner">
+                                    <div class="match-hero-top d-none d-md-flex">
+                                        <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}"
+                                            class="league-header">
+                                            @if (data_get($fixture->league, 'image_path'))
+                                                <div class="logo">
+                                                    <img src="{{ data_get($fixture->league, 'image_path') }}"
+                                                        alt="">
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <h4 class="mb-0 fw-bold">
+                                                    {{ data_get($fixture->league, $name_var, 'League') }}</h4>
+                                                <span class="league-subtitle">
+                                                    {{ __('frontend.round') }} {{ $roundName ?: '-' }}
+                                                </span>
                                             </div>
                                         </a>
-                                        @include('frontEnd.football.partials.top-events', [
-                                            'teamid' => $fixture->homeTeam->id,
-                                            'textDiration' => 'text-start',
-                                        ])
+
+                                        {{-- The date is shown above the score so the top area stays focused on the league. --}}
                                     </div>
-                                    {{-- Score / Kickoff --}}
-                                    <div class="col-2 p-0">
-                                        <div class="text-center">
-                                            {{-- ✅ Box: Score (LIVE/HT/FT) --}}
-                                            {{-- @if ($isFinished || $isTimeLive) --}}
-                                            <div class="js-scorebox"
-                                                style="font-size:28px;font-weight:800;letter-spacing:1px; display: {{ $state_code !== 'NS' ? 'flex' : 'none' }}; align-items:center; justify-content:center; gap:10px;">
-                                                <span class="js-home fw-bold fs-2">{{ $fixture->home_score ?? '-' }}</span>
-                                                <span class="mx-0 mx-md-3" style="opacity:.6">-</span>
-                                                <span class="js-away fw-bold fs-2">{{ $fixture->away_score ?? '-' }}</span>
+
+                                    <div class="match-clubs">
+                                        <div class="club-box">
+                                            <a href="{{ route('team.details', ['id' => $fixture->homeTeam->id]) }}">
+                                                @if (!empty($fixture->homeTeam->image_path))
+                                                    <img src="{{ $fixture->homeTeam->image_path }}" alt="">
+                                                @else
+                                                    <div class="club-logo-fallback">
+                                                        {{ mb_substr($fixture->homeTeam->$name_var ?? 'H', 0, 1) }}
+                                                    </div>
+                                                @endif
+                                                <div class="club-name">{{ $fixture->homeTeam->$name_var ?? '-' }}</div>
+                                            </a>
+
+                                            <div class="team-side-events text-start">
+                                                @include('frontEnd.football.partials.top-events', [
+                                                    'teamid' => $fixture->homeTeam->id,
+                                                    'textDiration' => 'text-start',
+                                                ])
                                             </div>
-                                            {{-- @endif --}}
+                                        </div>
 
-                                            {{-- ✅ Box: Not started (NS) --}}
-                                            {{-- <div class="js-kickoffbox">
-                                                <div class="fw-bold"
-                                                    style="font-size:14px; opacity:.95;
-                                                    display: {{ $state_code === 'NS' ? 'block' : 'none' }};">
-                                                    {{ __('frontend.not_started') }}</div>
-                                            </div> --}}
+                                        <div class="score-box-wrap">
+                                            @if ($dt)
+                                                <div class="score-date-label">
+                                                    {!! Helper::day_name($dt, true) !!}
+                                                </div>
+                                            @endif
 
-                                            <div class="small mt-2">
+                                            <div class="score-frame js-scorebox"
+                                                style="display: {{ $state_code !== 'NS' ? 'inline-flex' : 'none' }};">
+                                                <span class="js-home fw-bold fs-1">{{ $fixture->home_score ?? '-' }}</span>
+                                                <span class="score-separator">-</span>
+                                                <span class="js-away fw-bold fs-1">{{ $fixture->away_score ?? '-' }}</span>
+                                            </div>
+
+                                            <div class="score-frame js-kickoffbox"
+                                                style="display: {{ $state_code === 'NS' ? 'inline-flex' : 'none' }};">
+                                                <span class="fw-bold">{{ __('frontend.not_started') }}</span>
+                                            </div>
+
+                                            <div class="match-status-stack">
                                                 <span class="badge bg-success js-status"
-                                                    style="display: {{ $state_code === 'LIVE' || $state_code === 'INPLAY_2ND' || $state_code === 'INPLAY_1ST' ? 'inline-block' : 'none' }};">
+                                                    style="display: {{ in_array($state_code, ['LIVE', 'INPLAY_2ND', 'INPLAY_1ST']) ? 'inline-block' : 'none' }};">
                                                     {{ __('frontend.live') }}
                                                 </span>
-
-                                                <span class="badge fs-6 text-secondary js-ns"
-                                                    style="display: {{ $state_code === 'NS' ? 'inline-block' : 'none' }};">{{ __('frontend.not_started') }}</span>
-
-                                                <span class="badge fs-6 text-secondary js-ht"
-                                                    style="display: {{ $state_code === 'HT' ? 'inline-block' : 'none' }};">{{ __('frontend.half_time') }}</span>
-
-                                                <span class="badge fs-6 text-secondary js-ft"
-                                                    style="display: {{ $state_code === 'FT' ? 'inline-block' : 'none' }};">{{ __('frontend.finished') }}</span>
-                                                <span class="badge fs-6 text-secondary js-stop"
-                                                    style="display: {{ $state_code === 'POSTP' ? 'inline-block' : 'none' }};">{{ __('frontend.deferred') }}</span>
-
-                                                <span class="text-success fw-bold js-minute">
+                                                <span class="badge bg-light text-secondary js-ns"
+                                                    style="display: {{ $state_code === 'NS' ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.not_started') }}
+                                                </span>
+                                                <span class="badge bg-light text-secondary js-ht"
+                                                    style="display: {{ $state_code === 'HT' ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.half_time') }}
+                                                </span>
+                                                <span class="badge bg-light text-secondary js-ft"
+                                                    style="display: {{ $state_code === 'FT' ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.finished') }}
+                                                </span>
+                                                <span class="badge bg-light text-secondary js-stop"
+                                                    style="display: {{ $state_code === 'POSTP' ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.deferred') }}
+                                                </span>
+                                                <span class="fw-bold js-minute">
                                                     {{ $status === 'LIVE' && !empty($fx['minute']) ? $fx['minute'] . "'" : '' }}
                                                 </span>
                                             </div>
-                                            <div class="text-muted small d-none d-md-block mt-3">
-                                                <span>
-                                                    {!! Helper::day_name($dt, true) !!}
-                                                </span>
+                                        </div>
+
+                                        <div class="club-box">
+                                            <a href="{{ route('team.details', ['id' => $fixture->awayTeam->id]) }}">
+                                                @if (!empty($fixture->awayTeam->image_path))
+                                                    <img src="{{ $fixture->awayTeam->image_path }}" alt="">
+                                                @else
+                                                    <div class="club-logo-fallback">
+                                                        {{ mb_substr($fixture->awayTeam->$name_var ?? 'A', 0, 1) }}
+                                                    </div>
+                                                @endif
+                                                <div class="club-name">{{ $fixture->awayTeam->$name_var ?? '-' }}</div>
+                                            </a>
+
+                                            <div class="team-side-events text-end">
+                                                @include('frontEnd.football.partials.top-events', [
+                                                    'teamid' => $fixture->awayTeam->id,
+                                                    'textDiration' => 'text-end',
+                                                ])
                                             </div>
                                         </div>
                                     </div>
-                                    {{-- Away --}}
-                                    <div class="col-5">
-                                        <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}">
-                                            <div class="text-center gap-2 team-details">
-                                                <img src="{{ $fixture->awayTeam->image_path ?? '' }}"
-                                                    class=" rounded-circle object-contain p-1">
-                                                <h4 class="fw-bold mt-3">{{ $fixture->awayTeam->$name_var ?? '-' }}</h4>
+
+                                    {{-- <div class="match-hero-foot">
+                                        <div class="hero-stat">
+                                            <div class="hero-stat-label">{{ __('frontend.round') }}</div>
+                                            <div class="hero-stat-value">{{ $roundName ?: '-' }}</div>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <div class="hero-stat-label">{{ __('frontend.match_info') }}</div>
+                                            <div class="hero-stat-value">
+                                                {{ $venueCity ?: $venueName }}
                                             </div>
-                                        </a>
-                                        @include('frontEnd.football.partials.top-events', [
-                                            'teamid' => $fixture->awayTeam->id,
-                                            'textDiration' => 'text-end',
-                                        ])
-                                    </div>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <div class="hero-stat-label">{{ __('frontend.capacity') }}</div>
+                                            <div class="hero-stat-value">{{ $venueCapacity ?: '-' }}</div>
+                                        </div>
+                                    </div> --}}
                                 </div>
                             </div>
 
-                        </div>
-                        @php
-                            $status = $fx['status'] ?? 'NS';
-                        @endphp
-                        {{-- Tabs --}}
-                        <ul class="nav nav-tabs nav-fill mb-3 league-pills p-0" role="tablist"
-                            style="border-color: rgba(255,255,255,.08);">
-                            @if ($state_code !== 'NS')
+                            <ul class="nav nav-tabs nav-fill my-4 match-tabs league-pills" role="tablist">
+                                @if ($state_code !== 'NS')
+                                    <li class="nav-item js-events-tab-item" role="presentation">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-events"
+                                            type="button" role="tab">{{ __('frontend.events') }}</button>
+                                    </li>
+                                @endif
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-events" type="button"
-                                        role="tab">{{ __('frontend.events') }}</button>
+                                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-stats"
+                                        type="button" role="tab">{{ __('frontend.statistics') }}</button>
                                 </li>
-                            @endif
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-stats" type="button"
-                                    role="tab">{{ __('frontend.statistics') }}</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link " data-bs-toggle="tab" data-bs-target="#t-lineups" type="button"
-                                    role="tab">{{ __('frontend.lineups') }}</button>
-                            </li>
-                            @if(count($standings) > 0)
-                                <li class="nav-item">
-                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-standings" type="button">
-                                        {{ __('frontend.standings') }}
-                                    </button>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-lineups" type="button"
+                                        role="tab">{{ __('frontend.lineups') }}</button>
                                 </li>
-                            @endif
-                            {{-- <li class="nav-item">
-                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-commentary" type="button">
-                                    {{ __('frontend.discussion') }}
-                                </button>
-                            </li> --}}
-                        </ul>
+                                @if (count($standings) > 0)
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-standings"
+                                            type="button" role="tab">{{ __('frontend.standings') }}</button>
+                                    </li>
+                                @endif
+                            </ul>
 
-                        <div class="tab-content">
-                            {{-- EVENTS --}}
-                            @include('frontEnd.football.partials.events') {{-- هذا ملف جديد خاص بأحداث المباراة (أفضل من وضع الكود هنا مباشرة) --}}
+                            <div class="tab-content">
+                                @include('frontEnd.football.partials.events')
+                                @include('frontEnd.football.partials.statistics')
+                                @include('frontEnd.football.partials.lineups')
 
-                            {{-- STATISTICS --}}
-                            @include('frontEnd.football.partials.statistics') {{-- هذا ملف جديد خاص بإحصائيات المباراة (أفضل من وضع الكود هنا مباشرة) --}}
-
-                            {{-- LINEUPS --}}
-                            @include('frontEnd.football.partials.lineups')
-                            @if(count($standings) > 0)
-                                @include('frontEnd.football.rounds-tabs.standings', [
-                                    'standings' => $standings,
-                                    'homeID' => $fixture->homeTeam->id,
-                                    'awayID' => $fixture->awayTeam->id,
-                                ])
-                            @endif
-
-                            {{-- @include('frontEnd.football.partials.discussion') --}}
-
+                                @if (count($standings) > 0)
+                                    @include('frontEnd.football.rounds-tabs.standings', [
+                                        'standings' => $standings,
+                                        'homeID' => $fixture->homeTeam->id,
+                                        'awayID' => $fixture->awayTeam->id,
+                                    ])
+                                @endif
+                            </div>
                         </div>
 
-                        {{-- ✅ polling للتفاصيل لو LIVE --}}
-                        @if (($fx['status'] ?? '') === 'LIVE')
-                            @push('after-scripts')
-                                <script>
-                                    (function() {
-                                        const url = "{{ route('match.show', ['id' => $fixtureId]) }}?refresh=1";
-                                        async function tick() {
-                                            try {
-                                                const res = await fetch(url, {
-                                                    cache: 'no-store'
-                                                });
-                                                if (!res.ok) return;
-
-                                                // نجيب الصفحة ونستخرج JSON؟ (أسهل حل: سو API endpoint يرجع JSON)
-                                                // ✅ الأفضل: تعمل endpoint JSON خاص للتفاصيل (أعطيك تحت)
-                                            } catch (e) {}
-                                        }
-                                        // هنا اتركه مع endpoint JSON (أفضل)
-                                    })();
-                                </script>
-                            @endpush
-                        @endif
-                        {{-- @endif --}}
-                    </div>
-                    <div class="col-lg-4 mb-4">
-                        <div class="">
-                            {{-- ✅ Box: TV Stations --}}
-                            @if (!$isFinished)
-                                <div class="card bg-dark text-light shadow-sm mb-3" style="border-radius:14px;">
-                                    <div class="card-body">
-                                        <h5 class="card-title mb-3">{{ __('frontend.tv_stations') }}</h5>
-
-                                        @php
-                                            $stations = collect($fx['tv_stations'] ?? [])
-                                                ->filter(fn($station) => is_array($station))
-                                                ->unique(fn($station) => strtolower(trim($station['name'] ?? '')))
-                                                ->values();
-                                        @endphp
+                        <div class="col-lg-4">
+                            <div class="d-flex flex-column gap-4">
+                                @if (!$isFinished)
+                                    <div class="match-side-card">
+                                        <div class="section-title-row">
+                                            <h5>{{ __('frontend.tv_stations') }}</h5>
+                                            <span class="section-kicker">{{ $stations->count() }}</span>
+                                        </div>
 
                                         @if ($stations->isNotEmpty())
-                                            <ul class="list-unstyled d-flex flex-wrap mb-0 px-2">
+                                            <div class="tv-grid">
                                                 @foreach ($stations as $station)
                                                     @if (!empty($station['url']))
-                                                        <li class="mb-2">
-                                                            <a href="{{ $station['url'] }}" target="_blank">
+                                                        <a href="{{ $station['url'] }}" target="_blank"
+                                                            class="tv-item-link">
+                                                            <div class="tv-station-tile">
                                                                 @if (!empty($station['image']))
-                                                                    <img src="{{ $station['image'] }}" alt="station Image"
-                                                                        class="ms-2"
-                                                                        style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
+                                                                    <img src="{{ $station['image'] }}" alt="">
                                                                 @else
-                                                                    <i class="fas fa-tv me-2"
-                                                                        style="color:rgba(255,255,255,.6);"></i>
+                                                                    <i class="fas fa-tv"></i>
                                                                 @endif
-                                                            </a>
-                                                        </li>
+                                                            </div>
+                                                            <div class="tv-item-name">
+                                                                {{ $station['name'] ?? __('frontend.tv_stations') }}</div>
+                                                        </a>
                                                     @endif
                                                 @endforeach
-                                            </ul>
+                                            </div>
                                         @else
-                                            <div class="text-muted">{{ __('frontend.no_tv_stations') }}</div>
+                                            <div class="soft-empty">{{ __('frontend.no_tv_stations') }}</div>
                                         @endif
                                     </div>
-                                </div>
-                            @endif
-                            {{-- ✅ Box: Match Info (الملعب، المدينة، السعة) --}}
-                            <div class="card bg-dark text-light shadow-sm mb-3" style="border-radius:14px;">
-                                <div class="card-body">
-                                    <h5 class="card-title mb-3">{{ __('frontend.match_info') }}</h5>
-                                    <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="d-flex align-items-center gap-3 mb-3 border-bottom pb-3">
-                                        @if (!empty($fixture->league->image_path))
-                                            <img src="{{ $fixture->league->image_path }}" alt="League Image " class="p-1 "
-                                                style="width:50px;height:50px;border-radius:8px;object-fit:cover;background: #fff">
-                                        @else
-                                            <div
-                                                style="width:50px;height:50px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;">
-                                                <i class="fas fa-trophy" style="color:rgba(255,255,255,.6);"></i>
-                                            </div>
-                                        @endif
-                                        <div>
-                                            <div class="">
-                                                {{ data_get($fixture->league, $name_var, 'League') ?? __('frontend.unknown_venue') }}
-                                                - {{ __('frontend.round') }} {{ $fixture->round->name ?? '' }}
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <div class="d-flex align-items-center gap-3 mb-3 border-bottom pb-3">
-                                        <div
-                                            style="width:50px;height:50px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;">
-                                            <i class="fas fa-calendar" style="color:rgba(255,255,255,.6);"></i>
-                                        </div>
-                                        <div>
-                                            <div class="">
-                                                <span>
-                                                    {!! Helper::day_name($dt) !!}
-                                                    @if ($timeLabel)
-                                                        • {{ $timeLabel }}
-                                                    @endif
-                                                </span>
-                                            </div>
-                                        </div>
+                                @endif
+
+                                <div class="match-side-card">
+                                    <div class="section-title-row">
+                                        <h5>{{ __('frontend.match_info') }}</h5>
+                                        <span class="section-kicker">{{ __('frontend.round') }}
+                                            {{ $roundName ?: '-' }}</span>
                                     </div>
-                                    <div class="d-flex align-items-center gap-3 mb-3">
-                                        @if (!empty($fx['venue']['image']))
-                                            <img src="{{ $fx['venue']['image'] }}" alt="Venue Image" class=""
-                                                style="width:50px;height:50px;border-radius:8px;object-fit:cover;">
-                                        @else
-                                            <div
-                                                style="width:50px;height:50px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;">
-                                                <i class="fas fa-building" style="color:rgba(255,255,255,.6);"></i>
+
+                                    <div class="info-list">
+                                        <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}"
+                                            class="info-item">
+                                            <div class="info-icon">
+                                                @if (!empty($fixture->league->image_path))
+                                                    <img src="{{ $fixture->league->image_path }}" alt="">
+                                                @else
+                                                    <i class="fas fa-trophy"></i>
+                                                @endif
                                             </div>
-                                        @endif
-                                        <div>
-                                            <div class="">{{ $fx['venue']['name'] ?? __('frontend.unknown_venue') }}
+                                            <div>
+                                                <div class="fw-bold">{{ data_get($fixture->league, $name_var, 'League') }}
+                                                </div>
+                                                <div class="text-muted small">{{ __('frontend.round') }}
+                                                    {{ $roundName ?: '-' }}</div>
                                             </div>
-                                            <div class="text-muted" dir="{{ Helper::currentLanguage()->direction }}"
-                                                style="font-size:14px;">
-                                                <span
-                                                    dir="{{ Helper::currentLanguage()->direction }}">{{ $fx['venue']['city'] ?? '' }}</span>
-                                                @if (!empty($fx['venue']['capacity']))
-                                                    • {{ number_format($fx['venue']['capacity']) }}
-                                                    {{ __('frontend.capacity') }}
+                                        </a>
+
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="fas fa-calendar"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{!! Helper::day_name($dt) !!}</div>
+                                                @if ($timeLabel)
+                                                    <div class="text-muted small">{{ $timeLabel }}</div>
                                                 @endif
                                             </div>
                                         </div>
-                                    </div>
-                                    {{-- ممكن تضيف معلومات إضافية عن الملعب أو الفريقين إذا حابب --}}
-                                </div>
-                            </div>
 
-                            @include('frontEnd.football.partials.probabilities') {{-- هذا ملف جديد خاص باحتمالات الفوز (أفضل من وضع الكود هنا مباشرة) --}}
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                @if (!empty($fx['venue']['image']))
+                                                    <img src="{{ $fx['venue']['image'] }}" alt="">
+                                                @else
+                                                    <i class="fas fa-building"></i>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ $venueName }}</div>
+                                                <div class="text-muted small">
+                                                    {{ $venueCity ?: '-' }}
+                                                    @if ($venueCapacity)
+                                                        <span>- {{ $venueCapacity }} {{ __('frontend.capacity') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @include('frontEnd.football.partials.probabilities')
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -330,5 +320,7 @@
 @endsection
 
 @push('after-scripts')
-    @include('frontEnd.layouts.match-details') {{-- هذا ملف جديد فيه كود الجافا سكريبت الخاص بالتحديثات الحية (أفضل من وضعه هنا مباشرة) --}}
+    @if (!empty($shouldLoadLiveScript))
+        @include('frontEnd.layouts.match-details')
+    @endif
 @endpush

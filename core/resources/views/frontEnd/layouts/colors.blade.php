@@ -448,6 +448,10 @@ $style_color4 = Helper::GeneralSiteSettings("style_color4");
     .ads2top-home .card{
         background-color: #F1C40FC7 !important;
     }
+
+    .matches-home2 .card{
+        background-color: #000000 !important;
+    }
     .dark .list-group-item{
         background: {{ Helper::colorHexToDarken(Helper::GeneralSiteSettings("style_color2"),1.6) }} !important;
         border-color: {{ Helper::GeneralSiteSettings("style_color2") }};

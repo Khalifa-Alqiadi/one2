@@ -26,8 +26,8 @@ class UpdateLeaguesAndSeasons extends Command
      */
     public function handle()
     {
-        app(UpdatesLeaguesAndSeasonsServices::class)->loadLeagues();
-        $this->info("Fixtures synced: Successfull");
+         $saved = app(UpdatesLeaguesAndSeasonsServices::class)->loadLeagues();
+        $this->info("Leagues updated: {$saved}");
 
         return self::SUCCESS;
     }

@@ -114,12 +114,12 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
                                 <h3>{{ __('frontend.followUs') }}</h3>
                             </div>
                             @include('frontEnd.layouts.social', ['tt_position' => 'top'])
-                            <div class="contact-box">
+                            {{-- <div class="contact-box">
                                 {{ __('frontend.address') }}:
                                 {{ Helper::GeneralSiteSettings('contact_t1_' . @Helper::currentLanguage()->code) }}<br />
                                 {{ __('frontend.callUs') }}: {{ Helper::GeneralSiteSettings('contact_t3') }}<br />
                                 {{ __('frontend.email') }}: {{ Helper::GeneralSiteSettings('contact_t6') }}
-                            </div>
+                            </div> --}}
                             <div class="footer-title mt-4">
                                 <h3 class="mb-2 pb-0">{{ __('frontend.mobile_app') }}</h3>
                             </div>

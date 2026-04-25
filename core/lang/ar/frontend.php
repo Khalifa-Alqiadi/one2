@@ -108,7 +108,7 @@ return [
     'pts' => 'نقاط',
     'form' => 'آخر 5',
     'no_data' => 'لا توجد بيانات متاحة.',
-    'yesterdays_matches' => 'مباريات أمس',
+    'yesterdays_matches' => 'مباريات الأمس',
     'todays_matches' => 'مباريات اليوم',
     'yesterday' => 'أمس',
     'tomorrow' => 'غدًا',
@@ -186,7 +186,10 @@ return [
     'ad_space' => 'مساحة إعلانية',
     'mobile_app' => 'تطبيق الهاتف',
     'be_the_first_to_know' => 'كن أول من يعلم بكل جديد عبر تطبيقنا',
+    'key_matches' => 'أهم المباريات',
+    'tomorrows_matches' => 'مباريات الغد',
+    'videos' => 'الفيديوهات',
+    'home' => 'الرئيسية',
+    'leagues' => 'الدوري',
 ];
-
-
 ?>

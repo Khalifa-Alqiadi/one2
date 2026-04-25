@@ -28,7 +28,8 @@ h2,
 h3,
 h4,
 h5,
-h6 {
+h6,
+.badge {
     font-family: Tajawal, sans-serif
 }
 
@@ -249,8 +250,12 @@ h6 {
 }
 
 .swiper-backface-hidden .swiper-slide {
-    margin-right: 20px !important;
-    margin-left: 0 !important
+    margin-right: 20px;
+    margin-left: 0
+}
+
+.teams-home .swiper-backface-hidden .swiper-slide{
+    margin-right: 0;
 }
 
 .testimonials .testimonial-item .testimonial-img {

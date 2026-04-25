@@ -9,15 +9,21 @@
 
         function setText(sel, val) {
             const el = $(sel);
-            if (el) el.textContent = val ?? '';
+            if (el) {
+                el.textContent = val ?? '';
+            }
         }
 
         function show(el, yes, displayType = 'inline-block') {
-            if (el) el.style.display = yes ? displayType : 'none';
+            if (el) {
+                el.style.display = yes ? displayType : 'none';
+            }
         }
 
-        function showBlock(el, yes) {
-            if (el) el.style.display = yes ? 'block' : 'none';
+        function showBlock(el, yes, displayType = 'block') {
+            if (el) {
+                el.style.display = yes ? displayType : 'none';
+            }
         }
 
         function escapeHtml(str) {
@@ -32,32 +38,33 @@
         function setHeader(fx) {
             const status = String(fx.status ?? 'NS').toUpperCase();
             const stateCode = String(fx.state_code ?? 'NS').toUpperCase();
+            const isNotStarted = stateCode === 'NS' || status === 'NS';
+            const isLiveNow = ['LIVE', 'INPLAY_1ST', 'INPLAY_2ND'].includes(stateCode) || status === 'LIVE';
 
-
-            showBlock($('.js-scorebox'), status !== 'NS');
-            showBlock($('.js-kickoffbox'), status === 'NS');
+            showBlock($('.js-scorebox'), !isNotStarted, 'inline-flex');
+            showBlock($('.js-kickoffbox'), isNotStarted, 'inline-flex');
 
             setText('.js-home', fx.score?.home ?? '-');
             setText('.js-away', fx.score?.away ?? '-');
 
-            show($('.js-status'), status === 'LIVE');
-            show($('.js-ns'), stateCode === 'NS');
+            show($('.js-status'), isLiveNow);
+            show($('.js-ns'), isNotStarted);
             show($('.js-ht'), stateCode === 'HT');
-            show($('.js-ft'), status === 'FT');
+            show($('.js-ft'), stateCode === 'FT' || status === 'FT');
             show($('.js-stop'), stateCode === 'POSTP');
 
-            setText('.js-minute', status === 'LIVE' && fx.minute ? (fx.minute + "'") : '');
+            setText('.js-minute', isLiveNow && fx.minute ? (fx.minute + "'") : '');
 
             const tabItem = $('.js-events-tab-item');
             if (tabItem) {
-                tabItem.style.display = status === 'NS' ? 'none' : 'block';
+                tabItem.style.display = isNotStarted ? 'none' : 'block';
             }
 
-            showBlock(document.getElementById('js-ns-prob'), status === 'NS');
+            showBlock(document.getElementById('js-ns-prob'), isNotStarted);
 
             const statsSection = $('.js-stats-section');
             if (statsSection) {
-                statsSection.style.display = status === 'NS' ? 'none' : 'block';
+                statsSection.style.display = isNotStarted ? 'none' : 'block';
             }
         }
 
@@ -73,152 +80,120 @@
             const bh = $('.js-bar-home');
             const bd = $('.js-bar-draw');
             const ba = $('.js-bar-away');
+
             if (bh) bh.style.width = home + '%';
             if (bd) bd.style.width = draw + '%';
             if (ba) ba.style.width = away + '%';
-        }
-
-        function updateStatistics(p) {
-            const home2 = Number(p?.home ?? 0);
-            const away2 = Number(p?.away ?? 0);
-
-            const total = home2 + away2;
-
-            let homePercent = 0;
-            let awayPercent = 0;
-
-            if (total > 0) {
-                homePercent = Math.round((home2 / total) * 100);
-                awayPercent = Math.round((away2 / total) * 100);
-            }
-
-            setText('.js-p-home2', homePercent + '%');
-            setText('.js-p-away2', awayPercent + '%');
-
-            const bh = $('.js-bar-home2');
-            const ba = $('.js-bar-away2');
-
-            if (bh) bh.style.width = homePercent + '%';
-            if (ba) ba.style.width = awayPercent + '%';
         }
 
         function renderEvents(fx) {
             const wrap = $('.js-events-wrapper');
             if (!wrap) return;
 
-            let events = Array.isArray(fx.events?.data) ? fx.events.data : (Array.isArray(fx.events) ? fx.events :
-            []);
+            let events = Array.isArray(fx.events?.data) ? fx.events.data : (Array.isArray(fx.events) ? fx.events : []);
 
             if (!events.length) {
-                wrap.innerHTML = '<div class="gx-empty">لا توجد أحداث</div>';
+                wrap.innerHTML = '<div class="soft-empty">لا توجد أحداث</div>';
                 return;
             }
 
-            let html = '';
+            const html = events.map((e) => {
+                const kind = String(e.kind ?? 'other');
+                const minute = escapeHtml(e.minute_label ?? '-');
+                const playerName = escapeHtml(e.player_name ?? '');
+                const playerImage = e.player_image ?? '';
+                const eventTypeName = String(e.type_name ?? e.event_name ?? e.name ?? '').toLowerCase();
+                const isYellowCard = kind === 'yellow_card' || eventTypeName.includes('yellow');
+                const isRedCard = kind === 'red_card' || eventTypeName.includes('red');
 
-            events.forEach(e => {
-                const kind = e.kind ?? 'other';
-                const minute = escapeHtml(e.minute_label ?? '');
+                const sub = e.sub ?? {};
+                const inPlayer = sub.in ?? {};
+                const outPlayer = sub.out ?? {};
+                const inName = escapeHtml(inPlayer.name ?? '-');
+                const outName = escapeHtml(outPlayer.name ?? '-');
+                const inImg = inPlayer.image ?? '';
+                const outImg = outPlayer.image ?? '';
+
+                const goal = e.goal ?? {};
+                const scorerName = escapeHtml(goal.scorer_name ?? e.player_name ?? '-');
+                const scorerImg = goal.scorer_image ?? '';
+                const assistName = escapeHtml(goal.assist_name ?? '');
+                const scoreLine = escapeHtml(goal.scoreline ?? '');
+
+                const teamName = escapeHtml(e.team_name ?? '');
+
+                let title = 'حدث';
+                let body = '';
+                let media = '';
 
                 if (kind === 'goal') {
-                    const goal = e.goal ?? {};
-                    const scorerName = escapeHtml(goal.scorer_name ?? e.player_name ?? '-');
-                    const scorerImg = goal.scorer_image ?? '';
-                    const assistName = escapeHtml(goal.assist_name ?? '');
-                    const scoreLine = escapeHtml(goal.scoreline ?? '');
-                    const fallback = scorerName ? scorerName.charAt(0) : '?';
-
-                    html += `
-                    <div class="gx-card gx-goal-card">
-                        <div class="gx-goal-top">
-                            <div class="gx-goal-chip">
-                                <span class="gx-goal-icon">⚽</span>
-                                هدف
-                                <div class="gx-goal-minute">${minute}</div>
-                            </div>
+                    title = 'هدف';
+                    body = `
+                        <div class="fw-bold">${scorerName}</div>
+                        <div class="text-muted small">
+                            ${scoreLine || 'تحديث النتيجة'}
+                            ${assistName ? ` - أسيست: ${assistName}` : ''}
                         </div>
-                        <div class="gx-goal-scoreline">${scoreLine}</div>
-                        <div class="gx-goal-body">
-                            <div class="gx-goal-player">
-                                <div class="gx-avatar gx-goal-ring">
-                                    ${scorerImg ? `<img src="${scorerImg}" alt="" loading="lazy" onerror="this.remove();">` : ''}
-                                    <div class="gx-fallback">${fallback}</div>
-                                </div>
-                                <div class="gx-goal-info">
-                                    <div class="gx-name">${scorerName}</div>
-                                    ${assistName ? `<div class="gx-meta">أسيست: ${assistName}</div>` : ''}
-                                </div>
+                    `;
+                    if (scorerImg) {
+                        media = `<img src="${escapeHtml(scorerImg)}" alt="" style="width: 44px; height: 44px; border-radius: 14px; object-fit: cover;">`;
+                    }
+                } else if (kind === 'sub') {
+                    title = 'تبديل لاعب';
+                    body = `
+                        <div class="fw-bold">تبديل لاعب</div>
+                        <div class="text-muted small">${outName} - ${inName}</div>
+                    `;
+                    media = `
+                        <div class="d-flex gap-2">
+                            ${outImg ? `<img src="${escapeHtml(outImg)}" alt="" style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover;">` : ''}
+                            ${inImg ? `<img src="${escapeHtml(inImg)}" alt="" style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover;">` : ''}
+                        </div>
+                    `;
+                } else if (isYellowCard) {
+                    title = 'بطاقة صفراء';
+                    body = `
+                        <div class="fw-bold">${playerName || '-'}</div>
+                        <div class="text-muted small">تم إنذاره ببطاقة صفراء</div>
+                    `;
+                    if (playerImage) {
+                        media = `<img src="${escapeHtml(playerImage)}" alt="" style="width: 44px; height: 44px; border-radius: 14px; object-fit: cover;">`;
+                    }
+                } else if (isRedCard) {
+                    title = 'بطاقة حمراء';
+                    body = `
+                        <div class="fw-bold">${playerName || '-'}</div>
+                        <div class="text-muted small">تم طرده ببطاقة حمراء</div>
+                    `;
+                    if (playerImage) {
+                        media = `<img src="${escapeHtml(playerImage)}" alt="" style="width: 44px; height: 44px; border-radius: 14px; object-fit: cover;">`;
+                    }
+                } else {
+                    title = 'حدث';
+                    body = `
+                        <div class="fw-bold">${playerName || teamName || 'حدث'}</div>
+                        <div class="text-muted small">${escapeHtml(e.type_name ?? e.event_name ?? e.name ?? 'تفاصيل المباراة')}</div>
+                    `;
+                }
+
+                return `
+                    <div class="info-item">
+                        <div class="info-icon">${minute}</div>
+                        <div class="w-100">
+                            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2">
+                                <div class="fw-bold">${teamName || 'المباراة'}</div>
+                                <div class="section-kicker">${title}</div>
                             </div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div>${body}</div>
+                            </div>
+                            ${media}
                         </div>
                     </div>
                 `;
-                    return;
-                }
+            }).join('');
 
-                if (kind === 'sub') {
-                    const sub = e.sub ?? {};
-                    const inn = sub.in ?? {};
-                    const out = sub.out ?? {};
-
-                    const inName = escapeHtml(inn.name ?? '-');
-                    const outName = escapeHtml(out.name ?? '-');
-                    const inImg = inn.image ?? '';
-                    const outImg = out.image ?? '';
-                    const inNum = escapeHtml(inn.number ?? '');
-                    const outNum = escapeHtml(out.number ?? '');
-                    const inPos = escapeHtml(inn.pos ?? '');
-                    const outPos = escapeHtml(out.pos ?? '');
-                    const inInitial = inName ? inName.charAt(0) : '?';
-                    const outInitial = outName ? outName.charAt(0) : '?';
-
-                    html += `
-                    <div class="gx-card gx-sub-card">
-                        <div class="gx-card-head">
-                            <div class="gx-minute">${minute}</div>
-                            <div class="gx-title">
-                                <span class="gx-icon">🔁</span>
-                                تبديل لاعب
-                            </div>
-                        </div>
-
-                        <div class="gx-card-body">
-                            <div class="gx-row">
-                                <div class="gx-tag gx-in">دخل</div>
-                                <div class="gx-player">
-                                    <div class="gx-name">${inName}</div>
-                                    <div class="gx-meta">
-                                        ${inPos ? `<span>${inPos}</span>` : ''}
-                                        ${inNum ? `<span>• #${inNum}</span>` : ''}
-                                    </div>
-                                </div>
-                                <div class="gx-avatar gx-in-ring" title="${inName}">
-                                    ${inImg ? `<img src="${inImg}" alt="" loading="lazy" onerror="this.remove();">` : ''}
-                                    <div class="gx-fallback">${inInitial}</div>
-                                </div>
-                            </div>
-
-                            <div class="gx-row mt">
-                                <div class="gx-tag gx-out">خرج</div>
-                                <div class="gx-player">
-                                    <div class="gx-name">${outName}</div>
-                                    <div class="gx-meta">
-                                        ${outPos ? `<span>${outPos}</span>` : ''}
-                                        ${outNum ? `<span>• #${outNum}</span>` : ''}
-                                    </div>
-                                </div>
-                                <div class="gx-avatar gx-out-ring" title="${outName}">
-                                    ${outImg ? `<img src="${outImg}" alt="" loading="lazy" onerror="this.remove();">` : ''}
-                                    <div class="gx-fallback">${outInitial}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                    return;
-                }
-            });
-
-            wrap.innerHTML = html || '<div class="gx-empty">لا توجد أحداث</div>';
+            wrap.innerHTML = html;
         }
 
         function renderStats(fx) {
@@ -228,75 +203,55 @@
             const stats = Array.isArray(fx.statistics_rows) ? fx.statistics_rows : [];
 
             if (!stats.length) {
-                wrap.innerHTML = '<div class="text-muted">لا توجد إحصائيات</div>';
+                wrap.innerHTML = '<div class="soft-empty">لا توجد إحصائيات</div>';
                 return;
             }
 
-            let html = '';
+            const html = `
+                <div class="d-flex flex-column gap-3 gx-stats-list">
+                    ${stats.map((row) => {
+                        const homeValue = Number(row.home ?? 0);
+                        const awayValue = Number(row.away ?? 0);
+                        const total = homeValue + awayValue;
+                        const homePercent = total > 0 ? Math.round((homeValue / total) * 100) : 0;
+                        const awayPercent = total > 0 ? Math.round((awayValue / total) * 100) : 0;
 
-            stats.forEach(row => {
-                html += `
-                <div class="gx-stat-row">
-                    <div class="gx-val gx-left">
-                        <span class="gx-pill gx-pill-home">${escapeHtml(row.home ?? '-')}</span>
-                    </div>
-                    <div class="gx-label">${escapeHtml(row.label ?? '-')}</div>
-                    <div class="gx-val gx-right">
-                        <span class="gx-pill gx-pill-away">${escapeHtml(row.away ?? '-')}</span>
-                    </div>
+                        return `
+                            <div class="info-item d-block">
+                                <div class="gx-label text-center mb-3 fw-bold">${escapeHtml(row.label ?? '-')}</div>
+                                <div class="row align-items-center g-3">
+                                    <div class="col-6">
+                                        <div class="fw-bold text-start gx-ns-perc-val">${escapeHtml(row.home ?? 0)}</div>
+                                        <div class="gx-ns-bar" dir="ltr">
+                                            <div class="gx-ns-bar-home2" style="width: ${homePercent}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-bold text-end gx-ns-perc-val">${escapeHtml(row.away ?? 0)}</div>
+                                        <div class="gx-ns-bar">
+                                            <div class="gx-ns-bar-away2" style="width: ${awayPercent}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
-            });
 
             wrap.innerHTML = html;
         }
 
-        function groupPlayersByRows(players) {
-            const map = {};
-
-            (players || []).forEach(p => {
-                const field = String(p.formation_field ?? '');
-                let r = 0,
-                    c = 0;
-
-                if (field.includes(':')) {
-                    const parts = field.split(':');
-                    r = parseInt(parts[0] || '0', 10);
-                    c = parseInt(parts[1] || '0', 10);
-                }
-
-                if (!map[r]) map[r] = [];
-                map[r].push({
-                    ...p,
-                    _r: r,
-                    _c: c
-                });
-            });
-
-            return Object.keys(map)
-                .map(k => Number(k))
-                .sort((a, b) => a - b)
-                .map(k => ({
-                    row: k,
-                    players: map[k].sort((a, b) => (a._c || 0) - (b._c || 0))
-                }));
+        function playerName(player) {
+            return player?.player?.display_name || player?.player?.name || player?.player_name || '-';
         }
 
-        function formationLabel(grouped) {
-            const out = [];
-            grouped.forEach(g => {
-                if ((g.players || []).length === 1) return;
-                out.push(g.players.length);
-            });
-            return out.join('-');
+        function playerNum(player) {
+            return player?.jersey_number ?? '';
         }
 
-        function playerName(p) {
-            return p?.player?.display_name || p?.player?.name || p?.player_name || '-';
-        }
-
-        function playerNum(p) {
-            return p?.jersey_number ?? '';
+        function playerImg(player) {
+            return player?.player?.image_path || '';
         }
 
         function renderLineups(fx) {
@@ -305,112 +260,95 @@
 
             const lineups = Array.isArray(fx.lineups) ? fx.lineups : [];
             if (!lineups.length) {
-                wrap.innerHTML = '<div class="text-muted">لا توجد تشكيلات</div>';
+                wrap.innerHTML = '<div class="soft-empty">لا توجد تشكيلات</div>';
                 return;
             }
 
             const homeId = fx.home?.id ?? null;
             const awayId = fx.away?.id ?? null;
 
-            const homeAll = lineups.filter(p => Number(p.team_id) === Number(homeId));
-            const awayAll = lineups.filter(p => Number(p.team_id) === Number(awayId));
+            const homeAll = lineups.filter((p) => Number(p.team_id) === Number(homeId));
+            const awayAll = lineups.filter((p) => Number(p.team_id) === Number(awayId));
 
-            let homeXI = homeAll.filter(p => Number(p.type_id) === 11);
-            let awayXI = awayAll.filter(p => Number(p.type_id) === 11);
+            let homeXI = homeAll.filter((p) => Number(p.type_id) === 11);
+            let awayXI = awayAll.filter((p) => Number(p.type_id) === 11);
 
             if (!homeXI.length) homeXI = homeAll.slice(0, 11);
             if (!awayXI.length) awayXI = awayAll.slice(0, 11);
 
-            const homeBench = homeAll.filter(p => Number(p.type_id) !== 11);
-            const awayBench = awayAll.filter(p => Number(p.type_id) !== 11);
+            const homeBench = homeAll.filter((p) => Number(p.type_id) !== 11);
+            const awayBench = awayAll.filter((p) => Number(p.type_id) !== 11);
 
-            const homeRows = groupPlayersByRows(homeXI);
-            const awayRows = groupPlayersByRows(awayXI);
-
-            const homeFormation = formationLabel(homeRows);
-            const awayFormation = formationLabel(awayRows);
-
-            let html = `
-            <div class="gx-topline">
-                <div class="gx-formation">${escapeHtml(awayFormation)}</div>
-                <div class="gx-team">${escapeHtml(fx.away?.name ?? '')}</div>
-            </div>
-
-            <div class="gx-field">
-        `;
-
-            awayRows.forEach(g => {
-                html += `<div class="gx-line">`;
-                g.players.forEach(p => {
-                    html += `
-                    <div class="gx-player">
-                        <div class="gx-badge gx-away">
-                            <span class="gx-num">${escapeHtml(playerNum(p))}</span>
+            const renderRoster = (players) => players.map((p) => `
+                <div class="lineup-roster-card d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        ${playerImg(p)
+                            ? `<img src="${escapeHtml(playerImg(p))}" alt="" style="width: 42px; height: 42px; border-radius: 12px; object-fit: cover;">`
+                            : `<div class="info-icon" style="width: 42px; height: 42px; border-radius: 12px;">${escapeHtml(String(playerName(p)).charAt(0) || '?')}</div>`}
+                        <div>
+                            <div class="fw-bold">${escapeHtml(playerName(p))}</div>
+                            <div class="text-muted small">${escapeHtml(p?.position?.name ?? p?.position?.code ?? '-')}</div>
                         </div>
-                        <div class="gx-name">${escapeHtml(playerName(p))}</div>
                     </div>
-                `;
-                });
-                html += `</div>`;
-            });
+                    <span class="section-kicker">#${escapeHtml(playerNum(p) || '-')}</span>
+                </div>
+            `).join('');
 
-            html += `<div class="gx-mid"></div>`;
+            const renderBench = (players) => {
+                if (!players.length) {
+                    return '<div class="soft-empty">لا يوجد بدلاء</div>';
+                }
 
-            homeRows.forEach(g => {
-                html += `<div class="gx-line">`;
-                g.players.forEach(p => {
-                    html += `
-                    <div class="gx-player">
-                        <div class="gx-badge gx-home">
-                            <span class="gx-num">${escapeHtml(playerNum(p))}</span>
+                return players.map((p) => `
+                    <div class="bench-row">
+                        <span>${escapeHtml(playerName(p))}</span>
+                        <span class="text-muted small">#${escapeHtml(playerNum(p) || '-')}</span>
+                    </div>
+                `).join('');
+            };
+
+            wrap.innerHTML = `
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="info-item d-block">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="section-title-row mb-3">
+                                        <h5>${escapeHtml(fx.home?.name ?? 'المضيف')}</h5>
+                                        <span class="section-kicker">التشكيل الأساسي</span>
+                                    </div>
+                                    <div class="d-flex flex-column gap-2">${renderRoster(homeXI)}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="section-title-row mb-3">
+                                        <h5>${escapeHtml(fx.away?.name ?? 'الضيف')}</h5>
+                                        <span class="section-kicker">التشكيل الأساسي</span>
+                                    </div>
+                                    <div class="d-flex flex-column gap-2">${renderRoster(awayXI)}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="gx-name">${escapeHtml(playerName(p))}</div>
                     </div>
-                `;
-                });
-                html += `</div>`;
-            });
-
-            html += `
-            </div>
-
-            <div class="gx-bottomline">
-                <div class="gx-team">${escapeHtml(fx.home?.name ?? '')}</div>
-                <div class="gx-formation">${escapeHtml(homeFormation)}</div>
-            </div>
-
-            <div class="row g-3 mt-4">
-                <div class="col-lg-6">
-                    <div class="fw-bold mb-2">${escapeHtml(fx.home?.name ?? '')} - البدلاء</div>
-                    <ul class="list-group list-group-flush">
-                        ${homeBench.length ? homeBench.map(p => `
-                            <li class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
-                                <span>${escapeHtml(playerName(p))}</span>
-                                <span class="text-muted small">#${escapeHtml(playerNum(p))}</span>
-                            </li>
-                        `).join('') : `
-                            <li class="list-group-item bg-dark text-muted border-secondary">لا يوجد بدلاء</li>
-                        `}
-                    </ul>
+                    <div class="col-md-6">
+                        <div class="info-item d-block">
+                            <div class="section-title-row">
+                                <h5>${escapeHtml(fx.home?.name ?? 'المضيف')} - البدلاء</h5>
+                                <span class="section-kicker">${homeBench.length}</span>
+                            </div>
+                            ${renderBench(homeBench)}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item d-block">
+                            <div class="section-title-row">
+                                <h5>${escapeHtml(fx.away?.name ?? 'الضيف')} - البدلاء</h5>
+                                <span class="section-kicker">${awayBench.length}</span>
+                            </div>
+                            ${renderBench(awayBench)}
+                        </div>
+                    </div>
                 </div>
-
-                <div class="col-lg-6">
-                    <div class="fw-bold mb-2">${escapeHtml(fx.away?.name ?? '')} - البدلاء</div>
-                    <ul class="list-group list-group-flush">
-                        ${awayBench.length ? awayBench.map(p => `
-                            <li class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
-                                <span>${escapeHtml(playerName(p))}</span>
-                                <span class="text-muted small">#${escapeHtml(playerNum(p))}</span>
-                            </li>
-                        `).join('') : `
-                            <li class="list-group-item bg-dark text-muted border-secondary">لا يوجد بدلاء</li>
-                        `}
-                    </ul>
-                </div>
-            </div>
-        `;
-
-            wrap.innerHTML = html;
+            `;
         }
 
         async function tick() {
@@ -433,27 +371,24 @@
                 if (!json || !json.ok || !json.data) return;
 
                 const fx = json.data;
-
                 setHeader(fx);
 
                 if (fx.probabilities) {
                     updateProbabilities(fx.probabilities);
                 }
-                // if (fx.statistics_rows) {
-                //     updateStatistics(fx.statistics_rows);
-                // }
 
                 renderEvents(fx);
                 renderStats(fx);
                 renderLineups(fx);
 
-
                 const status = String(fx.status ?? '').toUpperCase();
-                if (status === 'FT') {
+                const stateCode = String(fx.state_code ?? '').toUpperCase();
+                const stillLive = status === 'LIVE' || ['LIVE', 'INPLAY_1ST', 'INPLAY_2ND', 'HT'].includes(stateCode);
+
+                if (!stillLive && timer) {
                     clearInterval(timer);
                     timer = null;
                 }
-
             } catch (e) {
                 console.error('Live match details polling failed:', e);
             } finally {
@@ -463,50 +398,5 @@
 
         tick();
         timer = setInterval(tick, intervalMs);
-        startLiveCommentary(true)
-
-
-//         async function loadCommentary(fixtureId) {
-//             const resCommentary = await fetch("{{ route('commentary', ['id' => $fixtureId]) }}");
-//             const data = await resCommentary.json();
-//
-//             // if (!resCommentary.ok) return;
-//             renderCommentary(data.data);
-//         }
-
-        function renderCommentary(events) {
-            const container = document.querySelector('.js-commentary');
-            if (!container) return;
-
-            container.innerHTML = '';
-
-            events.forEach(e => {
-
-                const minute = e.extra_minute ?
-                    `${e.minute}+${e.extra_minute}` :
-                    e.minute;
-
-                const row = document.createElement('div');
-                row.className = 'commentary-row';
-
-                row.innerHTML = `
-            <div class="minute">${minute}'</div>
-            <div class="text">${e.comment}</div>
-        `;
-
-                container.appendChild(row);
-            });
-        }
-
-        function startLiveCommentary(isLive) {
-            var fixtureId = `{{$fixtureId}}`;
-            if (!isLive) return;
-
-//             loadCommentary(fixtureId);
-//
-//             setInterval(() => {
-//                 loadCommentary(fixtureId);
-//             }, 10000); // كل 10 ثواني
-        }
     })();
 </script>

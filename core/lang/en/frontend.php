@@ -182,6 +182,11 @@ return [
     'major_national_teams' => 'Major National Teams',
     'ad_space' => 'Ad Space',
     'mobile_app' => 'Mobile App',
-    'be_the_first_to_know' => 'كن أول من يعلم بكل جديد عبر تطبيقنا',
+    'be_the_first_to_know' => 'Be the first to know',
+    'key_matches' => 'Key Matches',
+    'tomorrows_matches' => "Tomorrow's Matches",
+    'videos' => 'Videos',
+    'home' => 'Home',
+    'leagues' => 'Leagues',
 ];
 ?>

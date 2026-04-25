@@ -1,22 +1,16 @@
 <div class="tab-pane fade" id="t-lineups" role="tabpanel">
-    <div class="card bg-dark text-light border-0 shadow-sm gx-wrap">
-        <div class="card-body">
-
+    <div class="match-tab-card">
+        <div class="panel-card-body">
             @php
                 $lineups = collect($fx['lineups'] ?? []);
 
                 $homeId = $fx['home']['id'] ?? null;
                 $awayId = $fx['away']['id'] ?? null;
-
-                // ✅ عندك team_id وليس participant_id
                 $homeAll = $lineups->where('team_id', $homeId)->values();
                 $awayAll = $lineups->where('team_id', $awayId)->values();
-
-                // ✅ الأساسيين: type_id = 11
                 $homeXI = $homeAll->where('type_id', 11)->values();
                 $awayXI = $awayAll->where('type_id', 11)->values();
 
-                // fallback لو ما اكتملت
                 if ($homeXI->count() === 0) {
                     $homeXI = $homeAll->take(11);
                 }
@@ -27,16 +21,10 @@
                 $homeBench = $homeAll->where('type_id', '!=', 11)->values();
                 $awayBench = $awayAll->where('type_id', '!=', 11)->values();
 
-                // helpers
-                $pName = fn($p) => data_get($p, 'player.display_name') ??
-                    (data_get($p, 'player.name') ?? (data_get($p, 'player_name') ?? '-'));
-
+                $pName = fn($p) => data_get($p, 'player.display_name') ?? (data_get($p, 'player.name') ?? (data_get($p, 'player_name') ?? '-'));
                 $pNum = fn($p) => data_get($p, 'jersey_number') ?? '';
-                $pId = fn($p) => data_get($p, 'player.id') ?? '';
-
                 $pImg = fn($p) => data_get($p, 'player.image_path') ?? '';
 
-                // ✅ formation_field مثل "2:4"
                 $parseField = function ($val) {
                     $val = (string) $val;
                     if (!str_contains($val, ':')) {
@@ -46,7 +34,6 @@
                     return [(int) $r, (int) $c];
                 };
 
-                // group by row index (r)
                 $groupRows = function ($players) use ($parseField) {
                     return $players
                         ->map(function ($p) use ($parseField) {
@@ -59,17 +46,11 @@
                         ->groupBy(fn($p) => (int) ($p['_r'] ?? 0));
                 };
 
-                $awayRows = $groupRows($awayXI);
-                $homeRows = $groupRows($homeXI);
-
-                // formation label من عدد الصفوف/اللاعبين (تقريبي)
                 $formationLabel = function ($rows) {
-                    // تجاهل صف الحارس غالبًا r=1
                     $rKeys = collect($rows->keys())->sort()->values();
                     $out = [];
                     foreach ($rKeys as $rk) {
                         $count = $rows[$rk]->count();
-                        // افتراض: أقل صف فيه 1 هو الحارس
                         if ($count === 1) {
                             continue;
                         }
@@ -78,146 +59,114 @@
                     return $out ? implode('-', $out) : '';
                 };
 
+                $awayRows = $groupRows($awayXI);
+                $homeRows = $groupRows($homeXI);
                 $homeFormation = $formationLabel($homeRows);
                 $awayFormation = $formationLabel($awayRows);
             @endphp
 
-            @if ($lineups->isEmpty())
-                <div class="text-muted">لا توجد تشكيلات</div>
-            @else
-                {{-- عنوان علوي --}}
-                <div class="gx-topline">
-                    <div class="gx-formation">
-                        {{ $awayFormation ?: '' }}
-                    </div>
-                    <div class="gx-team">
-                        <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}">
-                            {{ $fixture->awayTeam->$name_var ?? '' }}
-                        </a>
-                    </div>
-                </div>
+            <div class="section-title-row">
+                <h3>{{ __('frontend.lineups') }}</h3>
+                <span class="section-kicker">{{ $homeFormation ?: '-' }} / {{ $awayFormation ?: '-' }}</span>
+            </div>
 
-                {{-- الملعب --}}
-                <div class="gx-field">
-
-                    {{-- away (فوق) --}}
-                    @foreach ($awayRows as $rk => $row)
-                        <div class="gx-line">
-                            @foreach ($row->sortBy('_c') as $p)
-                                @php
-                                    $name = $pName($p);
-                                    $num = $pNum($p);
-                                    $img = $pImg($p);
-                                    $id = $pId($p);
-                                    $initial = trim($name) ? mb_substr(trim($name), 0, 1) : '?';
-                                @endphp
-
-                                <div class="gx-player">
-                                    {{-- <a href="{{route('players.details', ['id' => $id])}}"> --}}
-                                        <div class="gx-badge gx-away">
-                                            <img src="{{ $img }}" alt="station Image" class=""
-                                                style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
-                                            {{-- <span class="gx-num">{{ $num }}</span> --}}
+            <div class="js-lineups-wrapper">
+                @if ($lineups->isEmpty())
+                    <div class="soft-empty">لا توجد تشكيلات</div>
+                @else
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="info-item d-block">
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="section-title-row mb-3">
+                                            <h5>{{ $fixture->homeTeam->$name_var ?? '' }}</h5>
+                                            <span class="section-kicker">{{ $homeFormation ?: '-' }}</span>
                                         </div>
-                                        <div class="gx-name">{{ $name }}</div>
-                                    {{-- </a> --}}
-                                </div>
-                            @endforeach
-                        </div>
-                    @endforeach
-
-                    <div class="gx-mid"></div>
-
-                    {{-- home (تحت) --}}
-                    @foreach ($homeRows as $rk => $row)
-                        <div class="gx-line">
-                            @foreach ($row->sortBy('_c') as $p)
-                                @php
-                                    $name = $pName($p);
-                                    $num = $pNum($p);
-                                    $img = $pImg($p);
-                                    $id = $pId($p);
-                                    $initial = trim($name) ? mb_substr(trim($name), 0, 1) : '?';
-                                @endphp
-
-                                <div class="gx-player">
-                                    {{-- <a href="{{route('players.details', ['id' => $id])}}"> --}}
-                                        <div class="gx-badge gx-home">
-                                            {{-- <span class="gx-num">{{ $num }}</span> --}}
-                                            <img src="{{ $img }}" alt="station Image" class=""
-                                                style="width:35px;height:35px;border-radius:8px;object-fit:cover;">
+                                        <div class="d-flex flex-column gap-2">
+                                            @foreach ($homeXI as $p)
+                                                <div class="lineup-roster-card d-flex align-items-center justify-content-between gap-3">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        @if ($pImg($p))
+                                                            <img src="{{ $pImg($p) }}" alt="" style="width: 42px; height: 42px; border-radius: 12px; object-fit: cover;">
+                                                        @else
+                                                            <div class="info-icon" style="width: 42px; height: 42px; border-radius: 12px;">{{ mb_substr($pName($p), 0, 1) }}</div>
+                                                        @endif
+                                                        <div>
+                                                            <div class="fw-bold">{{ $pName($p) }}</div>
+                                                            <div class="text-muted small">{{ data_get($p, 'position.name') ?? data_get($p, 'position.code') ?? '-' }}</div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="section-kicker">#{{ $pNum($p) ?: '-' }}</span>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                        <div class="gx-name">{{ $name }}</div>
-                                    {{-- </a> --}}
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="section-title-row mb-3">
+                                            <h5>{{ $fixture->awayTeam->$name_var ?? '' }}</h5>
+                                            <span class="section-kicker">{{ $awayFormation ?: '-' }}</span>
+                                        </div>
+                                        <div class="d-flex flex-column gap-2">
+                                            @foreach ($awayXI as $p)
+                                                <div class="lineup-roster-card d-flex align-items-center justify-content-between gap-3">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        @if ($pImg($p))
+                                                            <img src="{{ $pImg($p) }}" alt="" style="width: 42px; height: 42px; border-radius: 12px; object-fit: cover;">
+                                                        @else
+                                                            <div class="info-icon" style="width: 42px; height: 42px; border-radius: 12px;">{{ mb_substr($pName($p), 0, 1) }}</div>
+                                                        @endif
+                                                        <div>
+                                                            <div class="fw-bold">{{ $pName($p) }}</div>
+                                                            <div class="text-muted small">{{ data_get($p, 'position.name') ?? data_get($p, 'position.code') ?? '-' }}</div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="section-kicker">#{{ $pNum($p) ?: '-' }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
-                            @endforeach
+                            </div>
                         </div>
-                    @endforeach
-                </div>
 
-                {{-- عنوان سفلي --}}
-                <div class="gx-bottomline">
-                    <div class="gx-team">
-                        <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}">
-                            {{ $fixture->homeTeam->$name_var ?? '' }}
-                        </a>
-                    </div>
-                    <div class="gx-formation">
-                        {{ $homeFormation ?: '' }}
-                    </div>
-                </div>
-
-                {{-- البدلاء --}}
-                <div class="row g-3 mt-4">
-                    <div class="col-lg-6">
-                        <div class="fw-bold mb-2">
-                            <a href="{{route('team.details', ['id' => $fixture->homeTeam->id])}}">
-                                {{ $fixture->homeTeam->$name_var ?? '' }} -
-                                البدلاء
-                            </a>
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            @forelse($homeBench as $p)
-                                <li
-                                    class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
-                                    {{-- <a href="{{route('players.details', ['id' => $pId($p)])}}"> --}}
+                        <div class="col-md-6">
+                            <div class="info-item d-block">
+                                <div class="section-title-row">
+                                    <h5>{{ $fixture->homeTeam->$name_var ?? '' }} - البدلاء</h5>
+                                    <span class="section-kicker">{{ $homeBench->count() }}</span>
+                                </div>
+                                @forelse ($homeBench as $p)
+                                    <div class="bench-row">
                                         <span>{{ $pName($p) }}</span>
-                                        <span class="text-muted small">#{{ $pNum($p) }}</span>
-                                    {{-- </a> --}}
-                                </li>
-                            @empty
-                                <li class="list-group-item bg-dark text-muted border-secondary">
-                                    لا يوجد
-                                    بدلاء</li>
-                            @endforelse
-                        </ul>
-                    </div>
-
-                    <div class="col-lg-6">
-                        <div class="fw-bold mb-2">
-                            <a href="{{route('team.details', ['id' => $fixture->awayTeam->id])}}">
-                                {{ $fixture->awayTeam->$name_var ?? '' }} -
-                                البدلاء
-                            </a>
+                                        <span class="text-muted small">#{{ $pNum($p) ?: '-' }}</span>
+                                    </div>
+                                @empty
+                                    <div class="soft-empty">لا يوجد بدلاء</div>
+                                @endforelse
+                            </div>
                         </div>
-                        <ul class="list-group list-group-flush">
-                            @forelse($awayBench as $p)
-                                <li
-                                    class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
-                                    {{-- <a href="{{route('players.details', ['id' => $pId($p)])}}"> --}}
+
+                        <div class="col-md-6">
+                            <div class="info-item d-block">
+                                <div class="section-title-row">
+                                    <h5>{{ $fixture->awayTeam->$name_var ?? '' }} - البدلاء</h5>
+                                    <span class="section-kicker">{{ $awayBench->count() }}</span>
+                                </div>
+                                @forelse ($awayBench as $p)
+                                    <div class="bench-row">
                                         <span>{{ $pName($p) }}</span>
-                                        <span class="text-muted small">#{{ $pNum($p) }}</span>
-                                    {{-- </a> --}}
-                                </li>
-                            @empty
-                                <li class="list-group-item bg-dark text-muted border-secondary">
-                                    لا يوجد
-                                    بدلاء</li>
-                            @endforelse
-                        </ul>
+                                        <span class="text-muted small">#{{ $pNum($p) ?: '-' }}</span>
+                                    </div>
+                                @empty
+                                    <div class="soft-empty">لا يوجد بدلاء</div>
+                                @endforelse
+                            </div>
+                        </div>
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
     </div>
 </div>

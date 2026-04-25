@@ -23,12 +23,14 @@ class UpdatesLeaguesAndSeasonsServices
         $primaryLocale = 'ar';
         $primaryUrl = "https://api.sportmonks.com/v3/football/leagues"
             . "?api_token={$token}"
-            . "&locale={$primaryLocale}";
+            . "&locale={$primaryLocale}"
+            . "&include=seasons"; // نجيب المواسم مع كل دوري عشان نقدر نحسب سنة التأسيس التقريبية
 
         // الطلب الثاني: فقط الاسم الإنجليزي
         $englishUrl = "https://api.sportmonks.com/v3/football/leagues"
             . "?api_token={$token}"
-            . "&locale=en";
+            . "&locale=en"
+            . "&include=seasons";
 
         $primaryRes = $this->apiClient->curlGet($primaryUrl);
         $englishRes = $this->apiClient->curlGet($englishUrl);
@@ -74,10 +76,11 @@ class UpdatesLeaguesAndSeasonsServices
 
                     // الخام كامل لو احتجته لاحقًا
                     'raw' => $league,
+                    'seasons' => $seasons->toArray(),
                 ];
             })
             ->values();
-
+        $saved = 0;
         foreach ($leagues as $league) {
             $existLeague = League::find($league['id']);
             if($existLeague){
@@ -98,45 +101,27 @@ class UpdatesLeaguesAndSeasonsServices
                     ]
                 );
             }
-            // $this->loadSeasons($league['id']);
+            $this->loadSeasons($league['seasons']);
+            $saved++;
         }
+        return $saved;
     }
 
-    public function loadSeasons($leagueId){
-        $token  = config('services.SPORTMONKS_TOKEN');
-
-        $page  = 1;
-        $saved = 0;
-        do {
-            $url = "https://api.sportmonks.com/v3/football/seasons"
-                . "?api_token={$token}"
-                . "&page={$page}";
-
-            $res  = $this->apiClient->curlGet($url);
-            $json = data_get($res, 'json', []);
-            $data = data_get($json, 'data', []);
-
-            $seasons = collect($data)
-                ->filter(fn($s) => (int) data_get($s, 'league_id', 0) === (int) $leagueId)
-                ->values();
-
-            foreach ($seasons as $season) {
-                Season::updateOrCreate(
-                    ['id' => $season['id']],
-                    [
-                        'league_id'   => $season['league_id'],
-                        'name'        => $season['name'],
-                        'starting_at' => $season['starting_at'],
-                        'ending_at'   => $season['ending_at'],
-                        'is_current'  => $season['is_current'],
-                    ]
-                );
-
-                $saved++;
-            }
-
-            $hasMore = (bool) data_get($json, 'pagination.has_more', false);
-            $page++;
-        } while ($hasMore);
+    public function loadSeasons($seasons){
+        if(empty($seasons)){
+            return;
+        }
+        foreach ($seasons as $season) {
+            Season::updateOrCreate(
+                ['id' => $season['id']],
+                [
+                    'league_id'   => $season['league_id'],
+                    'name'        => $season['name'],
+                    'starting_at' => $season['starting_at'],
+                    'ending_at'   => $season['ending_at'],
+                    'is_current'  => $season['is_current'],
+                ]
+            );
+        }
     }
 }

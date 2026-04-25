@@ -3,6 +3,7 @@
 use App\Http\Controllers\Custom\CustomController;
 use App\Http\Controllers\Football\LeaguesController;
 use App\Http\Controllers\Custom\LeagueTabsController;
+use App\Http\Controllers\FixturesController as ControllersFixturesController;
 use App\Http\Controllers\Football\FixturesController;
 use App\Http\Controllers\Football\MatchesController;
 use App\Http\Controllers\Football\LivescoresController;
@@ -66,6 +67,12 @@ Route::post('/set-timezone', [TimezoneController::class, 'set'])->name('set.time
 // Teams
 Route::get('/teams/{id}/details', [TeamsController::class, 'show'])->name('team.details');
 Route::get('/players/{id}/details', [PlayersController::class, 'show'])->name('players.details');
+Route::post('/matches-by-date', [MatchesController::class, 'matchesByDate'])->name('matches.by.date');
+
+Route::get('/fixtures', [ControllersFixturesController::class, 'index'])->name('fixtures.index');
+Route::get('/fixtures/{id}', [ControllersFixturesController::class, 'show'])
+    ->whereNumber('id')
+    ->name('fixtures.show');
 
 
 

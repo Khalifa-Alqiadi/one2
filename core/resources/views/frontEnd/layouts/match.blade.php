@@ -54,119 +54,124 @@
                 if (!json || !json.ok) return;
 
                 (json.fixtures || []).forEach((fx) => {
-                    const el    = document.getElementById("fixture-" + fx.id);
-                    if (!el) return;
+                    // const el    = document.getElementById("fixture-" + fx.id);
+                    const items    = document.querySelectorAll("#fixture-" + fx.id);
+                    items.forEach((el )=> {
 
-                    // ✅ خزّن آخر قيم معروفة داخل dataset (عشان ما تنمسح)
-                    const lastHome = el.dataset.lastHome ?? "";
-                    const lastAway = el.dataset.lastAway ?? "";
-                    const lastMin = el.dataset.lastMin ?? "";
+                        // ✅ إذا ما رجع بيانات دقيقة أو أهداف، لا تمسح النص الحالي، فقط احتفظ به
+                        if (!el) return;
 
-
-
-                    // scores: حدّث فقط إذا في قيمة رقمية/واضحة
-                    if (fx.home_score !== null && fx.home_score !== undefined) {
-                        setText(el, ".js-home-score", fx.home_score);
-                        el.dataset.lastHome = fx.home_score;
-                    } else if (lastHome !== "") {
-                        setText(el, ".js-home-score", lastHome);
-                    }
-
-                    if (fx.away_score !== null && fx.away_score !== undefined) {
-                        setText(el, ".js-away-score", fx.away_score);
-                        el.dataset.lastAway = fx.away_score;
-                    } else if (lastAway !== "") {
-                        setText(el, ".js-away-score", lastAway);
-                    }
-
-                    // ✅ إذا انتهت المباراة: فقط هنا نطفي live ونمسح الدقيقة
-                    if (fx.is_finished && fx.state_code == "FT") {
-
-                        el.dataset.live = "0";
-                        setText(
-                            el,
-                            ".js-live-badge",
-                            "{{ $locale == 'ar' ? 'النهائية' : 'FT' }}",
-                            true,
-                        );
-                        setText(el, ".js-minute", "", true);
-                        el.dataset.lastMin = "";
-                        return;
-                    }
-
-                    if (fx.state_code == "POSTP") {
-
-                        el.dataset.live = "0";
-                        setText(
-                            el,
-                            ".js-live-badge",
-                            "{{ __('frontend.deferred') }}",
-                            true,
-                        );
-                        setText(el, ".js-minute", "", true);
-                        setText(el, ".js-home-score", "", true);
-                        setText(el, ".js-away-score", "", true);
-                        el.dataset.lastMin = "";
-                        el.dataset.lastHome ?? "";
-                        el.dataset.lastAway ?? "";
-                        return;
-                    }
+                        // ✅ خزّن آخر قيم معروفة داخل dataset (عشان ما تنمسح)
+                        const lastHome = el.dataset.lastHome ?? "";
+                        const lastAway = el.dataset.lastAway ?? "";
+                        const lastMin = el.dataset.lastMin ?? "";
 
 
-                    // منتصف المباراة
 
+                        // scores: حدّث فقط إذا في قيمة رقمية/واضحة
+                        if (fx.home_score !== null && fx.home_score !== undefined) {
+                            setText(el, ".js-home-score", fx.home_score);
+                            el.dataset.lastHome = fx.home_score;
+                        } else if (lastHome !== "") {
+                            setText(el, ".js-home-score", lastHome);
+                        }
 
-                    // ✅ ما دام مش منتهية: لا تطفي live حتى لو fx.is_live رجع false لحظة
-                    // فقط حدّث النص والدقيقة إذا متاحة
-                    el.dataset.live = "1";
-                    if(fx.state_code == "NS"){
-                        setText(
-                            el,
-                            ".js-live-badge",
-                            "{{ $locale == 'ar' ? __('frontend.coming_soon') : 'LIVE' }}",
-                            false,
-                        );
-                    }else{
-                        if (fx.state_code === 'HT') {
-                            // el.dataset.live = "1";
-                            // lb.textContent = "منتصف المباراة";
-                            // mn.textContent = "";
-                            // return;
+                        if (fx.away_score !== null && fx.away_score !== undefined) {
+                            setText(el, ".js-away-score", fx.away_score);
+                            el.dataset.lastAway = fx.away_score;
+                        } else if (lastAway !== "") {
+                            setText(el, ".js-away-score", lastAway);
+                        }
+
+                        // ✅ إذا انتهت المباراة: فقط هنا نطفي live ونمسح الدقيقة
+                        if (fx.is_finished && fx.state_code == "FT") {
+
+                            el.dataset.live = "0";
                             setText(
                                 el,
                                 ".js-live-badge",
-                                "{{ $locale == 'ar' ? 'منتصف المباراة' : 'LIVE' }}",
-                                false,
-                            );
-
-                        }else{
-                            setText(
-                                el,
-                                ".js-live-badge",
-                                "{{ $locale == 'ar' ? 'مباشر' : 'LIVE' }}",
+                                "{{ $locale == 'ar' ? 'النهائية' : 'FT' }}",
                                 true,
                             );
+                            setText(el, ".js-minute", "", true);
+                            el.dataset.lastMin = "";
+                            return;
                         }
 
-                    }
+                        if (fx.state_code == "POSTP") {
 
-                    if (fx.minute !== null && fx.minute !== undefined && fx.minute !== "") {
-                        const m = fmtMinute(fx.minute, fx.state_code);
-                        if (m) {
-                            setText(el, ".js-minute", m, true);
-                            el.dataset.lastMin = m;
+                            el.dataset.live = "0";
+                            setText(
+                                el,
+                                ".js-live-badge",
+                                "{{ __('frontend.deferred') }}",
+                                true,
+                            );
+                            setText(el, ".js-minute", "", true);
+                            setText(el, ".js-home-score", "", true);
+                            setText(el, ".js-away-score", "", true);
+                            el.dataset.lastMin = "";
+                            el.dataset.lastHome ?? "";
+                            el.dataset.lastAway ?? "";
+                            return;
                         }
-                    } else if (lastMin !== "") {
-                        // ✅ احتفظ بآخر دقيقة بدل تمسح
-                        setText(el, ".js-minute", lastMin, true);
-                    } else {
-                        setText(el, ".js-minute", "—", true);
-                    }
 
-                    if (fx.state_code === 'HT') {
-                        setText(el, ".js-minute", "", true);
-                        el.dataset.lastMin = "";
-                    }
+
+                        // منتصف المباراة
+
+
+                        // ✅ ما دام مش منتهية: لا تطفي live حتى لو fx.is_live رجع false لحظة
+                        // فقط حدّث النص والدقيقة إذا متاحة
+                        el.dataset.live = "1";
+                        if(fx.state_code == "NS"){
+                            setText(
+                                el,
+                                ".js-live-badge",
+                                "{{ $locale == 'ar' ? __('frontend.coming_soon') : 'LIVE' }}",
+                                false,
+                            );
+                        }else{
+                            if (fx.state_code === 'HT') {
+                                // el.dataset.live = "1";
+                                // lb.textContent = "منتصف المباراة";
+                                // mn.textContent = "";
+                                // return;
+                                setText(
+                                    el,
+                                    ".js-live-badge",
+                                    "{{ $locale == 'ar' ? 'منتصف المباراة' : 'LIVE' }}",
+                                    false,
+                                );
+
+                            }else{
+                                setText(
+                                    el,
+                                    ".js-live-badge",
+                                    "{{ $locale == 'ar' ? 'مباشر' : 'LIVE' }}",
+                                    true,
+                                );
+                            }
+
+                        }
+
+                        if (fx.minute !== null && fx.minute !== undefined && fx.minute !== "") {
+                            const m = fmtMinute(fx.minute, fx.state_code);
+                            if (m) {
+                                setText(el, ".js-minute", m, true);
+                                el.dataset.lastMin = m;
+                            }
+                        } else if (lastMin !== "") {
+                            // ✅ احتفظ بآخر دقيقة بدل تمسح
+                            setText(el, ".js-minute", lastMin, true);
+                        } else {
+                            setText(el, ".js-minute", "—", true);
+                        }
+
+                        if (fx.state_code === 'HT') {
+                            setText(el, ".js-minute", "", true);
+                            el.dataset.lastMin = "";
+                        }
+                    });
                 });
             } catch (e) {
                 // لا تسوي شي

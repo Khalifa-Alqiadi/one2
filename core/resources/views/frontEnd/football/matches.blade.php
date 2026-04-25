@@ -19,6 +19,18 @@
                 $activeTab = $activeTab ?? 'today';
             @endphp
             <div class="mb-4 mb-md-5 row row-filter">
+                <div class="col-md-4">
+                    <div class="filter-matches">
+                        <select name="filter_leagues" id="filter-leagues" class="form-control">
+                            <option value="0">{{ __('frontend.all_competitions') }}</option>
+                            @if (count($leagues) > 0)
+                                @foreach ($leagues as $league)
+                                    <option value="{{ $league->id }}">{{ $league->$name_var }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                </div>
                 <div class="col-md-8">
                     <div class="tabs-wrapper d-flex">
                         @foreach ($dates as $day)
@@ -32,18 +44,7 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="filter-matches">
-                        <select name="filter_leagues" id="filter-leagues" class="form-control">
-                            <option value="0">{{ __('frontend.all_competitions') }}</option>
-                            @if (count($leagues) > 0)
-                                @foreach ($leagues as $league)
-                                    <option value="{{ $league->id }}">{{ $league->$name_var }}</option>
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
-                </div>
+
             </div>
             <div id="matches-container">
                 @include('frontEnd.football.partials.matches-list', ['matches' => $matches])
@@ -65,10 +66,10 @@
 
             function loadMatches() {
                 matchesContainer.innerHTML = `
-                <div class="text-center py-5">
-                    <span>Loading...</span>
-                </div>
-            `;
+                    <div class="text-center py-5">
+                        <span>Loading...</span>
+                    </div>
+                `;
 
                 fetch("{{ route('matches.filter') }}", {
                         method: "POST",

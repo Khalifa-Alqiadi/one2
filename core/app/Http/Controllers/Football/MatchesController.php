@@ -541,42 +541,6 @@ class MatchesController extends Controller
         ]);
     }
 
-    public function filterAjaxOld(\Illuminate\Http\Request $request)
-    {
-        $date = $request->input('date', 'today');
-
-        // $matches = $this->getMatchesByDateKey($date);
-        $selectedDate = $request->get('date', 'today');
-        $userTz    = Helper::getUserTimezone() ?: 'UTC';
-
-        // بداية ونهاية هذا اليوم بتوقيت المستخدم
-        $selectedStartLocal = Carbon::parse($selectedDate, $userTz)->startOfDay();
-        $selectedEndLocal   = Carbon::parse($selectedDate, $userTz)->endOfDay();
-
-        // نحولها إلى UTC للاستعلام من قاعدة البيانات
-        $selectedStartUtc = $selectedStartLocal->copy()->utc();
-        $selectedEndUtc   = $selectedEndLocal->copy()->utc();
-
-        $matches = Fixture::query()
-            ->whereBetween('starting_at', [$selectedStartUtc, $selectedEndUtc])
-            ->with(['homeTeam', 'awayTeam', 'league', 'season'])
-            ->whereHas('season', function ($q) {
-                $q->where('is_current', true);
-            })
-            ->orderBy('starting_at', 'desc')
-            ->paginate(40)
-            ->appends($request->query());
-
-        $html = view('frontEnd.football.partials.matches-list', [
-            'matches' => $matches,
-        ])->render();
-
-        return response()->json([
-            'status' => true,
-            'html'   => $html,
-        ]);
-    }
-
     public function filterAjax(\Illuminate\Http\Request $request)
     {
         $selectedDate = $request->get('date', now()->toDateString());
@@ -612,5 +576,41 @@ class MatchesController extends Controller
             'status' => true,
             'html'   => $html,
         ]);
+    }
+
+    public function matchesByDate(Request $request)
+    {
+        $date = $request->input('date');
+        $userTz = Helper::getUserTimezone() ?: 'UTC';
+
+        try {
+            $selectedStartLocal = Carbon::parse($date, $userTz)->startOfDay();
+            $selectedEndLocal   = Carbon::parse($date, $userTz)->endOfDay();
+
+            $selectedStartUtc = $selectedStartLocal->copy()->utc();
+            $selectedEndUtc   = $selectedEndLocal->copy()->utc();
+
+            $matches = Fixture::query()
+                ->whereBetween('starting_at', [$selectedStartUtc, $selectedEndUtc])
+                ->with(['homeTeam', 'awayTeam', 'league', 'season'])
+                ->whereHas('season', function ($q) {
+                    $q->where('is_current', true);
+                })
+                ->orderBy('starting_at', 'desc')
+                ->get();
+
+            $html = view('frontEnd.football.partials.matches-list', [
+                'matches' => $matches,
+            ])->render();
+            return response()->json([
+                'status' => true,
+                'html'   => $html,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => 'Invalid date format',
+            ], 400);
+        }
     }
 }

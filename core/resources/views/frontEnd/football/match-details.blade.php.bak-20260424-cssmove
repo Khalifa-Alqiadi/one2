@@ -1,0 +1,843 @@
+@php
+    $isRtl = ($locale ?? 'ar') === 'ar';
+    $name_var = 'name_' . @Helper::currentLanguage()->code;
+@endphp
+
+@extends('frontEnd.layouts.master')
+
+@push('before-styles')
+    <style>
+        .match-details-page {
+            --md-primary: #f1c40f;
+            --md-primary-dark: #dbb41c;
+            --md-secondary: #0cc2aa;
+            --md-ink: #ffffff;
+            --md-text: #eef2f7;
+            --md-muted: #9aa7b6;
+            --md-border: rgba(255, 255, 255, 0.08);
+            --md-soft: #161b22;
+            --md-card: #0f141b;
+            --md-card-2: #151c24;
+            --md-card-3: #1b2530;
+            --md-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+            color: var(--md-text);
+        }
+
+        .match-details-page a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .match-details-shell {
+            padding: 28px 0 48px;
+            background:
+                radial-gradient(circle at top right, rgba(241, 196, 15, 0.16), transparent 24%),
+                radial-gradient(circle at top left, rgba(12, 194, 170, 0.12), transparent 28%),
+                linear-gradient(180deg, #0a0f14 0%, #111821 48%, #0b1015 100%);
+        }
+
+        .match-card,
+        .match-side-card,
+        .match-tab-card {
+            background: var(--md-card);
+            border: 1px solid var(--md-border);
+            border-radius: 24px;
+            box-shadow: var(--md-shadow);
+        }
+
+        .match-hero {
+            overflow: hidden;
+            position: relative;
+            padding: 0;
+        }
+
+        .match-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(135deg, rgba(11, 15, 20, 0.95), rgba(20, 27, 35, 0.96)),
+                linear-gradient(125deg, rgba(241, 196, 15, 0.12), transparent 42%);
+        }
+
+        .match-hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -90px -120px auto;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(241, 196, 15, 0.16);
+            filter: blur(20px);
+        }
+
+        .match-hero-inner {
+            position: relative;
+            z-index: 1;
+            padding: 26px 28px 30px;
+            color: #fff;
+        }
+
+        .match-hero-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 26px;
+        }
+
+        .league-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            backdrop-filter: blur(12px);
+        }
+
+        .league-header .logo {
+            width: 52px;
+            height: 52px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: #fff;
+            padding: 8px;
+            flex-shrink: 0;
+        }
+
+        .league-header .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .league-subtitle {
+            display: block;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .match-meta-pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .match-meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .match-clubs {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 20px;
+        }
+
+        .club-box {
+            text-align: center;
+        }
+
+        .club-box img,
+        .club-logo-fallback {
+            width: 108px;
+            height: 108px;
+            border-radius: 28px;
+            object-fit: contain;
+            margin: 0 auto 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-size: 34px;
+            font-weight: 800;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+        }
+
+        .club-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .score-box-wrap {
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .score-frame {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            min-width: 180px;
+            padding: 16px 22px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(241, 196, 15, 0.18);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 30px rgba(0, 0, 0, 0.22);
+        }
+
+        .score-frame .score-separator {
+            opacity: 0.55;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .match-status-stack {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .match-status-stack .badge {
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .match-status-stack .js-status {
+            background: rgba(12, 194, 170, 0.18);
+            color: #7ce5d6;
+            border: 1px solid rgba(12, 194, 170, 0.26);
+        }
+
+        .match-status-stack .js-minute {
+            color: #f5d75b;
+            font-size: 18px;
+        }
+
+        .match-hero-foot {
+            margin-top: 26px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .hero-stat {
+            padding: 16px 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.74);
+            margin-bottom: 6px;
+        }
+
+        .hero-stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .team-side-events {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .match-tabs {
+            padding: 8px;
+            gap: 10px;
+            border: 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 22px;
+            box-shadow: var(--md-shadow);
+        }
+
+        .match-tabs .nav-link {
+            border: 0;
+            border-radius: 16px;
+            color: var(--md-muted);
+            padding: 14px 16px;
+            font-weight: 700;
+            background: transparent;
+        }
+
+        .match-tabs .nav-link.active,
+        .match-tabs .nav-link:hover {
+            color: #111;
+            background: linear-gradient(135deg, rgba(241, 196, 15, 0.96), rgba(219, 180, 28, 0.94));
+        }
+
+        .match-tab-card {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .panel-card-body {
+            padding: 24px;
+        }
+
+        .section-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .section-title-row h3,
+        .section-title-row h4,
+        .section-title-row h5 {
+            margin: 0;
+            color: var(--md-ink);
+            font-weight: 800;
+        }
+
+        .section-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(241, 196, 15, 0.12);
+            color: var(--md-primary);
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(241, 196, 15, 0.18);
+        }
+
+        .match-side-card {
+            padding: 24px;
+            height: 100%;
+        }
+
+        .info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.02));
+            border: 1px solid var(--md-border);
+        }
+
+        .info-icon,
+        .tv-station-tile {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, rgba(241, 196, 15, 0.16), rgba(12, 194, 170, 0.14));
+            color: var(--md-primary);
+        }
+
+        .info-icon img,
+        .tv-station-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+        }
+
+        .tv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+            gap: 12px;
+        }
+
+        .tv-item-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 10px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.02));
+            border: 1px solid var(--md-border);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .tv-item-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.22);
+        }
+
+        .tv-item-name {
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--md-text);
+        }
+
+        .soft-empty {
+            padding: 18px;
+            text-align: center;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--md-muted);
+            border: 1px dashed rgba(255, 255, 255, 0.12);
+        }
+
+        .match-side-card h5,
+        .match-tab-card h3,
+        .match-tab-card h5 {
+            letter-spacing: 0.01em;
+        }
+
+        .team-side-events .list-unstyled {
+            margin-bottom: 0;
+        }
+
+        .team-side-events li {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 8px 10px;
+        }
+
+        .match-details-page .gx-stats-head,
+        .match-details-page .gx-timeline,
+        .match-details-page .gx-stats-list {
+            color: var(--md-text);
+        }
+
+        .match-details-page .gx-team-ic {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 54px;
+            height: 54px;
+        }
+
+        .match-details-page .gx-stats-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--md-text);
+        }
+
+        .match-details-page .gx-label {
+            color: var(--md-text);
+        }
+
+        .match-details-page .gx-ns-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .match-details-page .gx-ns-bar-home,
+        .match-details-page .gx-ns-bar-home2 {
+            background: linear-gradient(90deg, #f1c40f, #dbb41c);
+            height: 100%;
+            border-radius: inherit;
+        }
+
+        .match-details-page .gx-ns-bar-away,
+        .match-details-page .gx-ns-bar-away2 {
+            background: linear-gradient(90deg, #19c2ac, #0f9f8d);
+            height: 100%;
+            border-radius: inherit;
+        }
+
+        .match-details-page .gx-ns-bar-draw {
+            background: linear-gradient(90deg, #5f6b78, #8b97a4);
+            height: 100%;
+            border-radius: inherit;
+        }
+
+        .match-details-page .gx-ns-perc-val {
+            color: var(--md-ink);
+            font-weight: 800;
+        }
+
+        .lineup-roster-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px 16px;
+        }
+
+        .bench-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .bench-row:last-child {
+            border-bottom: 0;
+        }
+
+        .match-tab-card .text-muted,
+        .match-side-card .text-muted,
+        .match-details-page .text-muted {
+            color: var(--md-muted) !important;
+        }
+
+        @media (max-width: 991.98px) {
+            .match-clubs {
+                grid-template-columns: 1fr;
+            }
+
+            .score-box-wrap {
+                order: -1;
+            }
+
+            .match-hero-foot {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .match-hero-inner,
+            .panel-card-body,
+            .match-side-card {
+                padding: 20px;
+            }
+
+            .club-box img,
+            .club-logo-fallback {
+                width: 82px;
+                height: 82px;
+                border-radius: 22px;
+            }
+
+            .club-name {
+                font-size: 1.05rem;
+            }
+
+            .score-frame {
+                min-width: 150px;
+                padding: 14px 18px;
+            }
+        }
+    </style>
+@endpush
+
+@section('content')
+    @if ($fixture)
+        @php
+            $isFinished = (bool) $fixture->is_finished;
+            $status = $fx['status'] ?? 'NS';
+            $state_code = $fx['state_code'] ?? 'NS';
+            $shouldLoadLiveScript = in_array(strtoupper((string) $status), ['LIVE'], true) || in_array(strtoupper((string) $state_code), ['LIVE', 'INPLAY_1ST', 'INPLAY_2ND', 'HT'], true);
+            $startAt = $fx['starting_at'] ?? null;
+            $dt = $startAt ? \Carbon\Carbon::parse($startAt)->timezone(Helper::getUserTimezone()) : null;
+            $timeLabel = $dt ? $dt->format('H:i') : '';
+            $roundName = $fixture->round->name ?? '';
+            $venueName = $fx['venue']['name'] ?? __('frontend.unknown_venue');
+            $venueCity = $fx['venue']['city'] ?? '';
+            $venueCapacity = !empty($fx['venue']['capacity']) ? number_format($fx['venue']['capacity']) : null;
+            $stations = collect($fx['tv_stations'] ?? [])
+                ->filter(fn($station) => is_array($station))
+                ->unique(fn($station) => strtolower(trim($station['name'] ?? '')))
+                ->values();
+        @endphp
+
+        <section id="content" class="football football-match details-match match-details-page">
+            <div class="match-details-shell">
+                <div class="container" style="direction: {{ $isRtl ? 'rtl' : 'ltr' }};">
+                    <div class="row justify-content-center row-details g-4">
+                        <div class="col-lg-8">
+                            <div class="match-card match-hero">
+                                <div class="match-hero-inner">
+                                    <div class="match-hero-top">
+                                        <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="league-header">
+                                            @if (data_get($fixture->league, 'image_path'))
+                                                <div class="logo">
+                                                    <img src="{{ data_get($fixture->league, 'image_path') }}" alt="">
+                                                </div>
+                                            @endif
+                                            <div>
+                                                <h4 class="mb-0 fw-bold">{{ data_get($fixture->league, $name_var, 'League') }}</h4>
+                                                <span class="league-subtitle">
+                                                    {{ __('frontend.round') }} {{ $roundName ?: '-' }}
+                                                </span>
+                                            </div>
+                                        </a>
+
+                                        <div class="match-meta-pills">
+                                            <div class="match-meta-pill">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                <span>{!! Helper::day_name($dt, true) !!}</span>
+                                            </div>
+                                            @if ($timeLabel)
+                                                <div class="match-meta-pill">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span>{{ $timeLabel }}</span>
+                                                </div>
+                                            @endif
+                                            <div class="match-meta-pill">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                <span>{{ $venueName }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="match-clubs">
+                                        <div class="club-box">
+                                            <a href="{{ route('team.details', ['id' => $fixture->homeTeam->id]) }}">
+                                                @if (!empty($fixture->homeTeam->image_path))
+                                                    <img src="{{ $fixture->homeTeam->image_path }}" alt="">
+                                                @else
+                                                    <div class="club-logo-fallback">
+                                                        {{ mb_substr($fixture->homeTeam->$name_var ?? 'H', 0, 1) }}
+                                                    </div>
+                                                @endif
+                                                <div class="club-name">{{ $fixture->homeTeam->$name_var ?? '-' }}</div>
+                                            </a>
+
+                                            <div class="team-side-events text-start">
+                                                @include('frontEnd.football.partials.top-events', [
+                                                    'teamid' => $fixture->homeTeam->id,
+                                                    'textDiration' => 'text-start',
+                                                ])
+                                            </div>
+                                        </div>
+
+                                        <div class="score-box-wrap">
+                                            <div class="score-frame js-scorebox"
+                                                style="display: {{ $state_code !== 'NS' ? 'inline-flex' : 'none' }};">
+                                                <span class="js-home fw-bold fs-1">{{ $fixture->home_score ?? '-' }}</span>
+                                                <span class="score-separator">-</span>
+                                                <span class="js-away fw-bold fs-1">{{ $fixture->away_score ?? '-' }}</span>
+                                            </div>
+
+                                            <div class="score-frame js-kickoffbox"
+                                                style="display: {{ $state_code === 'NS' ? 'inline-flex' : 'none' }};">
+                                                <span class="fw-bold">{{ __('frontend.not_started') }}</span>
+                                            </div>
+
+                                            <div class="match-status-stack">
+                                                <span class="badge bg-success js-status"
+                                                    style="display: {{ in_array($state_code, ['LIVE', 'INPLAY_2ND', 'INPLAY_1ST']) ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.live') }}
+                                                </span>
+                                                <span class="badge bg-light text-secondary js-ns"
+                                                    style="display: {{ $state_code === 'NS' ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.not_started') }}
+                                                </span>
+                                                <span class="badge bg-light text-secondary js-ht"
+                                                    style="display: {{ $state_code === 'HT' ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.half_time') }}
+                                                </span>
+                                                <span class="badge bg-light text-secondary js-ft"
+                                                    style="display: {{ $state_code === 'FT' ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.finished') }}
+                                                </span>
+                                                <span class="badge bg-light text-secondary js-stop"
+                                                    style="display: {{ $state_code === 'POSTP' ? 'inline-block' : 'none' }};">
+                                                    {{ __('frontend.deferred') }}
+                                                </span>
+                                                <span class="fw-bold js-minute">
+                                                    {{ $status === 'LIVE' && !empty($fx['minute']) ? $fx['minute'] . "'" : '' }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="club-box">
+                                            <a href="{{ route('team.details', ['id' => $fixture->awayTeam->id]) }}">
+                                                @if (!empty($fixture->awayTeam->image_path))
+                                                    <img src="{{ $fixture->awayTeam->image_path }}" alt="">
+                                                @else
+                                                    <div class="club-logo-fallback">
+                                                        {{ mb_substr($fixture->awayTeam->$name_var ?? 'A', 0, 1) }}
+                                                    </div>
+                                                @endif
+                                                <div class="club-name">{{ $fixture->awayTeam->$name_var ?? '-' }}</div>
+                                            </a>
+
+                                            <div class="team-side-events text-end">
+                                                @include('frontEnd.football.partials.top-events', [
+                                                    'teamid' => $fixture->awayTeam->id,
+                                                    'textDiration' => 'text-end',
+                                                ])
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="match-hero-foot">
+                                        <div class="hero-stat">
+                                            <div class="hero-stat-label">{{ __('frontend.round') }}</div>
+                                            <div class="hero-stat-value">{{ $roundName ?: '-' }}</div>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <div class="hero-stat-label">{{ __('frontend.match_info') }}</div>
+                                            <div class="hero-stat-value">
+                                                {{ $venueCity ?: $venueName }}
+                                            </div>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <div class="hero-stat-label">{{ __('frontend.capacity') }}</div>
+                                            <div class="hero-stat-value">{{ $venueCapacity ?: '-' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ul class="nav nav-tabs nav-fill mb-4 match-tabs league-pills" role="tablist">
+                                @if ($state_code !== 'NS')
+                                    <li class="nav-item js-events-tab-item" role="presentation">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-events" type="button"
+                                            role="tab">{{ __('frontend.events') }}</button>
+                                    </li>
+                                @endif
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t-stats"
+                                        type="button" role="tab">{{ __('frontend.statistics') }}</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-lineups"
+                                        type="button" role="tab">{{ __('frontend.lineups') }}</button>
+                                </li>
+                                @if (count($standings) > 0)
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-standings"
+                                            type="button" role="tab">{{ __('frontend.standings') }}</button>
+                                    </li>
+                                @endif
+                            </ul>
+
+                            <div class="tab-content">
+                                @include('frontEnd.football.partials.events')
+                                @include('frontEnd.football.partials.statistics')
+                                @include('frontEnd.football.partials.lineups')
+
+                                @if (count($standings) > 0)
+                                    @include('frontEnd.football.rounds-tabs.standings', [
+                                        'standings' => $standings,
+                                        'homeID' => $fixture->homeTeam->id,
+                                        'awayID' => $fixture->awayTeam->id,
+                                    ])
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="d-flex flex-column gap-4">
+                                @if (!$isFinished)
+                                    <div class="match-side-card">
+                                        <div class="section-title-row">
+                                            <h5>{{ __('frontend.tv_stations') }}</h5>
+                                            <span class="section-kicker">{{ $stations->count() }}</span>
+                                        </div>
+
+                                        @if ($stations->isNotEmpty())
+                                            <div class="tv-grid">
+                                                @foreach ($stations as $station)
+                                                    @if (!empty($station['url']))
+                                                        <a href="{{ $station['url'] }}" target="_blank" class="tv-item-link">
+                                                            <div class="tv-station-tile">
+                                                                @if (!empty($station['image']))
+                                                                    <img src="{{ $station['image'] }}" alt="">
+                                                                @else
+                                                                    <i class="fas fa-tv"></i>
+                                                                @endif
+                                                            </div>
+                                                            <div class="tv-item-name">{{ $station['name'] ?? __('frontend.tv_stations') }}</div>
+                                                        </a>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="soft-empty">{{ __('frontend.no_tv_stations') }}</div>
+                                        @endif
+                                    </div>
+                                @endif
+
+                                <div class="match-side-card">
+                                    <div class="section-title-row">
+                                        <h5>{{ __('frontend.match_info') }}</h5>
+                                        <span class="section-kicker">{{ __('frontend.round') }} {{ $roundName ?: '-' }}</span>
+                                    </div>
+
+                                    <div class="info-list">
+                                        <a href="{{ route('league.rounds', ['id' => $fixture->league->id]) }}" class="info-item">
+                                            <div class="info-icon">
+                                                @if (!empty($fixture->league->image_path))
+                                                    <img src="{{ $fixture->league->image_path }}" alt="">
+                                                @else
+                                                    <i class="fas fa-trophy"></i>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ data_get($fixture->league, $name_var, 'League') }}</div>
+                                                <div class="text-muted small">{{ __('frontend.round') }} {{ $roundName ?: '-' }}</div>
+                                            </div>
+                                        </a>
+
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                <i class="fas fa-calendar"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{!! Helper::day_name($dt) !!}</div>
+                                                @if ($timeLabel)
+                                                    <div class="text-muted small">{{ $timeLabel }}</div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="info-item">
+                                            <div class="info-icon">
+                                                @if (!empty($fx['venue']['image']))
+                                                    <img src="{{ $fx['venue']['image'] }}" alt="">
+                                                @else
+                                                    <i class="fas fa-building"></i>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ $venueName }}</div>
+                                                <div class="text-muted small">
+                                                    {{ $venueCity ?: '-' }}
+                                                    @if ($venueCapacity)
+                                                        <span>- {{ $venueCapacity }} {{ __('frontend.capacity') }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @include('frontEnd.football.partials.probabilities')
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+@endsection
+
+@push('after-scripts')
+    @if (!empty($shouldLoadLiveScript))
+        @include('frontEnd.layouts.match-details')
+    @endif
+@endpush
