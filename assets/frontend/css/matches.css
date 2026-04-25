@@ -387,6 +387,10 @@
     font-weight: 900;
 }
 
+.matches-home .navigation  {
+    gap: 12px;
+}
+
 /* Form dots */
 .football .form-dots {
     display: flex;
