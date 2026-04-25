@@ -4,7 +4,7 @@
             <img src="{{URL::to('uploads/settings/home.svg')}}" alt="">
             <span class="visually-hidden">{{__('frontend.home')}}</span>
         </a>
-        <a href="{{ route('fixtures.index') }}" class="one-two-header__item" aria-label="Fixtures">
+        <a href="{{ route('matches') }}" class="one-two-header__item" aria-label="Fixtures">
             <img src="{{URL::to('uploads/settings/fixtures.svg')}}" alt="">
             <span class="visually-hidden">{{__('frontend.matches')}}</span>
         </a>
