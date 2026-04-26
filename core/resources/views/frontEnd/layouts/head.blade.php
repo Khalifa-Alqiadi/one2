@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.theme.default.min.css') }}?v={{ Helper::system_version() }}">
 
 <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v=2" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=87" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=88" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=21" rel="stylesheet"/>
 
 
