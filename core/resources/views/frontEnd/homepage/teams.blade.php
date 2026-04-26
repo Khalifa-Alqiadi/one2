@@ -26,7 +26,7 @@
     <div class="container">
         <div class="row g-4">
             @if($majorCompetitions->count() > 0)
-            <div class="col-lg-6">
+            <div class="col-lg-12 mb-4">
                 <article class="teams-home__panel teams-home__panel--gold">
                     <div class="teams-home__panel-bg"></div>
                     <div
@@ -109,7 +109,7 @@
             </div>
             @endif
             @if($majorNationalTeams->count() > 0)
-                <div class="col-lg-6">
+                <div class="col-lg-12">
                     <article class="teams-home__panel teams-home__panel--gold">
                         <div class="teams-home__panel-bg"></div>
 
@@ -238,7 +238,7 @@
                             spaceBetween: 18,
                         },
                         1200: {
-                            slidesPerView: 3.15,
+                            slidesPerView: 6.15,
                             spaceBetween: 20,
                         },
                     },

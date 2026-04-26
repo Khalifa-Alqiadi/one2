@@ -219,35 +219,6 @@
 
                         <div class="col-lg-4">
                             <div class="d-flex flex-column gap-4">
-                                @if (!$isFinished)
-                                    <div class="match-side-card">
-                                        <div class="section-title-row">
-                                            <h5>{{ __('frontend.tv_stations') }}</h5>
-                                        </div>
-
-                                        @if ($stations->isNotEmpty())
-                                            <div class="tv-grid">
-                                                @foreach ($stations as $station)
-                                                    {{-- @if (!empty($station['url'])) --}}
-                                                        <a href="{{ $station['url'] }}" target="_blank"
-                                                            class="tv-item-link">
-                                                            <div class="tv-station-tile">
-                                                                @if (!empty($station['image']))
-                                                                    <img src="{{ $station['image'] }}" alt="">
-                                                                @else
-                                                                    <i class="fas fa-tv"></i>
-                                                                @endif
-                                                            </div>
-                                                        </a>
-                                                    {{-- @endif --}}
-                                                @endforeach
-                                            </div>
-                                        @else
-                                            <div class="soft-empty">{{ __('frontend.no_tv_stations') }}</div>
-                                        @endif
-                                    </div>
-                                @endif
-
                                 <div class="match-side-card">
                                     <div class="section-title-row">
                                         <h5>{{ __('frontend.match_info') }}</h5>
@@ -305,6 +276,35 @@
                                 </div>
 
                                 @include('frontEnd.football.partials.probabilities')
+
+                                @if (!$isFinished)
+                                    <div class="match-side-card">
+                                        <div class="section-title-row">
+                                            <h5>{{ __('frontend.tv_stations') }}</h5>
+                                        </div>
+
+                                        @if ($stations->isNotEmpty())
+                                            <div class="tv-grid">
+                                                @foreach ($stations as $station)
+                                                    @if (!empty($station['image']))
+                                                        <a href="{{ $station['url'] }}" target="_blank" nofollow rel="noopener"
+                                                            class="tv-item-link">
+                                                            <div class="tv-station-tile">
+                                                                {{-- @if (!empty($station['image'])) --}}
+                                                                    <img src="{{ $station['image'] }}" alt="">
+                                                                {{-- @else
+                                                                    <i class="fas fa-tv"></i>
+                                                                @endif --}}
+                                                            </div>
+                                                        </a>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="soft-empty">{{ __('frontend.no_tv_stations') }}</div>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
