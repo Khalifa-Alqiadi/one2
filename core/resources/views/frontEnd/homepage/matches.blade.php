@@ -17,9 +17,9 @@
             <div class="row mt-3">
                 <div class="col-md-12">
                     <?php
-                    $yesterday = now()->subDay()->toDateString();
+                    $yesterday = now(Helper::getUserTimezone() ?: 'UTC')->subDay()->toDateString();
                     $today = now(Helper::getUserTimezone() ?: 'UTC')->toDateString();
-                    $tomorrow = now()->addDay()->toDateString();
+                    $tomorrow = now(Helper::getUserTimezone() ?: 'UTC')->addDay()->toDateString();
                     ?>
                     <div class="tabs-wrapper d-flex">
                         <button type="button" class="tab-item match-tab active" data-date="key_matches">
