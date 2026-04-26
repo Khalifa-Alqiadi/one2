@@ -50,7 +50,7 @@
             show($('.js-status'), isLiveNow);
             show($('.js-ns'), isNotStarted);
             show($('.js-ht'), stateCode === 'HT');
-            show($('.js-ft'), stateCode === 'FT' || status === 'FT');
+            show($('.js-ft'), stateCode === 'FT' && status === 'FT');
             show($('.js-stop'), stateCode === 'POSTP');
 
             setText('.js-minute', isLiveNow && fx.minute ? (fx.minute + "'") : '');

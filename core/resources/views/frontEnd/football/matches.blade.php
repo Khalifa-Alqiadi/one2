@@ -19,7 +19,7 @@
                 $activeTab = $activeTab ?? 'today';
             @endphp
             <div class="mb-4 mb-md-5 row row-filter">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="filter-matches">
                         <select name="filter_leagues" id="filter-leagues" class="form-control">
                             <option value="0">{{ __('frontend.all_competitions') }}</option>
@@ -31,7 +31,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-9">
                     <div class="tabs-wrapper d-flex">
                         @foreach ($dates as $day)
                             <button type="button"

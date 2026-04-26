@@ -113,7 +113,7 @@
                                             </div>
 
                                             <div class="match-status-stack">
-                                                <span class="badge bg-success js-status"
+                                                <span class="badge js-status"
                                                     style="display: {{ in_array($state_code, ['LIVE', 'INPLAY_2ND', 'INPLAY_1ST']) ? 'inline-block' : 'none' }};">
                                                     {{ __('frontend.live') }}
                                                 </span>
@@ -223,13 +223,12 @@
                                     <div class="match-side-card">
                                         <div class="section-title-row">
                                             <h5>{{ __('frontend.tv_stations') }}</h5>
-                                            <span class="section-kicker">{{ $stations->count() }}</span>
                                         </div>
 
                                         @if ($stations->isNotEmpty())
                                             <div class="tv-grid">
                                                 @foreach ($stations as $station)
-                                                    @if (!empty($station['url']))
+                                                    {{-- @if (!empty($station['url'])) --}}
                                                         <a href="{{ $station['url'] }}" target="_blank"
                                                             class="tv-item-link">
                                                             <div class="tv-station-tile">
@@ -239,10 +238,8 @@
                                                                     <i class="fas fa-tv"></i>
                                                                 @endif
                                                             </div>
-                                                            <div class="tv-item-name">
-                                                                {{ $station['name'] ?? __('frontend.tv_stations') }}</div>
                                                         </a>
-                                                    @endif
+                                                    {{-- @endif --}}
                                                 @endforeach
                                             </div>
                                         @else
@@ -254,8 +251,6 @@
                                 <div class="match-side-card">
                                     <div class="section-title-row">
                                         <h5>{{ __('frontend.match_info') }}</h5>
-                                        <span class="section-kicker">{{ __('frontend.round') }}
-                                            {{ $roundName ?: '-' }}</span>
                                     </div>
 
                                     <div class="info-list">
@@ -290,11 +285,11 @@
 
                                         <div class="info-item">
                                             <div class="info-icon">
-                                                @if (!empty($fx['venue']['image']))
+                                                {{-- @if (!empty($fx['venue']['image']))
                                                     <img src="{{ $fx['venue']['image'] }}" alt="">
-                                                @else
-                                                    <i class="fas fa-building"></i>
-                                                @endif
+                                                @else --}}
+                                                    <i class="fas fa-location-arrow"></i>
+                                                {{-- @endif --}}
                                             </div>
                                             <div>
                                                 <div class="fw-bold">{{ $venueName }}</div>

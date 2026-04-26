@@ -370,7 +370,7 @@ $style_color4 = Helper::GeneralSiteSettings("style_color4");
         border-color: {{ Helper::GeneralSiteSettings("style_color2") }} !important;
     }
     .dark #footer .copyright, .dark .mobile-nav-toggle.bi-x, .dark #footer .credits {
-        color: {{ Helper::GeneralSiteSettings("style_color4") }};
+        /* color: {{ Helper::GeneralSiteSettings("style_color4") }}; */
     }
 
     .dark #footer {
@@ -379,17 +379,17 @@ $style_color4 = Helper::GeneralSiteSettings("style_color4");
 
     .dark .form-control,.dark .select2-container--default .select2-selection--multiple,.dark .select2-container--default .select2-selection--single,.dark .select2-dropdown,.dark .select2-search--dropdown .select2-search__field,.dark .iti--inline-dropdown .iti__dropdown-content,.dark .iti__search-input {
         background: {{ Helper::GeneralSiteSettings("style_color2") }} !important;
-        border-color: {{ Helper::GeneralSiteSettings("style_color2") }} !important;
+        /* border-color: {{ Helper::GeneralSiteSettings("style_color2") }} !important; */
         color: #fff !important;
     }
     .dark .select2-container--default .select2-selection--single .select2-selection__rendered,.dark .select2-container--default .select2-search--inline .select2-search__field{
         color: #fff !important;
     }
 
-    .dark .form-control:focus {
+    /* .dark .form-control:focus {
         border-color: 0 !important;
         box-shadow: none;
-    }
+    } */
 
     .dark .select2-container--default .select2-selection--multiple .select2-selection__choice,.dark .select2-container--default .select2-results__option--selected {
         background-color: {{ Helper::colorHexToDarken(Helper::GeneralSiteSettings("style_color2"),1.6) }} !important;
@@ -438,7 +438,7 @@ $style_color4 = Helper::GeneralSiteSettings("style_color4");
         filter: brightness(0) invert(1);
     }
     .dark .card,.dark .form-control,.dark .card {
-        border-color: {{ Helper::GeneralSiteSettings("style_color2") }};
+        /* border-color: {{ Helper::GeneralSiteSettings("style_color2") }}; */
     }
     .dark .card{
         background: {{ Helper::colorHexToDarken(Helper::GeneralSiteSettings("style_color2"),1.6) }} !important;
