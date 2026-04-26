@@ -61,6 +61,7 @@ class SportmonksStandingService
                         'stage_id'       => $row['stage_id'],
                         'round_id'       => $row['round_id'],
                         'participant_id' => $row['participant_id'],
+                        'sportmonks_standing_id' => $row['sportmonks_standing_id'],
                         'group_name'     => $row['group_name'],
                     ],
                     $row

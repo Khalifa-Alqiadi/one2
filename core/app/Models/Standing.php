@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Standing extends Model
 {
     protected $fillable = [
+        'id',
         'league_id',
         'season_id',
         'stage_id',

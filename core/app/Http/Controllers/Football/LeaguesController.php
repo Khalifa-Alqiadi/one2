@@ -87,13 +87,20 @@ class LeaguesController extends Controller
             ->with([
                 'rounds' => function ($q) use ($seasonId) {
                     $q->where('season_id', $seasonId)
+                        ->with([
+                            'fixtures' => function ($fx) {
+                                $fx->with(['homeTeam', 'awayTeam'])
+                                    ->orderBy('starting_at', 'desc')
+                                    ->orderBy('id', 'desc');
+                            },
+                        ])
                         ->orderBy('starting_at', 'asc');
                 },
                 'fixtures' => function ($fx) {
-                    $fx->orderBy('starting_at', 'asc');
+                    $fx->with(['homeTeam', 'awayTeam'])
+                        ->orderBy('starting_at', 'desc')
+                        ->orderBy('id', 'desc');
                 },
-                'fixtures.homeTeam',
-                'fixtures.awayTeam',
             ])
             ->where('season_id', $seasonId)
             ->orderBy('sort_order', 'asc')
@@ -112,6 +119,10 @@ class LeaguesController extends Controller
                 if ($isLeaguePhase) {
                     $roundsCount = $stage->rounds->count();
                     foreach ($stage->rounds as $round) {
+                        $fixtures = $round->fixtures
+                            ->sortByDesc(fn($fixture) => $fixture->starting_at?->timestamp ?? 0)
+                            ->values();
+
                         $pages->push([
                             'type' => 'round',
                             'title' => __('frontend.matchday_progress', [
@@ -120,7 +131,7 @@ class LeaguesController extends Controller
                             ]),
                             'stage' => $stage,
                             'round' => $round,
-                            'fixtures' => $round->fixtures,
+                            'fixtures' => $fixtures,
                         ]);
                     }
                 } else {
@@ -139,9 +150,10 @@ class LeaguesController extends Controller
                     ]);
                 }
             } else {
-                $fixtures = Fixture::where('stage_id', $stage->id)
-                    ->orderBy('starting_at', 'desc')
-                    ->get();
+                $fixtures = $stage->fixtures
+                    ->sortByDesc(fn($fixture) => $fixture->starting_at?->timestamp ?? 0)
+                    ->values();
+
                 $pages->push([
                     'type' => 'stage',
                     'title' => $stage->$name_var ?: ('Stage ' . $stage->id),
