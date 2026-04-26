@@ -72,7 +72,7 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="form-group row">
+                            {{-- <div class="form-group row">
                                 <label for="major_competitions1" class="col-sm-2 form-control-label">{{ __('backend.major_competitions') }}</label>
                                 <div class="col-sm-10">
                                     <div class="radio">
@@ -89,7 +89,7 @@
                                         </label>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
                             <div class="form-group row">
                                 <label for="major_national_teams1" class="col-sm-2 form-control-label">{{ __('backend.major_national_teams') }}</label>
                                 <div class="col-sm-10">
