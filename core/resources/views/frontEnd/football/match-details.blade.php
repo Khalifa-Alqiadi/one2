@@ -295,6 +295,7 @@
                                                                 {{-- @else
                                                                     <i class="fas fa-tv"></i>
                                                                 @endif --}}
+                                                                <span>{{ $station['name'] }}</span>
                                                             </div>
                                                         </a>
                                                     @endif

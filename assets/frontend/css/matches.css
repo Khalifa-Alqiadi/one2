@@ -2331,6 +2331,36 @@
     box-shadow: var(--md-shadow);
 }
 
+.match-details-page .match-side-card .tv-station-tile {
+    position: relative;
+}
+.match-details-page .match-side-card .tv-station-tile span {
+    position: absolute;
+    /* inset: 0; */
+    top: -36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    padding: 4px 12px;
+    background-color: var(--color-primary-gold);
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 12px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    width: 100px;
+    z-index: 1;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.match-details-page .match-side-card .tv-station-tile:hover span {
+    visibility: visible;
+    opacity: 1;
+}   
 .match-details-page .match-hero {
     overflow: hidden;
     position: relative;
