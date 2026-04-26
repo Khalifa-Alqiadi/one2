@@ -277,7 +277,7 @@
 
                                 @include('frontEnd.football.partials.probabilities')
 
-                                @if (!$isFinished)
+                                {{-- @if (!$isFinished) --}}
                                     <div class="match-side-card">
                                         <div class="section-title-row">
                                             <h5>{{ __('frontend.tv_stations') }}</h5>
@@ -304,7 +304,7 @@
                                             <div class="soft-empty">{{ __('frontend.no_tv_stations') }}</div>
                                         @endif
                                     </div>
-                                @endif
+                                {{-- @endif --}}
                             </div>
                         </div>
                     </div>
