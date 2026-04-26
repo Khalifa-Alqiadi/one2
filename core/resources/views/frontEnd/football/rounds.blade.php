@@ -32,12 +32,13 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
                         {{ $locale == 'ar' ? 'اللاعبون' : 'Players' }}
                     </button>
                 </li>
-                @if(count($standings) > 0)
+                {{-- @if(count($standings) > 0) --}}
                 <li class="nav-item mx-4">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-standings" type="button">
                         {{ $locale == 'ar' ? 'الترتيب' : 'Standings' }}
                     </button>
                 </li>
+                {{-- @endif --}}
                 @endif
                 <li class="nav-item mx-4">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#t-stats" type="button">
@@ -63,13 +64,13 @@ $name_var = 'name_' . @Helper::currentLanguage()->code;
                 ]) --}}
 
                 {{-- Standings --}}
-                @if(count($standings) > 0)
+                {{-- @if(count($standings) > 0) --}}
                     @include('frontEnd.football.rounds-tabs.standings', [
                         'standings' => $standings,
                         'homeID'    => 0,
                         'awayID'    => 0,
                     ])
-                @endif
+                {{-- @endif --}}
 
 
                 {{-- Stats --}}
