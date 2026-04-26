@@ -8,7 +8,7 @@ $i = 0;
             @foreach($MenuLinks as $MenuLink)
                 @if($i == 3)
                     <a href="{{ Helper::homeURL() }}" class="one-two-header__brand" aria-label="One Two home">
-                        <img src="{{ URL::to('uploads/settings/'.Helper::GeneralSiteSettings("style_logo_" . @Helper::currentLanguage()->code)) }}" alt="One Two">
+                        <img src="{{ {{ URL::to('uploads/settings/'.Helper::GeneralSiteSettings("style_logo_" . @Helper::currentLanguage()->code)) }}" alt="One Two">
                     </a>
                 @endif
                 @php $i++; @endphp
