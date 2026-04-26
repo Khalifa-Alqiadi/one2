@@ -1,4 +1,13 @@
-<div class="swiper swiper-matches">
+@php
+    $name_var = $name_var ?? 'name_' . @Helper::currentLanguage()->code;
+    $matchesCount = is_countable($matches) ? count($matches) : 0;
+@endphp
+
+<div class="swiper swiper-matches js-matches-swiper"
+    data-slide-count="{{ $matchesCount }}"
+    data-next=".js-matches-next"
+    data-prev=".js-matches-prev"
+    data-pagination=".js-matches-pagination">
     <div class="swiper-wrapper">
         @foreach ($matches as $match)
             <?php
@@ -113,10 +122,10 @@
             </div>
         @endforeach
     </div>
-    <div class="swiper-pagination"></div>
+    <div class="swiper-pagination js-matches-pagination"></div>
     <div
         class="navigation d-flex justify-content-center justify-content-center gap-7 mt-5 {{ Helper::currentLanguage()->code == 'ar' ? 'flex-row-reverse' : '' }}">
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next js-matches-next"></div>
+        <div class="swiper-button-prev js-matches-prev"></div>
     </div>
 </div>

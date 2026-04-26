@@ -582,29 +582,35 @@ class MatchesController extends Controller
     {
         $date = $request->input('date');
         $userTz = Helper::getUserTimezone() ?: 'UTC';
+        $isHomeSwiper = $request->input('view') === 'home_swiper';
 
         try {
-            $selectedStartLocal = Carbon::parse($date, $userTz)->startOfDay();
-            $selectedEndLocal   = Carbon::parse($date, $userTz)->endOfDay();
 
-            $selectedStartUtc = $selectedStartLocal->copy()->utc();
-            $selectedEndUtc   = $selectedEndLocal->copy()->utc();
+            if ($date === 'key_matches') {
+                $matches = Helper::getMatchHome($isHomeSwiper ? 3 : 4);
+            } else {
+                $selectedStartLocal = Carbon::parse($date, $userTz)->startOfDay();
+                $selectedEndLocal   = Carbon::parse($date, $userTz)->endOfDay();
 
-            $matches = Fixture::query()
-                ->whereBetween('starting_at', [$selectedStartUtc, $selectedEndUtc])
-                ->with(['homeTeam', 'awayTeam', 'league', 'season'])
-                ->whereHas('season', function ($q) {
-                    $q->where('is_current', true);
-                })
-                ->orderBy('starting_at', 'desc')
-                ->get();
-
-            if($date === 'key_matches'){
-                $matches = Helper::getMatchHome();
+                $selectedStartUtc = $selectedStartLocal->copy()->utc();
+                $selectedEndUtc   = $selectedEndLocal->copy()->utc();
+                $matches = Fixture::query()
+                    ->whereBetween('starting_at', [$selectedStartUtc, $selectedEndUtc])
+                    ->with(['homeTeam', 'awayTeam', 'league', 'season'])
+                    ->whereHas('season', function ($q) {
+                        $q->where('is_current', true);
+                    })
+                    ->orderBy('starting_at', 'desc')
+                    ->get();
             }
 
-            $html = view('frontEnd.football.partials.matches-list', [
+            $view = $isHomeSwiper
+                ? 'frontEnd.homepage.swiper-home'
+                : 'frontEnd.football.partials.matches-list';
+
+            $html = view($view, [
                 'matches' => $matches,
+                'name_var' => 'name_' . Helper::currentLanguage()->code,
             ])->render();
             return response()->json([
                 'status' => true,

@@ -188,5 +188,6 @@ return [
     'videos' => 'Videos',
     'home' => 'Home',
     'leagues' => 'Leagues',
+    'downloadOn' => 'Download On',
 ];
 ?>

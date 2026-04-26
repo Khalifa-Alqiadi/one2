@@ -18,7 +18,7 @@
                 <div class="col-md-12">
                     <?php
                     $yesterday = now()->subDay()->toDateString();
-                    $today = now()->toDateString();
+                    $today = now(Helper::getUserTimezone() ?: 'UTC')->toDateString();
                     $tomorrow = now()->addDay()->toDateString();
                     ?>
                     <div class="tabs-wrapper d-flex">
@@ -47,63 +47,119 @@
     @push('after-scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const tabs = document.querySelectorAll('.match-tab');
-                const matchesContainer = document.getElementById('matches-container');
+                const section = document.querySelector('.matches-home2');
+                const tabs = section ? section.querySelectorAll('.match-tab') : [];
+                const matchesContainer = section ? section.querySelector('#matches-container') : null;
+                const loadingMessage = @json(__('backend.loading') . '...');
+                const noDataMessage = @json(__('frontend.no_data'));
+                const errorMessage = @json(__('backend.error'));
 
                 let swiperMatches = null;
+                let matchesRequest = null;
 
-                function initSwiper() {
-                    const swiperElement = document.querySelector('.swiper-matches');
+                if (!matchesContainer) {
+                    return;
+                }
 
-                    if (!swiperElement) return;
-
+                function destroySwiper() {
                     if (swiperMatches) {
                         swiperMatches.destroy(true, true);
                         swiperMatches = null;
                     }
+                }
 
-                    swiperMatches = new Swiper('.swiper-matches', {
+                function showMessage(message, className) {
+                    destroySwiper();
+
+                    const messageEl = document.createElement('div');
+                    messageEl.className = 'text-center py-4 ' + className;
+                    messageEl.textContent = message;
+
+                    matchesContainer.innerHTML = '';
+                    matchesContainer.appendChild(messageEl);
+                }
+
+                function initSwiper() {
+                    if (typeof Swiper === 'undefined') {
+                        return;
+                    }
+
+                    const swiperElement = matchesContainer.querySelector('.js-matches-swiper');
+
+                    if (!swiperElement) {
+                        return;
+                    }
+
+                    destroySwiper();
+
+                    const slideCount = swiperElement.querySelectorAll('.swiper-slide').length;
+
+                    if (!slideCount) {
+                        return;
+                    }
+
+                    const nextEl = swiperElement.querySelector(swiperElement.dataset.next);
+                    const prevEl = swiperElement.querySelector(swiperElement.dataset.prev);
+                    const paginationEl = swiperElement.querySelector(swiperElement.dataset.pagination);
+                    const enableLoop = slideCount > 4;
+
+                    const swiperOptions = {
                         slidesPerView: 1.2,
                         spaceBetween: 10,
-
-                        navigation: {
-                            nextEl: '.swiper-button-next',
-                            prevEl: '.swiper-button-prev',
-                        },
-                        pagination: {
-                            el: '.swiper-pagination',
-                            clickable: true,
-                        },
+                        speed: 650,
+                        grabCursor: slideCount > 1,
+                        watchOverflow: true,
+                        loop: enableLoop,
+                        rewind: !enableLoop && slideCount > 1,
+                        centeredSlides: false,
+                        slideToClickedSlide: enableLoop,
+                        observer: true,
+                        observeParents: true,
                         breakpoints: {
                             576: {
                                 slidesPerView: 1.5,
                                 spaceBetween: 10,
-                                loop: false,
                                 centeredSlides: false,
                             },
                             768: {
                                 slidesPerView: 2,
                                 spaceBetween: 15,
-                                loop: false,
                                 centeredSlides: false,
                             },
                             992: {
                                 slidesPerView: 3.40,
                                 spaceBetween: 40,
-                                loop: true,
-                                centeredSlides: true,
-                                slideToClickedSlide: true,
+                                centeredSlides: enableLoop,
                             },
                         },
-                    });
+                    };
+
+                    if (nextEl && prevEl) {
+                        swiperOptions.navigation = {
+                            nextEl: nextEl,
+                            prevEl: prevEl,
+                        };
+                    }
+
+                    if (paginationEl) {
+                        swiperOptions.pagination = {
+                            el: paginationEl,
+                            clickable: true,
+                        };
+                    }
+
+                    swiperMatches = new Swiper(swiperElement, swiperOptions);
                 }
 
                 function fetchMatches(date) {
-                    matchesContainer.innerHTML = `
-                <div class="text-center py-4 text-white">
-                    جاري تحميل المباريات...
-                </div>
-            `;
+                    if (matchesRequest) {
+                        matchesRequest.abort();
+                    }
+
+                    const controller = new AbortController();
+                    matchesRequest = controller;
+
+                    showMessage(loadingMessage, 'text-white');
 
                     fetch(`{{ route('matches.by.date') }}`, {
                             method: 'POST',
@@ -113,30 +169,37 @@
                                 "X-Requested-With": "XMLHttpRequest"
                             },
                             body: JSON.stringify({
-                                date: date
-                            })
+                                date: date,
+                                view: 'home_swiper'
+                            }),
+                            signal: controller.signal
                         })
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Request failed');
+                            }
+
+                            return response.json();
+                        })
                         .then(result => {
-                            if (result.html) {
+                            if (result.status && result.html) {
                                 matchesContainer.innerHTML = result.html;
                                 initSwiper();
                             } else {
-                                matchesContainer.innerHTML = `
-                        <div class="text-center py-4 text-danger">
-                            لا توجد بيانات متاحة
-                        </div>
-                    `;
+                                showMessage(noDataMessage, 'text-danger');
                             }
                         })
                         .catch(error => {
-                            console.error('Error fetching matches:', error);
+                            if (error.name === 'AbortError') {
+                                return;
+                            }
 
-                            matchesContainer.innerHTML = `
-                    <div class="text-center py-4 text-danger">
-                        حصل خطأ أثناء تحميل المباريات
-                    </div>
-                `;
+                            showMessage(errorMessage, 'text-danger');
+                        })
+                        .finally(() => {
+                            if (matchesRequest === controller) {
+                                matchesRequest = null;
+                            }
                         });
                 }
 
@@ -145,8 +208,7 @@
                         tabs.forEach(t => t.classList.remove('active'));
                         this.classList.add('active');
 
-                        const date = this.getAttribute('data-date');
-                        fetchMatches(date);
+                        fetchMatches(this.getAttribute('data-date'));
                     });
                 });
 

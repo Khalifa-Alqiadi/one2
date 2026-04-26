@@ -1727,15 +1727,15 @@ class Helper
             ->get();
     }
 
-    static function majorCompetitionsTeams($limit = 0){
-        $teams = Team::where('major_competitions', 1)
+    static function majorCompetitions($limit = 0){
+        $leagues = League::where('major_competitions', 1)
             ->where('status', 1);
         if($limit > 0){
-            $teams = $teams->limit($limit);
+            $leagues = $leagues->limit($limit);
         }
 
-        $teams = $teams->get();
-        return $teams;
+        $leagues = $leagues->get();
+        return $leagues;
     }
     static function majorNationalTeams($limit = 0){
         $teams = Team::where('major_national_teams', 1)

@@ -126,14 +126,15 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
 
                             <div class="legal-links">
                                 <div class="app-badges">
-                                    <a href="#" class="badge">
-                                        <span><i class="fa-brands fa-app-store-ios"></i></span>
-                                        <span><small>حمّل من</small><strong>App Store</strong></span>
-                                    </a>
-                                    <a href="#" class="badge">
-                                        <span><i class="fa-brands fa-google-play"></i></span>
-                                        <span><small>حمّل من</small><strong>Google Play</strong></span>
-                                    </a>
+                                    @php($appMenuLinks = \App\Helpers\SiteMenu::List(74))
+                                    @if(count($appMenuLinks)>0)
+                                        @foreach ($appMenuLinks as $item)
+                                            <a href="{{ $item->url }}" class="badge" target="{{ $item->target }}">
+                                                <span><i class="fa-brands {{ $item->icon }}"></i></span>
+                                                <span><small>{{__('frontend.downloadOn')}}</small><strong>{{ $item->title }}</strong></span>
+                                            </a>
+                                        @endforeach
+                                    @endif
                                 </div>
                             </div>
 

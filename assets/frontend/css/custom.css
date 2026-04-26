@@ -1277,7 +1277,7 @@
 
 #footer .footer-bottom {
     border: 0 !important;
-    border-top: 1px solid var(--line) !important;
+    /* border-top: 1px solid var(--line) !important; */
     /* display: flex; */
     text-align: center;
     align-items: center;
@@ -1286,7 +1286,7 @@
     padding: 18px 24px;
     color: var(--muted);
     font-size: 14px;
-    background: rgba(255, 255, 255, 0.02) !important;
+    background: transparent !important;
 }
 
 #footer .legal-links {
@@ -1297,7 +1297,7 @@
 
 #footer .app-badges {
     display: flex;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
     gap: 10px;
 }
 
@@ -1308,10 +1308,11 @@
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 16px;
-    padding: 10px 14px;
+    padding: 10px 10px;
     color: var(--text);
     text-decoration: none;
-    min-width: 150px;
+    min-width: 135px;
+    font-weight: 500;
 }
 
 #footer .badge small {
@@ -1835,13 +1836,13 @@
     position: relative;
     overflow: hidden;
     min-height: 100%;
-    padding: 26px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 28px;
+    /* padding: 26px; */
+    /* border: 1px solid rgba(255, 255, 255, 0.08); */
+    /* border-radius: 28px;
     background:
         radial-gradient(circle at top left, rgba(var(--teams-accent-rgb), 0.18), transparent 34%),
         linear-gradient(145deg, rgba(36, 38, 43, 0.98), rgba(18, 19, 24, 0.96));
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24); */
     isolation: isolate;
 }
 
@@ -1850,7 +1851,7 @@
     --teams-accent-rgb: 12, 194, 170;
 }
 
-.teams-home .teams-home__panel-bg {
+/* .teams-home .teams-home__panel-bg {
     position: absolute;
     inset: auto -70px -90px auto;
     width: 220px;
@@ -1860,7 +1861,7 @@
     filter: blur(6px);
     pointer-events: none;
     z-index: -1;
-}
+} */
 
 .teams-home .teams-home__header,
 .teams-home .teams-home__footer {
@@ -1991,7 +1992,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 18px;
-    min-height: 270px;
+    min-height: 200px;
     padding: 15px 18px;
     border-radius: 24px;
     background:
@@ -2232,6 +2233,7 @@
     border-top: 1.06px solid #FFFFFF !important;
     background: #000000;
     transition: all 0.3s ease-in-out;
+    min-height: 250px;
 }
 .matches-home2 .swiper-slide-active .card {
     transform: scale(1.05);

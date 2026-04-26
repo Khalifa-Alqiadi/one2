@@ -70,7 +70,7 @@ class LeaguesController extends Controller
             }
             $League->country_id = $request->country_id;
             $League->status = $request->status;
-            $League->is_home = $request->is_home;
+            $League->major_competitions = $request->major_competitions;
             // $League->updated_by = Auth::user()->id;
             $League->save();
 
