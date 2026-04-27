@@ -37,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->commands([
             \App\Console\Commands\SyncLiveFixtures::class,
+            \App\Console\Commands\UpdateCurrentSeasonStructure::class,
+            \App\Console\Commands\UpdateStandings::class,
             \App\Console\Commands\UpdateLeaguesAndSeasons::class,
         ]);
     }

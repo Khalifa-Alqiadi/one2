@@ -22,8 +22,8 @@
 <link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.theme.default.min.css') }}?v={{ Helper::system_version() }}">
 
 <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v=2" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=89" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=22" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=90" rel="stylesheet"/>
+<link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=23" rel="stylesheet"/>
 
 
 @if( @Helper::currentLanguage()->direction=="rtl")

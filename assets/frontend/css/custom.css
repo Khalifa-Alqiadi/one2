@@ -1655,7 +1655,7 @@
     font-size: 18px;
     line-height: 28px;
     text-align: center;
-
+    color: #000;
 }
 /* End ads-top-home */
 
@@ -1957,6 +1957,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    justify-content: flex-end;
 }
 
 .teams-home .teams-home__nav {
@@ -2120,8 +2121,8 @@
     }
 
     .teams-home .teams-home__controls {
-        width: 100%;
-        justify-content: space-between;
+        width: auto;
+        justify-content: end;
     }
 
     .teams-home .teams-home__title {
@@ -2140,8 +2141,8 @@
     }
 
     .teams-home .teams-home__team-card {
-        min-height: 227px;
-        padding: 16px 18px;
+        min-height: 170px;
+        padding: 16px 10px;
         gap: 12px;
     }
 
@@ -2153,8 +2154,8 @@
     }
 
     .teams-home .teams-home__team-name {
-        min-height: 30px;
-        font-size: 18px;
+        min-height: auto;
+        font-size: 15px;
     }
 
     .teams-home .teams-home__team-link{
@@ -2415,7 +2416,7 @@
 
     .section-title {
         padding-bottom: 0;
-        margin-bottom: 10px !important;
+        margin-bottom: 20px !important;
     }
 
     #header .logo {

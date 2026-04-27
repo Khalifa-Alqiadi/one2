@@ -293,17 +293,19 @@ class SportmonksStandingService
 
     public function refreshStandingsCache(int $seasonId, string $locale): void
     {
-        $cacheKey = "sm:standings:season:{$seasonId}:{$locale}";
-        $metaKey  = "sm:standings:season:{$seasonId}:{$locale}:meta";
-
         $hasStandings = Standing::where('season_id', $seasonId)->exists();
 
-        Cache::forget($cacheKey);
-        Cache::forget($metaKey);
+        $this->forgetStandingsCache($seasonId, $locale);
 
         if (!$hasStandings) {
             $this->syncSeasonStandings($seasonId, $locale);
         }
+    }
+
+    public function forgetStandingsCache(int $seasonId, string $locale): void
+    {
+        Cache::forget("sm:standings:season:{$seasonId}:{$locale}");
+        Cache::forget("sm:standings:season:{$seasonId}:{$locale}:meta");
     }
 
     public function getStandingsCached(int $seasonId, string $locale): array

@@ -31,7 +31,7 @@
                     <div class="teams-home__panel-bg"></div>
                     <div
                         class="section-title d-flex justify-content-between align-items-center mb-4 section-title-with-line p-0">
-                        <h2 class="d-flex align-items-center gap-4 ">
+                        <h2 class="d-flex align-items-center gap-4 w-100">
                             <img src="{{ URL::to('uploads/settings/major_competitions.svg') }}" alt="{{ __('frontend.major_competitions') }}">
                             {{ __('frontend.major_competitions') }}
                         </h2>
@@ -115,7 +115,7 @@
 
                         <div
                             class="section-title d-flex justify-content-between align-items-center mb-4 section-title-with-line p-0">
-                            <h2 class="d-flex align-items-center gap-4 ">
+                            <h2 class="d-flex align-items-center gap-4 w-100">
                                 <img src="{{ URL::to('uploads/settings/major_competitions.svg') }}" alt="{{ __('frontend.major_national_teams') }}">
                                 {{ __('frontend.major_national_teams') }}
                             </h2>
@@ -219,7 +219,7 @@
                 }
 
                 const swiperOptions = {
-                    slidesPerView: 1.60,
+                    slidesPerView: 1.80,
                     spaceBetween: 14,
                     speed: 700,
                     grabCursor: true,
