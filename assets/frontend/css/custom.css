@@ -2697,10 +2697,14 @@
         top: -10px;
     }
 
+    .matches-home2 .tabs-wrapper{
+        gap: 12px;
+    }
+
     .matches-home2 .tabs-wrapper button{
         font-weight: 400;
         padding: 5px 8px;
-        font-size: 13px;
+        font-size: 12px;
         flex-shrink: 0;
     }
 
