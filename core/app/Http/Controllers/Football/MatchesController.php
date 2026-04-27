@@ -42,7 +42,14 @@ class MatchesController extends Controller
         $this->website_status();
         App::setLocale($lang);
         session(['locale' => $lang]);
-        $leagues = League::where('status', 1)->get();
+        $leagues = League::where('status', 1)
+            ->whereHas('matches', function ($query) {
+                $query->whereHas('season', function ($q) {
+                    $q->where('is_current', true);
+                });
+            })
+            ->orderby('row_no', 'desc')
+            ->get();
 
         $localeRaw = Helper::currentLanguage()->code ?? 'ar';
         $locale    = in_array($localeRaw, ['ar', 'en']) ? $localeRaw : 'en';

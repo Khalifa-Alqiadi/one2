@@ -88,7 +88,9 @@ $x = 0;
                                             </td>
                                             <td class="text-center">{{ $League->id }}</td>
                                             <td class="h6 nowrap">
+
                                                 <div class="d-flex content-justify-between">
+                                                    <input type="text" name="row_no_{{ $League->id }}" id="row_no_{{ $League->id }}" value="{{ $League->row_no }}" class="form-control row_no light" autocomplete="off">
                                                     <a href="{{ route("seasons",["league_id"=>$League->id]) }}">
                                                     {{ $League->$name_var }}
                                                         <div class="pull-right">

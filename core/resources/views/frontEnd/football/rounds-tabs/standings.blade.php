@@ -336,7 +336,7 @@
                                 <td class="text-center form-col">
                                     <div class="form-dots-v2">
                                         @foreach ($form as $f)
-                                            <span class="dot-v2 {{ $f }}">{{ $f }}</span>
+                                            <span class="dot-v2 {{ $f }}">{{ __('frontend.standings_table.' . strtolower($f)) }}</span>
                                         @endforeach
                                     </div>
                                 </td>

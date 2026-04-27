@@ -19,6 +19,7 @@ class League extends Model
         'image_path',
         'status',
         'is_home',
+        'row_no',
         'current_season_id',
     ];
 
