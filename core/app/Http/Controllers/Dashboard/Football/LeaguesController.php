@@ -41,7 +41,7 @@ class LeaguesController extends Controller
             $Leagues = $Leagues->where('name', 'like', '%' . $search_word . '%');
         }
 
-        $Leagues = $Leagues->orderby('row_no', 'desc')->paginate(config('smartend.backend_pagination'));
+        $Leagues = $Leagues->orderby('row_no', 'asc')->paginate(config('smartend.backend_pagination'));
 
         return view('dashboard.football.leagues.list', compact('Leagues', 'GeneralWebmasterSections'));
     }

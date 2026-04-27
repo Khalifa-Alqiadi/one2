@@ -48,7 +48,7 @@ class MatchesController extends Controller
                     $q->where('is_current', true);
                 });
             })
-            ->orderby('row_no', 'desc')
+            ->orderby('row_no', 'asc')
             ->get();
 
         $localeRaw = Helper::currentLanguage()->code ?? 'ar';
