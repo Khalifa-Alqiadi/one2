@@ -35,7 +35,7 @@ class TeamsController extends Controller
         $name = "name_" . $locale;
         $title = "title_" . $locale;
 
-        $dir = $request->input('order.0.dir', 'desc');
+        $dir = $request->input('order.0.dir', 'asc');
         $orderColumnIndex = (int) $request->input('order.0.column', 0);
         $q = $request->input('find_q');
         $country_id = $request->input('country_id');
@@ -50,10 +50,11 @@ class TeamsController extends Controller
             'founded',
             'status',
             'updated_at',
+            'row_no',
         ];
 
-        $order = $columns[$orderColumnIndex] ?? 'id';
-        if (!in_array($dir, ['asc', 'desc'])) $dir = 'desc';
+        $order = 'row_no';
+        if (!in_array($dir, ['asc', 'desc'])) $dir = 'asc';
 
         // Query
         $query = \App\Models\Team::query();
@@ -81,7 +82,7 @@ class TeamsController extends Controller
 
         // paginate + order
         $rows = $query->orderBy($order, $dir)
-            ->orderBy('id', 'desc')
+            ->orderBy('row_no', 'asc')
             ->offset($start)
             ->limit($limit > 0 ? $limit : 10)
             ->get();
@@ -92,7 +93,9 @@ class TeamsController extends Controller
         foreach ($rows as $team) {
             $x++;
             $logo = $team->image_path
-                ? " <div class=\"pull-right\"><img src=\"" . $team->image_path . "?w=150&h=150\" style=\"height: 40px\" alt=\"" . $title . "\"></div>"
+                ? " <div class=\"pull-right\">
+
+                    <img src=\"" . $team->image_path . "?w=150&h=150\" style=\"height: 40px\" alt=\"" . $title . "\"></div>"
                 : '-';
             // $logo = $team->image_path
             //     ? '<img src="' . $team->image_path . '" style="width:28px;height:28px;object-fit:contain;border-radius:6px;background:#fff;padding:2px" />'
@@ -128,7 +131,7 @@ class TeamsController extends Controller
                 'id'         => '<div class="text-center">' . $team->id . '</div>',
                 // 'logo'       => '<div class="text-center">' . $logo . '</div>',
                 'name'       => '<div>' . $team->name_ar . '</div>',
-                'name'       => "<a href='" . route("teams.edit", [
+                'name'       => "<input type='text' name=\"row_no_".$team->id."\" id=\"row_no_".$team->id."\" value=\"".$team->row_no."\" class=\"form-control row_no light pull-left\" autocomplete=\"off\"><a href='" . route("teams.edit", [
                     "id" => $team->id
                 ]) . "'>" . $logo . "<div class='h6 m-b-0'>" . $team->$name . "</div></a>",
                 'country_id' => '<div class="text-center">' . ($team->country->$title ?? '-') . '</div>',
@@ -191,17 +194,26 @@ class TeamsController extends Controller
     public function updateAll(Request $request)
     {
         $ids = $request->input('ids', []);
-        $rowNos = $request->input('row_no', []);
+        // $rowNos = $request->input('row_no', []);
 
-        if (is_array($ids) && count($ids) > 0) {
-            if ($request->input('action') === 'delete') {
+        // if (is_array($ids) && count($ids) > 0) {
+            if ($request->action === 'order') {
+                foreach ($request->row_ids as $rowId) {
+                    $team = Team::find($rowId);
+                    if (!empty($team)) {
+                        $row_no_val = "row_no_" . $rowId;
+                        $team->row_no = $request->$row_no_val;
+                        $team->save();
+                    }
+                }
+            }elseif ($request->action === 'delete') {
                  Team::whereIn('id', $ids)->delete();
-            } elseif ($request->input('action') === 'activate') {
+            } elseif ($request->action === 'activate') {
                 Team::whereIn('id', $ids)->update(['status' => 1]);
-            } elseif ($request->input('action') === 'block') {
+            } elseif ($request->action === 'block') {
                 Team::whereIn('id', $ids)->update(['status' => 0]);
              }
-        }
+        // }
 
         return redirect()->action([TeamsController::class, 'index'])->with('doneMessage', __('backend.saveDone'));
 

@@ -295,7 +295,7 @@ $x = 0;
                     },
                 ],
                 order: [
-                    [0, "desc"]
+                    [0, "asc"]
                 ],
             });
             dataTable.on('page.dt', function() {

@@ -1734,7 +1734,7 @@ class Helper
             $leagues = $leagues->limit($limit);
         }
 
-        $leagues = $leagues->get();
+        $leagues = $leagues->orderBy('row_no', 'asc')->get();
         return $leagues;
     }
     static function majorNationalTeams($limit = 0){
@@ -1744,7 +1744,7 @@ class Helper
             $teams = $teams->limit($limit);
         }
 
-        $teams = $teams->get();
+        $teams = $teams->orderBy('row_no', 'asc')->get();
         return $teams;
     }
 
