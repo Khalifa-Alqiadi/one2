@@ -28,7 +28,9 @@ class LeaguesController extends Controller
     public function index()
     {
         $this->website_status();
-        $leagues = \App\Models\League::with('country')->get();
+        $leagues = \App\Models\League::with('country')
+            ->orderBy('row_no', 'asc')
+            ->get();
         return view('frontEnd.football.leagues', [
             'leagues' => $leagues,
             'count' => count($leagues),
@@ -36,6 +38,387 @@ class LeaguesController extends Controller
     }
 
     public function rounds(Request $request, $id = null)
+    {
+        $leagueId = (int) $id;
+        $league = League::findOrFail($leagueId);
+
+
+        $locale = Helper::currentLanguage()->code ?? 'ar';
+        $locale = in_array($locale, ['ar', 'en']) ? $locale : 'ar';
+
+        // Resolve the requested season with a safe fallback.
+        $season = $this->resolveLeagueSeason($league, (int) $request->query('season_id', 0));
+        $seasonId = $season ? (int) $season->id : 0;
+
+        // ✅ standings من API مع كاش ساعة
+        $standings = [];
+        $standingsUpdatedAt = null;
+        $standingsErr = null;
+
+        if ($seasonId > 0 && $request->boolean('refresh_standings')) {
+            $this->refreshStandingsCache($seasonId, $locale);
+        }
+
+        if ($seasonId > 0) {
+            $standingsData = $this->getStandingsCached($seasonId, $locale);
+
+            $standings = $standingsData['standings'] ?? [];
+            $standingsUpdatedAt = $standingsData['fetched_at'] ?? null;
+            $standingsErr = $standingsData['error'] ?? null;
+        }
+
+        $rounds = $this->leagueRoundsQuery($leagueId, $seasonId)->get();
+        $roundsCount = $rounds->count();
+
+        $totalRounds = 0;
+        // (اختياري) standings
+        $fixturesErr = null;
+        $roundsErr = null;
+
+        $stages = $this->leagueStagesQuery($league, $seasonId)->get();
+
+        $pages = collect();
+        $name_var = 'name_' . Helper::currentLanguage()->code;
+        foreach ($stages as $stage) {
+            $stageName = mb_strtolower((string) ($stage->name ?? ''));
+            if (count($stage->rounds) > 0) {
+
+                // اعتبر هذه المرحلة الأساسية لو عندها عدة جولات
+                $isLeaguePhase = $stage->rounds->count() > 1;
+
+                if ($isLeaguePhase) {
+                    $roundsCount = $stage->rounds->count();
+                    foreach ($stage->rounds as $round) {
+                        $fixtures = $round->fixtures
+                            ->sortByDesc(fn($fixture) => $fixture->starting_at?->timestamp ?? 0)
+                            ->values();
+
+                        $pages->push([
+                            'type' => 'round',
+                            'title' => __('frontend.matchday_progress', [
+                                'current' => $round->name,
+                                'total' => $roundsCount,
+                            ]),
+                            'stage' => $stage,
+                            'round' => $round,
+                            'fixtures' => $fixtures,
+                        ]);
+                    }
+                } else {
+                    // المراحل الإقصائية كصفحة واحدة
+                    $fixtures = $stage->rounds
+                        ->flatMap(fn($round) => $round->fixtures)
+                        ->sortByDesc('starting_at')
+                        ->values();
+
+                    $pages->push([
+                        'type' => 'stage',
+                        'title' => $stage->$name_var ?: ('Stage ' . $stage->id),
+                        'stage' => $stage,
+                        'round' => null,
+                        'fixtures' => $fixtures,
+                    ]);
+                }
+            } else {
+                $fixtures = $stage->fixtures
+                    ->sortByDesc(fn($fixture) => $fixture->starting_at?->timestamp ?? 0)
+                    ->values();
+
+                $pages->push([
+                    'type' => 'stage',
+                    'title' => $stage->$name_var ?: ('Stage ' . $stage->id),
+                    'stage' => $stage,
+                    'round' => null,
+                    'fixtures' => $fixtures,
+                ]);
+            }
+        }
+        $roundsCount = $rounds->count();
+
+        if ($pages->isEmpty() || !$pages->contains(fn($page) => collect($page['fixtures'] ?? [])->isNotEmpty())) {
+            $roundPages = $this->buildRoundPages($rounds);
+
+            if ($roundPages->isNotEmpty()) {
+                $pages = $roundPages;
+            }
+        }
+
+        $pages = $this->appendLooseFixturePage($pages, $leagueId, $seasonId);
+
+        $perPage = 1;
+        $currentPage = max(1, LengthAwarePaginator::resolveCurrentPage());
+        if ($pages->isNotEmpty()) {
+            $currentPage = min($currentPage, $pages->count());
+        }
+        $currentItems = $pages->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+
+        $paginatedPages = new LengthAwarePaginator(
+            $currentItems,
+            $pages->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
+
+        if (!$request->has('page') && $pages->isNotEmpty()) {
+            $routeParams = [
+                'id' => $id,
+                'page' => $this->findTargetPageIndex($pages) + 1,
+            ];
+
+            if ($seasonId > 0) {
+                $routeParams['season_id'] = $seasonId;
+            }
+
+            return redirect()->route('league.rounds', $routeParams);
+        }
+
+        $seasons = $league->seasons()->orderByDesc('starting_at')->get();
+
+        return view('frontEnd.football.rounds', compact(
+            'league',
+            'leagueId',
+            'seasonId',
+            'seasons',
+            'season',
+            'rounds',
+            'locale',
+            'totalRounds',
+            'fixturesErr',
+            'roundsErr',
+            'roundsCount',
+            'standings',
+            'standingsErr',
+            'standingsUpdatedAt',
+            'stages',
+            'paginatedPages'
+        ));
+    }
+    private function resolveLeagueSeason(League $league, int $requestedSeasonId)
+    {
+        if ($requestedSeasonId > 0) {
+            $season = $league->seasons()->where('id', $requestedSeasonId)->first();
+
+            if ($season) {
+                return $season;
+            }
+        }
+
+        return $league->seasons()
+            ->where('is_current', 1)
+            ->orderByDesc('starting_at')
+            ->orderByDesc('id')
+            ->first()
+            ?: $league->seasons()
+                ->orderByDesc('starting_at')
+                ->orderByDesc('id')
+                ->first();
+    }
+
+    private function leagueRoundsQuery(int $leagueId, int $seasonId)
+    {
+        return Round::query()
+            ->where('league_id', $leagueId)
+            ->when($seasonId > 0, fn($q) => $q->where('season_id', $seasonId))
+            ->with([
+                'stage',
+                'fixtures' => function ($fx) use ($seasonId) {
+                    $fx->when($seasonId > 0, fn($q) => $q->where('season_id', $seasonId))
+                        ->with(['homeTeam', 'awayTeam'])
+                        ->orderBy('starting_at', 'desc')
+                        ->orderBy('id', 'desc');
+                },
+            ])
+            ->orderBy('starting_at', 'asc')
+            ->orderBy('id', 'asc');
+    }
+
+    private function leagueStagesQuery(League $league, int $seasonId)
+    {
+        return $league->stages()
+            ->when($seasonId > 0, fn($q) => $q->where('season_id', $seasonId))
+            ->with([
+                'rounds' => function ($q) use ($seasonId) {
+                    $q->when($seasonId > 0, fn($rounds) => $rounds->where('season_id', $seasonId))
+                        ->with([
+                            'fixtures' => function ($fx) use ($seasonId) {
+                                $fx->when($seasonId > 0, fn($fixtures) => $fixtures->where('season_id', $seasonId))
+                                    ->with(['homeTeam', 'awayTeam'])
+                                    ->orderBy('starting_at', 'desc')
+                                    ->orderBy('id', 'desc');
+                            },
+                        ])
+                        ->orderBy('starting_at', 'asc')
+                        ->orderBy('id', 'asc');
+                },
+                'fixtures' => function ($fx) use ($seasonId) {
+                    $fx->when($seasonId > 0, fn($fixtures) => $fixtures->where('season_id', $seasonId))
+                        ->with(['homeTeam', 'awayTeam'])
+                        ->orderBy('starting_at', 'desc')
+                        ->orderBy('id', 'desc');
+                },
+            ])
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('starting_at', 'asc')
+            ->orderBy('id', 'asc');
+    }
+
+    private function buildRoundPages($rounds)
+    {
+        $pages = collect();
+        $roundsCount = max(1, $rounds->count());
+
+        foreach ($rounds as $round) {
+            $pages->push([
+                'type' => 'round',
+                'title' => __('frontend.matchday_progress', [
+                    'current' => $round->name ?: $round->id,
+                    'total' => $roundsCount,
+                ]),
+                'stage' => $round->stage,
+                'round' => $round,
+                'fixtures' => $this->sortFixtures($round->fixtures),
+            ]);
+        }
+
+        return $pages;
+    }
+
+    private function appendLooseFixturePage($pages, int $leagueId, int $seasonId)
+    {
+        $shownFixtureIds = $pages
+            ->flatMap(fn($page) => collect($page['fixtures'] ?? [])->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $query = Fixture::query()
+            ->where('league_id', $leagueId)
+            ->when($seasonId > 0, fn($q) => $q->where('season_id', $seasonId))
+            ->with(['homeTeam', 'awayTeam'])
+            ->orderBy('starting_at', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($shownFixtureIds->isNotEmpty()) {
+            $query->whereNotIn('id', $shownFixtureIds->all());
+        }
+
+        $fixtures = $query->get();
+
+        if ($fixtures->isNotEmpty()) {
+            $pages->push([
+                'type' => 'fixtures',
+                'title' => __('frontend.matches'),
+                'stage' => null,
+                'round' => null,
+                'fixtures' => $this->sortFixtures($fixtures),
+            ]);
+        }
+
+        return $pages;
+    }
+
+    private function sortFixtures($fixtures)
+    {
+        return collect($fixtures)
+            ->filter()
+            ->unique('id')
+            ->sortByDesc(fn($fixture) => $this->fixtureTimestamp($fixture) ?? 0)
+            ->values();
+    }
+
+    private function findTargetPageIndex($pages): int
+    {
+        $hasFixturePages = $pages->contains(
+            fn($page) => collect($page['fixtures'] ?? [])->isNotEmpty()
+        );
+
+        foreach ($pages as $index => $page) {
+            if ($this->pageHasCurrentFlag($page) && (!$hasFixturePages || collect($page['fixtures'] ?? [])->isNotEmpty())) {
+                return (int) $index;
+            }
+        }
+
+        foreach ($pages as $index => $page) {
+            if (collect($page['fixtures'] ?? [])->contains(fn($fixture) => $this->fixtureLooksLive($fixture))) {
+                return (int) $index;
+            }
+        }
+
+        $now = now()->timestamp;
+        $upcomingIndex = null;
+        $upcomingTimestamp = null;
+        $latestIndex = null;
+        $latestTimestamp = null;
+
+        foreach ($pages as $index => $page) {
+            foreach (collect($page['fixtures'] ?? []) as $fixture) {
+                $timestamp = $this->fixtureTimestamp($fixture);
+
+                if (!$timestamp) {
+                    continue;
+                }
+
+                if (!$fixture->is_finished && $timestamp >= $now && ($upcomingTimestamp === null || $timestamp < $upcomingTimestamp)) {
+                    $upcomingTimestamp = $timestamp;
+                    $upcomingIndex = (int) $index;
+                }
+
+                if ($latestTimestamp === null || $timestamp > $latestTimestamp) {
+                    $latestTimestamp = $timestamp;
+                    $latestIndex = (int) $index;
+                }
+            }
+        }
+
+        return $upcomingIndex ?? $latestIndex ?? 0;
+    }
+
+    private function pageHasCurrentFlag(array $page): bool
+    {
+        return (bool) data_get($page, 'round.is_current') || (bool) data_get($page, 'stage.is_current');
+    }
+
+    private function fixtureLooksLive($fixture): bool
+    {
+        if ((bool) $fixture->is_finished) {
+            return false;
+        }
+
+        $state = strtoupper((string) ($fixture->state_code ?? $fixture->state_name ?? ''));
+        if (in_array($state, ['LIVE', 'HT', 'INPLAY_1ST', 'INPLAY_2ND'], true)) {
+            return true;
+        }
+
+        $timestamp = $this->fixtureTimestamp($fixture);
+
+        return $timestamp
+            && $timestamp >= now()->subMinutes(15)->timestamp
+            && $timestamp <= now()->addHours(3)->timestamp;
+    }
+
+    private function fixtureTimestamp($fixture): ?int
+    {
+        if (!$fixture || !$fixture->starting_at) {
+            return null;
+        }
+
+        try {
+            if ($fixture->starting_at instanceof \DateTimeInterface) {
+                return $fixture->starting_at->getTimestamp();
+            }
+
+            return \Carbon\Carbon::parse($fixture->starting_at)->timestamp;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    public function roundsOld(Request $request, $id = null)
     {
         $leagueId = (int) $id;
         $league = League::findOrFail($leagueId);

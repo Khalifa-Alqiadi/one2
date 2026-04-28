@@ -5,31 +5,48 @@ $title_var = 'title_' . @Helper::currentLanguage()->code;
 @extends('frontEnd.layouts.master')
 
 @section('content')
-    <div>
-        <section id="content">
-            <div class="container">
-                <div class="row">
-                    @forelse($leagues as $league)
+    <section id="content" class="football leagues-page">
+        <div class="leagues-page__ambient" aria-hidden="true"></div>
+        <div class="container position-relative">
+            <div class="leagues-directory">
+                <header class="leagues-directory__head">
+                    <div class="leagues-directory__title-wrap">
+                        <h2 class="leagues-directory__title">{{ __('frontend.leagues') }}</h2>
+                        <p class="leagues-directory__kicker">{{ __('frontend.all_competitions') }}</p>
+                    </div>
+                    @if(isset($count) && $count > 0)
+                        <span class="leagues-directory__count">{{ $count }}</span>
+                    @endif
+                </header>
 
-                        <div class="col-md-6">
-                            <a href="{{route('league.rounds', ['id' => $league->id])}}" class="card mb-2 p-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-white rounded-circle p-2">
-                                        <img src="{{ $league->image_path ?? '' }}" width="28" alt="">
+                <div class="leagues-grid">
+                    @forelse($leagues as $league)
+                        <a href="{{ route('league.rounds', ['id' => $league->id]) }}" class="league-tile">
+                            <span class="league-tile__sheen" aria-hidden="true"></span>
+                            <div class="league-tile__body">
+                                <div class="league-tile__main">
+                                    <div class="league-tile__logo">
+                                        <span class="league-tile__logo-ring"></span>
+                                        <img src="{{ $league->image_path ?? '' }}" alt="{{ $league->$name_var ?? '' }}" loading="lazy" width="44" height="44">
                                     </div>
-                                    <h4 class="mb-2 mx-2">{{ $league->$name_var ?? '' }}</h4>
+                                    <h3 class="league-tile__name">{{ $league->$name_var ?? '' }}</h3>
                                 </div>
-                                <div class="card-body">
-                                    <span>{{$league->country->$title_var ?? ''}}</span>
+                                <div class="league-tile__foot">
+                                    @php $countryLabel = optional($league->country)->{$title_var} ?? ''; @endphp
+                                    @if($countryLabel !== '')
+                                        <span class="league-tile__country">{{ $countryLabel }}</span>
+                                    @endif
+                                    <span class="league-tile__go" aria-hidden="true">
+                                        <i class="bi bi-arrow-up-right"></i>
+                                    </span>
                                 </div>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     @empty
-                        <p>لا توجد دوري</p>
+                        <p class="leagues-empty">{{ __('frontend.no_data') }}</p>
                     @endforelse
                 </div>
-
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
 @endsection
