@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Football;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Models\Fixture;
+use App\Services\FetchFixtureDetailsFromSportmonksService;
 use App\Services\LiveMatchesService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,10 +14,15 @@ use Illuminate\Support\Facades\Cache;
 class LivescoresController extends Controller
 {
     private LiveMatchesService $handleMatchesService;
+    private FetchFixtureDetailsFromSportmonksService $fetchFixtureDetailsFromSportmonks;
 
-    public function __construct(LiveMatchesService $handleMatchesService)
+    public function __construct(
+        LiveMatchesService $handleMatchesService,
+        FetchFixtureDetailsFromSportmonksService $fetchFixtureDetailsFromSportmonks
+    )
     {
         $this->handleMatchesService = $handleMatchesService;
+        $this->fetchFixtureDetailsFromSportmonks = $fetchFixtureDetailsFromSportmonks;
     }
 
     public function index()
@@ -115,21 +121,27 @@ class LivescoresController extends Controller
                 ];
                 continue;
             }
-
-            // dd($liveData['status']);
-
             // ✅ حدّث DB فقط إذا API أكد FT
-            if (($liveData['status'] ?? '') === 'FT' && $liveData['state_code'] === 'FT') {
-                \App\Models\Fixture::where('id', $id)->update([
-                    'home_score'    => $liveData['home_score'],
-                    'away_score'    => $liveData['away_score'],
-                    'ft_home_score' => $liveData['home_score'],
-                    'ft_away_score' => $liveData['away_score'],
-                    'is_finished'   => 1,
-                    'state_code'    => $liveData['state_code'] ?? 'FT',
-                    'state_name'    => $liveData['state_name'] ?? 'Finished',
-                    'minute'        => null,
-                ]);
+            $isFinishedLive = (bool) data_get($liveData, 'is_finished', false)
+                || (($liveData['status'] ?? '') === 'FT');
+
+            if ($isFinishedLive) {
+                // \App\Models\Fixture::where('id', $id)->update([
+                //     'home_score'    => $liveData['home_score'],
+                //     'away_score'    => $liveData['away_score'],
+                //     'ft_home_score' => $liveData['home_score'],
+                //     'ft_away_score' => $liveData['away_score'],
+                //     'is_finished'   => 1,
+                //     'state_code'    => $liveData['state_code'] ?? 'FT',
+                //     'state_name'    => $liveData['state_name'] ?? 'Finished',
+                //     'minute'        => null,
+                // ]);
+
+                $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($fx->id, $token, $locale);
+
+                if ($data) {
+                    $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fx, $data);
+                }
 
                 Cache::forget($cacheKey);
             }

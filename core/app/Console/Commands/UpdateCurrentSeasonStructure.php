@@ -260,7 +260,7 @@ class UpdateCurrentSeasonStructure extends Command
             $json = $this->sportmonksGet('fixtures', [
                 'locale' => $this->locale,
                 'filters' => "fixtureSeasons:{$seasonId}",
-                'include' => 'participants;state;scores;periods',
+                'include' => 'participants;state;scores;periods;venue',
                 'per_page' => $this->perPage,
                 'page' => $page,
             ]);
@@ -394,6 +394,9 @@ class UpdateCurrentSeasonStructure extends Command
                 'season_id' => (int) data_get($match, 'season_id'),
                 'round_id' => data_get($match, 'round_id') ? (int) data_get($match, 'round_id') : null,
                 'stage_id' => data_get($match, 'stage_id') ? (int) data_get($match, 'stage_id') : null,
+                'venue_id' => data_get($match, 'venue_id')
+                    ? (int) data_get($match, 'venue_id')
+                    : (data_get($match, 'venue.id') ? (int) data_get($match, 'venue.id') : null),
                 'home_team_id' => $homeId,
                 'away_team_id' => $awayId,
                 'starting_at' => data_get($match, 'starting_at'),

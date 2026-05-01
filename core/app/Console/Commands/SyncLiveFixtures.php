@@ -7,6 +7,7 @@ use App\Models\Fixture;
 use App\Services\FetchFixtureDetailsFromSportmonksService;
 use App\Services\LiveMatchesService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 
 class SyncLiveFixtures extends Command
@@ -29,8 +30,11 @@ class SyncLiveFixtures extends Command
         $locale   = app()->getLocale() ?: 'ar';
 
         $updated = 0;
+        $advanceTargets = [];
 
         Fixture::query()
+            ->when($leagueId, fn ($query) => $query->where('league_id', (int) $leagueId))
+            ->when($seasonId, fn ($query) => $query->where('season_id', (int) $seasonId))
             ->where(function ($q) {
                 $q->where('is_finished', 0)
                     ->whereNotNull('starting_at')
@@ -52,7 +56,7 @@ class SyncLiveFixtures extends Command
                 'state_name',
                 'minute',
             ])
-            ->chunkById(100, function ($fixtures) use ($token, $locale, &$updated) {
+            ->chunkById(100, function ($fixtures) use ($token, $locale, &$updated, &$advanceTargets) {
                 foreach ($fixtures as $fx) {
                     $data = app(FetchFixtureDetailsFromSportmonksService::class)
                         ->fetchFixtureDetailsFromSportmonks($fx->id, $token, $locale);
@@ -68,7 +72,9 @@ class SyncLiveFixtures extends Command
                     $awayScore = $data['away_score'] ?? $fx->away_score;
                     $minute    = $data['minute'] ?? null;
 
-                    $isFinalState = in_array($stateCode, ['FT', 'AET', 'PEN', 'CANC', 'POSTP'], true);
+                    $isFinalState = (bool) data_get($data, 'is_finished', false)
+                        || $status === 'FT'
+                        || in_array($stateCode, ['FT', 'AET', 'PEN', 'CANC', 'POSTP'], true);
 
                     if ($isFinalState) {
                         // $payload = [
@@ -85,8 +91,12 @@ class SyncLiveFixtures extends Command
                         // $payload = $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fx, $data);
 
                         if ($this->hasChanges($fx, $data)) {
-                            app(FetchFixtureDetailsFromSportmonksService::class)->persistFixtureDetails($fx, $data);
+                            app(FetchFixtureDetailsFromSportmonksService::class)->persistFixtureDetails($fx, $data, false);
                             Cache::forget("sportmonks:fixture_live:{$fx->id}:{$locale}");
+                            $advanceTargets["{$fx->season_id}:{$fx->league_id}"] = [
+                                'season_id' => (int) $fx->season_id,
+                                'league_id' => (int) $fx->league_id,
+                            ];
                             $updated++;
                         }
 
@@ -103,12 +113,20 @@ class SyncLiveFixtures extends Command
                     // ];
 
                     if ($this->hasChanges($fx, $data)) {
-                        app(FetchFixtureDetailsFromSportmonksService::class)->persistFixtureDetails($fx, $data);
+                        app(FetchFixtureDetailsFromSportmonksService::class)->persistFixtureDetails($fx, $data, false);
                         Cache::forget("sportmonks:fixture_live:{$fx->id}:{$locale}");
                         $updated++;
                     }
                 }
             });
+
+        foreach ($advanceTargets as $target) {
+            Artisan::call('football:advance-season-structure', [
+                '--season_id' => $target['season_id'],
+                '--league_id' => $target['league_id'],
+                '--refresh-fixtures' => 0,
+            ]);
+        }
 
         $this->info("Fixtures synced: {$updated}");
 

@@ -11,6 +11,7 @@ class Fixture extends Model
         'league_id',
         'season_id',
         'round_id',
+        'venue_id',
         'home_team_id',
         'away_team_id',
         'starting_at',

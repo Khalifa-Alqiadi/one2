@@ -439,7 +439,6 @@ class MatchesController extends Controller
             $isLive = $this->shouldFetchLiveDetails($dbStatus, $dbStateCode);
             if ($isTimeLive && $isLive) {
                 $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-                // dd($data);
 
                 if ($data) {
                     $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
