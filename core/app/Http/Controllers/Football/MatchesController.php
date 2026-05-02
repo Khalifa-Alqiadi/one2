@@ -318,8 +318,6 @@ class MatchesController extends Controller
             $json = data_get($res, 'json', []);
             $rows = data_get($json, 'data', []);
 
-            dd($rows);
-
             // خزّن وقت آخر تحديث
             Cache::put($metaKey, ['fetched_at' => now()->toDateTimeString()], 3600);
 
@@ -442,6 +440,7 @@ class MatchesController extends Controller
 
                 if ($data) {
                     $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
+                    $fixture = $fixture->fresh(['league', 'homeTeam', 'awayTeam']) ?? $fixture;
                 } else {
                     $data = $this->buildFixtureDetailsFromDatabase($fixture->fresh(['league', 'homeTeam', 'awayTeam']), $locale);
                 }
@@ -451,22 +450,22 @@ class MatchesController extends Controller
                     $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
                     if ($data) {
                         $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
+                        $fixture = $fixture->fresh(['league', 'homeTeam', 'awayTeam']) ?? $fixture;
                     }
                 } elseif (!$fixture->lineups_json || !$fixture->statistics_json || !$fixture->events_json) {
                     $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
                     if ($data) {
                         $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fixture, $data);
+                        $fixture = $fixture->fresh(['league', 'homeTeam', 'awayTeam']) ?? $fixture;
                     }
                 }
 
                 $data = $this->buildFixtureDetailsFromDatabase($fixture, $locale);
             }
             // $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($id, $token, $locale);
-            //     dd($data);
             // $service = app(\App\Services\FetchCommentaryService::class)->getLiveCommentary($id, $locale);
-            // dd($service);
             $name_var = 'name_' . $locale;
-            $PageTitle = $fixture->homeTeam->$name_var . ' vs ' . $fixture->awayTeam->$name_var . ' - ' . ($fixture->league->$name_var ?? '');
+            $PageTitle = data_get($fixture->homeTeam, $name_var, '') . ' vs ' . data_get($fixture->awayTeam, $name_var, '') . ' - ' . data_get($fixture->league, $name_var, '');
 
             return view('frontEnd.football.match-details', [
                 'fixtureId' => $id,

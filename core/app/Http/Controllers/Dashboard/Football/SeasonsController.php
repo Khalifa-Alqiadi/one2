@@ -22,10 +22,17 @@ class SeasonsController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request, League $League_id)
+    public function index(Request $request, $league_id = null)
     {
         $GeneralWebmasterSections = WebmasterSection::where('status', '=', '1')->orderby('row_no', 'asc')->get();
-        $League = $League_id;
+        $League = League::find($league_id);
+
+        if (!$League) {
+            return redirect()
+                ->action([LeaguesController::class, 'index'])
+                ->with('errorMessage', __('backend.error'));
+        }
+
         $Season = $League->seasons()->where('is_current', 1)->first();
         if (@Auth::user()->permissionsGroup->view_status) {
             $Seasons = Season::where('created_by', '=', Auth::user()->id)
@@ -44,13 +51,13 @@ class SeasonsController extends Controller
         return view('dashboard.football.seasons.list', compact('Seasons', 'League', 'tab', 'GeneralWebmasterSections', 'Season'));
     }
 
-    public function update($League_id)
+    public function update($league_id)
     {
-        app(UpdatesLeaguesAndSeasonsServices::class)->loadSeasons($League_id);
+        $saved = app(UpdatesLeaguesAndSeasonsServices::class)->loadSeasonsForLeague((int) $league_id);
 
         return redirect()
-            ->action([SeasonsController::class, 'index'], ['league_id' => $League_id, 'tab' => 'seasons'])
-            ->with('doneMessage', __('backend.saveDone'));
+            ->action([SeasonsController::class, 'index'], ['league_id' => $league_id, 'tab' => 'seasons'])
+            ->with('doneMessage', __('backend.saveDone') . " - {$saved} seasons synced");
     }
 
 }

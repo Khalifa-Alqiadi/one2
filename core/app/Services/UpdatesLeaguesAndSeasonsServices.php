@@ -93,6 +93,7 @@ class UpdatesLeaguesAndSeasonsServices
             }else{
                 League::create(
                     [
+                        'id' => $league['id'],
                         'name_ar' => $league['name_ar'],
                         'name_en' => $league['name_en'],
                         'image_path' => $league['image_path'],
@@ -107,19 +108,54 @@ class UpdatesLeaguesAndSeasonsServices
         return $saved;
     }
 
+    public function loadSeasonsForLeague(int $leagueId, string $locale = 'ar'): int
+    {
+        if ($leagueId <= 0) {
+            return 0;
+        }
+
+        $token = (string) config('services.SPORTMONKS_TOKEN');
+
+        if ($token === '') {
+            return 0;
+        }
+
+        $url = "https://api.sportmonks.com/v3/football/leagues/{$leagueId}"
+            . "?api_token={$token}"
+            . "&locale={$locale}"
+            . "&include=seasons";
+
+        $response = $this->apiClient->curlGet($url);
+
+        if (!data_get($response, 'ok')) {
+            return 0;
+        }
+
+        $seasons = data_get($response, 'json.data.seasons', []);
+        $this->loadSeasons($seasons);
+
+        return is_countable($seasons) ? count($seasons) : 0;
+    }
+
     public function loadSeasons($seasons){
         if(empty($seasons)){
             return;
         }
         foreach ($seasons as $season) {
+            $seasonId = (int) data_get($season, 'id', 0);
+
+            if ($seasonId <= 0) {
+                continue;
+            }
+
             Season::updateOrCreate(
-                ['id' => $season['id']],
+                ['id' => $seasonId],
                 [
-                    'league_id'   => $season['league_id'],
-                    'name'        => $season['name'],
-                    'starting_at' => $season['starting_at'],
-                    'ending_at'   => $season['ending_at'],
-                    'is_current'  => $season['is_current'],
+                    'league_id'   => data_get($season, 'league_id'),
+                    'name'        => data_get($season, 'name'),
+                    'starting_at' => data_get($season, 'starting_at'),
+                    'ending_at'   => data_get($season, 'ending_at'),
+                    'is_current'  => (bool) data_get($season, 'is_current', false),
                 ]
             );
         }

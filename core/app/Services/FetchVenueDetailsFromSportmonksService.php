@@ -40,40 +40,31 @@ class FetchVenueDetailsFromSportmonksService
             throw new RuntimeException('SportMonks venue id is missing.');
         }
 
+        $attributes = [
+            'name_ar'       => $this->firstFilled($arabicVenue, $englishVenue, 'name', ''),
+            'name_en'       => $this->firstFilled($englishVenue, $arabicVenue, 'name', ''),
+            'country_id'    => $this->firstFilled($arabicVenue, $englishVenue, 'country_id'),
+            'city_id'       => $this->firstFilled($arabicVenue, $englishVenue, 'city_id'),
+            'address'       => $this->firstFilled($arabicVenue, $englishVenue, 'address'),
+            'zipcode'       => $this->firstFilled($arabicVenue, $englishVenue, 'zipcode'),
+            'latitude'      => $this->firstFilled($arabicVenue, $englishVenue, 'latitude'),
+            'longitude'     => $this->firstFilled($arabicVenue, $englishVenue, 'longitude'),
+            'capacity'      => $this->firstFilled($arabicVenue, $englishVenue, 'capacity'),
+            'image_path'    => $this->firstFilled($arabicVenue, $englishVenue, 'image_path'),
+            'city_name'     => $this->firstFilled($arabicVenue, $englishVenue, 'city_name'),
+            'surface'       => $this->firstFilled($arabicVenue, $englishVenue, 'surface'),
+            'national_team' => (bool) $this->firstFilled($arabicVenue, $englishVenue, 'national_team', false),
+        ];
+
         $venue = Venue::find($venueId);
-        if($venue){
-            return $venue->update([
-                'name_en'       => $englishVenue['name'],
-                'country_id'    => $arabicVenue['country_id'],
-                'city_id'       => $arabicVenue['city_id'],
-                'address'       => $arabicVenue['address'],
-                'zipcode'       => $arabicVenue['zipcode'],
-                'latitude'      => $arabicVenue['latitude'],
-                'longitude'     => $arabicVenue['longitude'],
-                'capacity'      => $arabicVenue['capacity'],
-                'image_path'    => $arabicVenue['image_path'],
-                'city_name'     => $arabicVenue['city_name'],
-                'surface'       => $arabicVenue['surface'],
-                'national_team' => $arabicVenue['national_team'],
-            ]);
-        }else{
-            return Venue::create([
-                'id'            => $arabicVenue['id'],
-                'name_ar'       => $arabicVenue['name'],
-                'name_en'       => $englishVenue['name'],
-                'country_id'    => $arabicVenue['country_id'],
-                'city_id'       => $arabicVenue['city_id'],
-                'address'       => $arabicVenue['address'],
-                'zipcode'       => $arabicVenue['zipcode'],
-                'latitude'      => $arabicVenue['latitude'],
-                'longitude'     => $arabicVenue['longitude'],
-                'capacity'      => $arabicVenue['capacity'],
-                'image_path'    => $arabicVenue['image_path'],
-                'city_name'     => $arabicVenue['city_name'],
-                'surface'       => $arabicVenue['surface'],
-                'national_team' => $arabicVenue['national_team'],
-            ]);
+
+        if ($venue) {
+            $venue->update($attributes);
+
+            return $venue->refresh();
         }
+
+        return Venue::create(['id' => $venueId] + $attributes);
     }
 
     private function fetchVenue(int $venueId, string $locale): array

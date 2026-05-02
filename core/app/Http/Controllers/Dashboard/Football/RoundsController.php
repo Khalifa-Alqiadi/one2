@@ -189,6 +189,12 @@ class RoundsController extends Controller
 
         $League = League::find($league_id);
 
+        if (!$League) {
+            return redirect()
+                ->action([LeaguesController::class, 'index'])
+                ->with('errorMessage', __('backend.error'));
+        }
+
         $seasons = $League->seasons()->orderBy('starting_at', 'desc')->get();
 
 
@@ -247,11 +253,11 @@ class RoundsController extends Controller
 
         // أعمدة datatable حسب ترتيبها في JS
         $columns = [
-            'id',
-            "title",
-            'season_id',
-            'starting_at',
-            'is_finished',
+            0 => 'id',
+            1 => 'id',
+            2 => 'starting_at',
+            3 => 'starting_at',
+            4 => 'is_finished',
         ];
 
         $order = $columns[$orderColumnIndex] ?? 'starting_at';
@@ -286,24 +292,29 @@ class RoundsController extends Controller
         $matchsCount = $rows->count();
         foreach ($rows as $team) {
             $x++;
+            $homeTeam = $team->homeTeam;
+            $awayTeam = $team->awayTeam;
+            $homeName = $homeTeam ? ($homeTeam->{$name} ?? $homeTeam->name_ar ?? '-') : '-';
+            $awayName = $awayTeam ? ($awayTeam->{$name} ?? $awayTeam->name_ar ?? '-') : '-';
+
             $logo = '<a href="' . route('matcheRoundsEdit', ['id' => $team->id]) . '"
                     class="d-flex justify-content-between"
                     style="justify-content: space-between; display:flex">
                     <div>';
-            if($team->homeTeam || $team->awayTeam){
-                if ($team->homeTeam->image_path){
-                    $logo .= '<img src="' . $team->homeTeam->image_path . '"
+            if ($homeTeam || $awayTeam) {
+                if ($homeTeam && $homeTeam->image_path) {
+                    $logo .= '<img src="' . e($homeTeam->image_path) . '"
                         style="height:30px; margin: 0 4px;" alt="">';
                 }
-                $logo .= '<span>' . $team->homeTeam->$name . '</span></div>';
+                $logo .= '<span>' . e($homeName) . '</span></div>';
                 $logo .= '<span class="m-x-sm">vs</span>';
                 $logo .= '<div>';
-                if ($team->awayTeam) {
-                    if ($team->awayTeam->image_path) {
-                        $logo .= '<img src="' . $team->awayTeam->image_path . '"
+                if ($awayTeam) {
+                    if ($awayTeam->image_path) {
+                        $logo .= '<img src="' . e($awayTeam->image_path) . '"
                             style="height:30px; margin: 0 4px;" alt="">';
                     }
-                    $logo .= '<span>' . $team->awayTeam->$name . '</span>';
+                    $logo .= '<span>' . e($awayName) . '</span>';
                 }
                 $logo .= '</div>';
             }
@@ -351,6 +362,27 @@ class RoundsController extends Controller
             "recordsFiltered" => (int) $totalFiltered,
             "data"            => $data,
         ]);
+    }
+
+    public function matchesUpdateAllAPI(Request $request)
+    {
+        $ids = collect($request->input('ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return redirect()->back()->with('errorMessage', __('backend.error'));
+        }
+
+        if ($request->input('action') === 'mark_finished') {
+            Fixture::whereIn('id', $ids)->update([
+                'is_finished' => 1,
+                'minute' => null,
+            ]);
+        }
+
+        return redirect()->back()->with('doneMessage', __('backend.saveDone'));
     }
 
     private function syncRoundsBySeasonAPI($league, int $seasonId, string $token, string $locale): void
@@ -407,8 +439,14 @@ class RoundsController extends Controller
                 ->with('errorMessage', __('backend.error'));
         }
 
-        $token  = config('services.SPORTMONKS_TOKEN');
+        $token  = (string) config('services.SPORTMONKS_TOKEN');
         $locale = Helper::currentLanguage()->code ?? 'ar';
+
+        if ($token === '') {
+            return redirect()
+                ->action([SeasonsController::class, 'index'], ['league_id' => $league->id])
+                ->with('errorMessage', 'SPORTMONKS_TOKEN is missing.');
+        }
 
         // 1) stages
         $this->syncStagesAPI($league, $seasonId, $token, $locale);

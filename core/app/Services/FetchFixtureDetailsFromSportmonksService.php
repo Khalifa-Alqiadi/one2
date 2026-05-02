@@ -135,10 +135,7 @@ class FetchFixtureDetailsFromSportmonksService
         // if (isset($sidelinedRaw['data']) && is_array($sidelinedRaw['data'])) {
         //     $sidelinedRaw = $sidelinedRaw['data'];
         // }
-        // // dd($sidelinedRaw);
         // $sidelinedRaw = is_array($sidelinedRaw) ? $sidelinedRaw : [];
-        // dd($sidelinedRaw);
-        // dd($sidelinedRaw);
         //         $injuries = collect($sidelinedRaw)->filter(function ($row) {
         //             return mb_strtolower((string) (
         //                 data_get($row, 'type.name')
@@ -161,7 +158,6 @@ class FetchFixtureDetailsFromSportmonksService
         //                 || str_contains($text, 'red');
         //         })->values()->all();
 
-        // dd($injuries, $suspensions);
         $sidelinedRaw = data_get($match, 'sidelined', []);
         if (isset($sidelinedRaw['data']) && is_array($sidelinedRaw['data'])) {
             $sidelinedRaw = $sidelinedRaw['data'];
@@ -481,7 +477,7 @@ class FetchFixtureDetailsFromSportmonksService
             || $status === 'FT'
             || in_array($stateCode, ['FT', 'CANC', 'ABD', 'SUSP'], true);
 
-        $match = $fixture->update([
+        $fixture->update([
             'state_code'            => data_get($data, 'state_code', ''),
             'state_name'            => data_get($data, 'state_name', ''),
             'events_json'            => data_get($data, 'events', []),
@@ -508,7 +504,7 @@ class FetchFixtureDetailsFromSportmonksService
             ]);
         }
 
-        return $match;
+        return $fixture->fresh();
     }
 
 

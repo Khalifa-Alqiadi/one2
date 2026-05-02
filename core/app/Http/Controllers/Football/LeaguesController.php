@@ -9,6 +9,7 @@ use App\Models\League;
 use App\Models\Round;
 use App\Models\Standing;
 use App\Services\ApiClientService;
+use App\Services\LiveMatchesService;
 use App\Services\SportmonksStandingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -416,6 +417,69 @@ class LeaguesController extends Controller
         } catch (\Throwable $e) {
             return null;
         }
+    }
+
+    public function liveLeague(int $leagueId, LiveMatchesService $liveMatches)
+    {
+        $token = (string) config('services.SPORTMONKS_TOKEN');
+        $localeRaw = Helper::currentLanguage()->code ?? 'ar';
+        $locale = in_array($localeRaw, ['ar', 'en'], true) ? $localeRaw : 'ar';
+
+        $fixtures = Fixture::query()
+            ->where('league_id', $leagueId)
+            ->where('is_finished', false)
+            ->whereNotNull('starting_at')
+            ->whereBetween('starting_at', [now()->subMinutes(15), now()->addHours(3)])
+            ->select([
+                'id',
+                'starting_at',
+                'home_score',
+                'away_score',
+                'minute',
+                'state_code',
+                'state_name',
+                'is_finished',
+            ])
+            ->get();
+
+        $out = [];
+
+        foreach ($fixtures as $fixture) {
+            $stateCode = strtoupper((string) $fixture->state_code);
+            $stateName = (string) $fixture->state_name;
+            $looksLive = $liveMatches->isLiveState($stateCode, $stateName)
+                || $liveMatches->isHalfTimeState($stateCode, $stateName);
+
+            if (!$looksLive) {
+                continue;
+            }
+
+            $liveData = null;
+
+            if ($token !== '' && $liveMatches->isFixtureTimeLive($fixture->starting_at, (bool) $fixture->is_finished)) {
+                $cacheKey = "sportmonks:fixture_live:{$fixture->id}:{$locale}";
+                $liveData = Cache::remember(
+                    $cacheKey,
+                    8,
+                    fn () => $liveMatches->fetchFixtureLiveFromSportmonks((int) $fixture->id, $token, $locale)
+                );
+            }
+
+            $out[] = is_array($liveData)
+                ? $liveData
+                : [
+                    'id' => (int) $fixture->id,
+                    'home_score' => is_numeric($fixture->home_score) ? (int) $fixture->home_score : null,
+                    'away_score' => is_numeric($fixture->away_score) ? (int) $fixture->away_score : null,
+                    'minute' => is_numeric($fixture->minute) ? (int) $fixture->minute : null,
+                    'state_code' => $fixture->state_code,
+                    'state_name' => $fixture->state_name,
+                    'is_finished' => (bool) $fixture->is_finished,
+                    'status' => $liveMatches->isHalfTimeState($stateCode, $stateName) ? 'HT' : 'LIVE',
+                ];
+        }
+
+        return response()->json(['ok' => true, 'fixtures' => $out]);
     }
 
     public function roundsOld(Request $request, $id = null)

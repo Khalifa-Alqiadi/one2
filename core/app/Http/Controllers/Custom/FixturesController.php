@@ -708,6 +708,24 @@ class FixturesController extends Controller
 
 
 
+    private function extractScoreForUi(array $fixture, $home = null, $away = null): array
+    {
+        $scores = data_get($fixture, 'scores.data', data_get($fixture, 'scores', []));
+        [$homeScore, $awayScore] = app(\App\Services\LiveMatchesService::class)->extractGoalsFromScores($scores);
+
+        if ($homeScore !== null || $awayScore !== null) {
+            return [$homeScore, $awayScore];
+        }
+
+        $fallbackHome = data_get($fixture, 'home_score', data_get($fixture, 'score.home'));
+        $fallbackAway = data_get($fixture, 'away_score', data_get($fixture, 'score.away'));
+
+        return [
+            is_numeric($fallbackHome) ? (int) $fallbackHome : null,
+            is_numeric($fallbackAway) ? (int) $fallbackAway : null,
+        ];
+    }
+
     private function curlGet(string $url): array
     {
         $ch = curl_init();
