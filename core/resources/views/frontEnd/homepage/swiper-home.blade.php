@@ -29,7 +29,8 @@
             $minute = is_numeric($match->minute) ? (int) $match->minute : null;
             ?>
             <div class="swiper-slide">
-                <div class="card bg-transparent h-100 gx-fixture-card {{ $isTimeLive ? 'active' : '' }}"
+                <a href="{{ route('match.show', ['id' => $match->id]) }}"
+                    class="card bg-transparent h-100 gx-fixture-card {{ $isTimeLive ? 'active' : '' }}"
                     id="fixture-{{ $match->id }}" data-live="{{ $isTimeLive ? 1 : 0 }}">
                     <div
                         class="card-header d-flex align-items-center justify-content-between bg-transparent border-0 p-0 mb-3">
@@ -46,8 +47,7 @@
                         <div class="col-4">
                             <div class="team d-flex flex-column align-items-center">
                                 @if ($match->homeTeam)
-                                    <a href="{{ route('team.details', ['id' => $match->homeTeam->id]) }}"
-                                        class="d-flex flex-column align-items-center">
+                                    <div class="d-flex flex-column align-items-center">
                                         @if ($match->homeTeam->image_path)
                                             <div class="image d-flex align-items-center justify-content-center">
                                                 <img src="{{ $match->homeTeam->image_path }}" style="height:30px"
@@ -55,7 +55,7 @@
                                             </div>
                                         @endif
                                         <span class="mt-2 text-center">{{ $match->homeTeam->$name_var }}</span>
-                                    </a>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -92,8 +92,7 @@
                         <div class="col-4">
                             <div class="team d-flex flex-column align-items-center">
                                 @if ($match->awayTeam)
-                                    <a href="{{ route('team.details', ['id' => $match->awayTeam->id]) }}"
-                                        class="d-flex flex-column align-items-center">
+                                    <div class="d-flex flex-column align-items-center">
                                         @if ($match->awayTeam->image_path)
                                             <div class="image d-flex align-items-center justify-content-center">
                                                 <img src="{{ $match->awayTeam->image_path }}" style="height:30px"
@@ -101,7 +100,7 @@
                                             </div>
                                         @endif
                                         <span class="mt-2 text-center">{{ $match->awayTeam->$name_var }}</span>
-                                    </a>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -113,12 +112,12 @@
                                 • {{ $timeLabel }}
                             @endif
                         </span>
-                        <a href="{{ route('match.show', ['id' => $match->id]) }}">
+                        <p class="m-0">
                             {{ __('frontend.match_show') }}
                             <i class="fas fa-arrow-{{ Helper::isRTL() ? 'left' : 'right' }} mx-1"></i>
-                        </a>
+                        </p>
                     </div>
-                </div>
+                </a>
             </div>
         @endforeach
     </div>
