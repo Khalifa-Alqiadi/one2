@@ -15,11 +15,15 @@
                 </a>
             </div>
             <div class="row mt-3">
-                <div class="col-md-12">
+                <div class="col-md-8">
                     <?php
-                    $yesterday = now(Helper::getUserTimezone() ?: 'UTC')->subDay()->toDateString();
+                    $yesterday = now(Helper::getUserTimezone() ?: 'UTC')
+                        ->subDay()
+                        ->toDateString();
                     $today = now(Helper::getUserTimezone() ?: 'UTC')->toDateString();
-                    $tomorrow = now(Helper::getUserTimezone() ?: 'UTC')->addDay()->toDateString();
+                    $tomorrow = now(Helper::getUserTimezone() ?: 'UTC')
+                        ->addDay()
+                        ->toDateString();
                     ?>
                     <div class="tabs-wrapper d-flex">
                         <button type="button" class="tab-item match-tab active" data-date="key_matches">
@@ -38,6 +42,51 @@
                     <div class="items-matches">
                         <div id="matches-container">
                             @include('frontEnd.homepage.swiper-home', ['matches' => $matches])
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="results-col">
+                        <div class="results-panel">
+                            <div class="rp-hdr d-flex align-items-center justify-content-center">
+                                <span class="rp-icon">
+                                    <img src="{{URL::to('uploads/settings/chart.svg')}}" alt="">
+                                </span>
+                                <span class="rp-title">اخر النتائج</span>
+                            </div>
+                            <div class="match-items">
+                                @php($lastMatches = Helper::lastResults(5))
+                                @if (count($lastMatches) > 0)
+                                    @foreach ($lastMatches as $match)
+                                        <div class="match-row-item">
+                                            <div class="mri-league d-flex align-items-center justify-content-center">
+                                                <img src="{{ $match->league->image_path }}" >
+                                                {{ $match->league->$name_var }}
+                                            </div>
+                                            <div class="mri-body">
+                                                <div class="mri-team d-flex align-items-center justify-content-center">
+                                                    <span
+                                                        class="mri-name">{{ $match->homeTeam->{$name_var} ?? 'الفريق الأول' }}</span>
+                                                </div>
+                                                <div class="mri-score-wrap">
+                                                    <span
+                                                        class="mri-score">{{ $match->home_score ?? 0 }}-{{ $match->away_score ?? 0 }}</span>
+                                                </div>
+                                                <div class="mri-team rev d-flex align-items-center justify-content-center">
+                                                    <span
+                                                        class="mri-name">{{ $match->awayTeam->{$name_var} ?? 'الفريق الثاني' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="mri-btns">
+                                                <a href="{{ route('match.show', $match->id) }}" class="mri-btn"><i
+                                                        class="bi bi-trophy"></i> ملخص الهداف</a>
+                                                <a href="{{ route('match.show', $match->id) }}" class="mri-btn"><i
+                                                        class="bi bi-bar-chart"></i> تفاصيل</a>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -127,8 +176,8 @@
                                 centeredSlides: false,
                             },
                             992: {
-                                slidesPerView: 3.40,
-                                spaceBetween: 40,
+                                slidesPerView: 2.40,
+                                spaceBetween: 30,
                                 centeredSlides: enableLoop,
                             },
                         },
