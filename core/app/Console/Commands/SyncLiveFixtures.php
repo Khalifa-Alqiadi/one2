@@ -38,24 +38,8 @@ class SyncLiveFixtures extends Command
             ->where(function ($q) {
                 $q->where('is_finished', 0)
                     ->whereNotNull('starting_at')
-                    ->whereBetween('starting_at', [now()->subHours(4), now()->addHours(1)]);
+                    ->whereBetween('starting_at', [now()->subHours(10), now()->addHours(1)]);
             })
-            ->select([
-                'id',
-                'league_id',
-                'season_id',
-                'round_id',
-                'stage_id',
-                'starting_at',
-                'is_finished',
-                'home_score',
-                'away_score',
-                'ft_home_score',
-                'ft_away_score',
-                'state_code',
-                'state_name',
-                'minute',
-            ])
             ->chunkById(100, function ($fixtures) use ($token, $locale, &$updated, &$advanceTargets) {
                 foreach ($fixtures as $fx) {
                     $data = app(FetchFixtureDetailsFromSportmonksService::class)
