@@ -50,7 +50,7 @@ class LeaguesController extends Controller
         $season = $this->resolveLeagueSeason($league, (int) $request->query('season_id', 0));
         $seasonId = $season ? (int) $season->id : 0;
 
-        // ✅ standings من API مع كاش ساعة
+        // ✅ standings من الـ DB مباشرة بدون كاش
         $standings = [];
         $standingsUpdatedAt = null;
         $standingsErr = null;
@@ -60,7 +60,7 @@ class LeaguesController extends Controller
         }
 
         if ($seasonId > 0) {
-            $standingsData = $this->getStandingsCached($seasonId, $locale);
+            $standingsData = $this->getStandingsFromDb($seasonId);
 
             $standings = $standingsData['standings'] ?? [];
             $standingsUpdatedAt = $standingsData['fetched_at'] ?? null;
@@ -436,7 +436,7 @@ class LeaguesController extends Controller
             $season = $league->seasons()->where('id', $seasonId)->first();
         }
 
-        // ✅ standings من API مع كاش ساعة
+        // ✅ standings من الـ DB مباشرة بدون كاش
         if ($request->boolean('refresh_standings')) {
             $this->refreshStandingsCache($seasonId, $locale);
         }
@@ -444,7 +444,7 @@ class LeaguesController extends Controller
         $standingsPack = null;
         $standingsErr = null;
 
-        $standingsData = $this->getStandingsCached($seasonId, $locale);
+        $standingsData = $this->getStandingsFromDb($seasonId);
 
         $standings = $standingsData['standings'] ?? [];
         $standingsUpdatedAt = $standingsData['fetched_at'] ?? null;
@@ -625,117 +625,99 @@ class LeaguesController extends Controller
         }
     }
 
-    private function getStandingsCached(int $seasonId, string $locale, bool $forceRefresh = false): array
+    private function getStandingsFromDb(int $seasonId): array
     {
-        $cacheKey = "sm:standings:season:{$seasonId}:{$locale}";
-        $metaKey  = "sm:standings:season:{$seasonId}:{$locale}:meta";
+        $rows = Standing::with('participant')
+            ->where('season_id', $seasonId)
+            ->orderByRaw("CASE WHEN group_name IS NULL OR group_name = '' THEN 1 ELSE 0 END")
+            ->orderBy('group_name')
+            ->orderBy('position')
+            ->get();
 
-        if ($forceRefresh) {
-            Cache::forget($cacheKey);
-            Cache::forget($metaKey);
-        }
+        $standings = $rows
+            ->map(function (Standing $row) {
+                $item = is_array($row->payload_json) ? $row->payload_json : [];
 
-        $standings = Cache::remember($cacheKey, 3600, function () use ($seasonId, $metaKey) {
-            $rows = Standing::with('participant')
-                ->where('season_id', $seasonId)
-                ->orderByRaw("CASE WHEN group_name IS NULL OR group_name = '' THEN 1 ELSE 0 END")
-                ->orderBy('group_name')
-                ->orderBy('position')
-                ->get();
+                // fallback لو payload_json فارغ أو ناقص
+                if (empty($item)) {
+                    $item = [
+                        'id'              => $row->sportmonks_standing_id,
+                        'league_id'       => $row->league_id,
+                        'season_id'       => $row->season_id,
+                        'stage_id'        => $row->stage_id,
+                        'round_id'        => $row->round_id,
+                        'participant_id'  => $row->participant_id,
+                        'participant'     => $row->participant,
+                        'group_name'      => $row->group_name,
+                        'position'        => $row->position,
+                        'points'          => $row->points,
+                        'played'          => $row->played,
+                        'won'             => $row->won,
+                        'draw'            => $row->draw,
+                        'lost'            => $row->lost,
+                        'goals_for'       => $row->goals_for,
+                        'goals_against'   => $row->goals_against,
+                        'goal_difference' => $row->goal_difference,
+                        'form'            => [],
+                        'details'         => [],
+                    ];
+                }
 
-            $payload = $rows
-                ->map(function (Standing $row) {
-                    $item = is_array($row->payload_json) ? $row->payload_json : [];
+                // احقن participant من العلاقة إذا غير موجود داخل payload
+                if (!isset($item['participant']) || !is_array($item['participant'])) {
+                    $item['participant'] = $row->participant ? $row->participant->toArray() : [];
+                }
 
-                    // fallback لو payload_json فارغ أو ناقص
-                    if (empty($item)) {
-                        $item = [
-                            'id'              => $row->sportmonks_standing_id,
-                            'league_id'       => $row->league_id,
-                            'season_id'       => $row->season_id,
-                            'stage_id'        => $row->stage_id,
-                            'round_id'        => $row->round_id,
-                            'participant_id'  => $row->participant_id,
-                            'participant'  => $row->participant,
-                            'group_name'      => $row->group_name,
-                            'position'        => $row->position,
-                            'points'          => $row->points,
-                            'played'          => $row->played,
-                            'won'             => $row->won,
-                            'draw'            => $row->draw,
-                            'lost'            => $row->lost,
-                            'goals_for'       => $row->goals_for,
-                            'goals_against'   => $row->goals_against,
-                            'goal_difference' => $row->goal_difference,
-                            'form'            => [],
-                            'details'         => [],
-                        ];
-                    }
+                // fallback للقيم الأساسية لو ناقصة داخل payload
+                $item['position']        = data_get($item, 'position', $row->position);
+                $item['points']          = data_get($item, 'points', $row->points);
+                $item['played']          = data_get($item, 'played', $row->played);
+                $item['won']             = data_get($item, 'won', $row->won);
+                $item['draw']            = data_get($item, 'draw', $row->draw);
+                $item['lost']            = data_get($item, 'lost', $row->lost);
+                $item['goals_for']       = data_get($item, 'goals_for', $row->goals_for);
+                $item['goals_against']   = data_get($item, 'goals_against', $row->goals_against);
+                $item['goal_difference'] = data_get($item, 'goal_difference', $row->goal_difference);
+                $item['group_name']      = data_get($item, 'group_name', $row->group_name);
+                $item['rule'] = data_get($item, 'rule', []);
 
-                    // احقن participant من العلاقة إذا غير موجود داخل payload
-                    if (!isset($item['participant']) || !is_array($item['participant'])) {
-                        $item['participant'] = $row->participant ? $row->participant->toArray() : [];
-                    }
+                $item['rule']['id'] = data_get($item, 'rule.id', $row->rule_id);
+                $item['rule']['name'] = data_get($item, 'rule.name', $row->rule_name);
 
-                    // fallback للقيم الأساسية لو ناقصة داخل payload
-                    $item['position']        = data_get($item, 'position', $row->position);
-                    $item['points']          = data_get($item, 'points', $row->points);
-                    $item['played']          = data_get($item, 'played', $row->played);
-                    $item['won']             = data_get($item, 'won', $row->won);
-                    $item['draw']            = data_get($item, 'draw', $row->draw);
-                    $item['lost']            = data_get($item, 'lost', $row->lost);
-                    $item['goals_for']       = data_get($item, 'goals_for', $row->goals_for);
-                    $item['goals_against']   = data_get($item, 'goals_against', $row->goals_against);
-                    $item['goal_difference'] = data_get($item, 'goal_difference', $row->goal_difference);
-                    $item['group_name']      = data_get($item, 'group_name', $row->group_name);
-                    $item['rule'] = data_get($item, 'rule', []);
+                $item['rule']['type'] = data_get($item, 'rule.type', []);
+                $item['rule']['type']['id'] = data_get($item, 'rule.type.id', $row->rule_type_id);
+                $item['rule']['type']['code'] = data_get($item, 'rule.type.code', $row->rule_type_code);
+                $item['rule']['type']['name'] = data_get($item, 'rule.type.name', $row->rule_type_name);
 
-                    $item['rule']['id'] = data_get($item, 'rule.id', $row->rule_id);
-                    $item['rule']['name'] = data_get($item, 'rule.name', $row->rule_name);
+                // لو form مخزنة كنص W,D,L نحولها لمصفوفة بسيطة للواجهة
+                if ((!isset($item['form']) || !is_array($item['form'])) && !empty($row->form)) {
+                    $item['form'] = collect(explode(',', $row->form))
+                        ->filter()
+                        ->values()
+                        ->map(fn($f, $i) => [
+                            'form' => strtoupper(trim($f)),
+                            'sort_order' => $i + 1,
+                        ])
+                        ->all();
+                }
 
-                    $item['rule']['type'] = data_get($item, 'rule.type', []);
-                    $item['rule']['type']['id'] = data_get($item, 'rule.type.id', $row->rule_type_id);
-                    $item['rule']['type']['code'] = data_get($item, 'rule.type.code', $row->rule_type_code);
-                    $item['rule']['type']['name'] = data_get($item, 'rule.type.name', $row->rule_type_name);
+                return $item;
+            })
+            ->filter(fn($row) => is_array($row) && !empty($row))
+            ->values()
+            ->all();
 
-                    // لو form مخزنة كنص W,D,L نحولها لمصفوفة بسيطة للواجهة
-                    if ((!isset($item['form']) || !is_array($item['form'])) && !empty($row->form)) {
-                        $item['form'] = collect(explode(',', $row->form))
-                            ->filter()
-                            ->values()
-                            ->map(fn($f, $i) => [
-                                'form' => strtoupper(trim($f)),
-                                'sort_order' => $i + 1,
-                            ])
-                            ->all();
-                    }
-
-                    return $item;
-                })
-                ->filter(fn($row) => is_array($row) && !empty($row))
-                ->values()
-                ->all();
-
-            $lastSyncedAt = optional(
-                $rows->sortByDesc('synced_at')->first()
-            )->synced_at;
-
-            Cache::put($metaKey, [
-                'fetched_at' => $lastSyncedAt
-                    ? $lastSyncedAt->toDateTimeString()
-                    : now()->toDateTimeString(),
-            ], 3600);
-
-            return $payload;
-        });
-
-        $meta = Cache::get($metaKey, []);
+        $lastSyncedAt = optional(
+            $rows->sortByDesc('synced_at')->first()
+        )->synced_at;
 
         return [
-            'ok'         => true,
-            'error'      => null,
-            'standings'  => $standings,
-            'fetched_at' => data_get($meta, 'fetched_at'),
+            'ok' => true,
+            'error' => null,
+            'standings' => $standings,
+            'fetched_at' => $lastSyncedAt
+                ? $lastSyncedAt->toDateTimeString()
+                : now()->toDateTimeString(),
         ];
     }
 
