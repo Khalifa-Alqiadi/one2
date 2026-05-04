@@ -129,16 +129,6 @@ if(@$TopicBlock->css_classes == 'slider-swiper-rails' || @$TopicBlock->css_class
     </section>
     @push("after-scripts")
         <script>
-            // $("#owl-slider-block-{{@$TopicBlock->id}}").owlCarousel({
-            //     items: 3,
-            //     autoplay: !0,
-            //     rtl: {{(@Helper::currentLanguage()->direction=="rtl")?"true":"false"}},
-            //     autoplayTimeout: 3e3,
-            //     dots: !0,
-            //     responsive: {0: {items: 1, loop: 1}, 600: {items: 2, loop: 1}, 1e3: {items: 3, loop: 1}}
-            // });
-        </script>
-        <script>
             var swiper = new Swiper(".swiper-slider-block-{{@$TopicBlock->id}}", {
                 slidesPerView: `{{$slider_mobile_count}}`,
                 spaceBetween: 10,

@@ -1789,4 +1789,47 @@ class Helper
 
         return $matches;
     }
+
+    static function lastResults($limit = 3)
+    {
+        $matches = \App\Models\Fixture::query()
+            ->with(['homeTeam:id,name_ar,name_en,image_path', 'awayTeam:id,name_ar,name_en,image_path', 'league:id,name_ar,name_en,image_path', 'round:id,name'])
+            ->where('is_finished', true)
+            ->orderByDesc('starting_at')
+            ->limit($limit)
+            ->get();
+
+        return $matches;
+    }
+
+    static function moreView($limit =5){
+        $topics = Topic::with(
+            'match',
+            'team',
+            'league',
+            'WebmasterSection'
+         )
+            ->where('status', 1)
+            ->whereNotIn('webmaster_id', [1,17])
+            ->orderByDesc('visits')
+            ->limit($limit)
+            ->get();
+        return $topics;
+    }
+
+    static function getFeaturedTopic($limit = 6){
+        $topics = Topic::with(
+            'match',
+            'team',
+            'league',
+            'WebmasterSection'
+         )
+            ->where('status', 1)
+            ->whereNotIn('webmaster_id', [1,17])
+            ->orderby('featured', 'desc')->orderby('date', "desc")->orderby('id', "desc")
+            ->limit($limit)
+            ->get();
+        return $topics;
+    }
+
 }

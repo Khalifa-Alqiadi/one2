@@ -620,9 +620,9 @@ class LeaguesController extends Controller
         Cache::forget($cacheKey);
         Cache::forget($metaKey);
 
-        // if ($hasStandings) {
+        if ($hasStandings) {
             app(SportmonksStandingService::class)->syncSeasonStandings($seasonId, $locale);
-        // }
+        }
     }
 
     private function getStandingsCached(int $seasonId, string $locale, bool $forceRefresh = false): array
