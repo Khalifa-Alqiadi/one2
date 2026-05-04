@@ -38,7 +38,7 @@ class SyncLiveFixtures extends Command
             ->where(function ($q) {
                 $q->where('is_finished', 0)
                     ->whereNotNull('starting_at')
-                    ->whereBetween('starting_at', [now()->subHours(10), now()->addHours(1)]);
+                    ->whereBetween('starting_at', [now()->subHours(50), now()->addHours(1)]);
             })
             ->chunkById(100, function ($fixtures) use ($token, $locale, &$updated, &$advanceTargets) {
                 foreach ($fixtures as $fx) {
