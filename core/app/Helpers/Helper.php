@@ -1612,7 +1612,9 @@ class Helper
 
     static function getMatchHome($limit = 4)
     {
-        $matches = Fixture::with('homeTeam', 'awayTeam', 'league')->where('is_home', 1)->limit($limit)->get();
+        $matches = Fixture::with('homeTeam', 'awayTeam', 'league')->where('is_home', 1)->limit($limit)
+            ->orderBy('starting_at', 'desc')
+            ->get();
         return $matches;
     }
 

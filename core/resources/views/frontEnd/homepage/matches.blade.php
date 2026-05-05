@@ -1,4 +1,4 @@
-@php($matches = Helper::getMatchHome(3))
+@php($matches = Helper::getMatchHome(6))
 @php($name_var = 'name_' . @Helper::currentLanguage()->code)
 @php($locale = @Helper::currentLanguage()->code)
 @if (count($matches) > 0)
