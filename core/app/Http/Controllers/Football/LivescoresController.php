@@ -123,7 +123,7 @@ class LivescoresController extends Controller
             }
             // ✅ حدّث DB فقط إذا API أكد FT
             $isFinishedLive = (bool) data_get($liveData, 'is_finished', false)
-                || (($liveData['status'] ?? '') === 'FT');
+                && (($liveData['state_code'] ?? '') === 'FT');
 
             if ($isFinishedLive) {
                 // \App\Models\Fixture::where('id', $id)->update([
