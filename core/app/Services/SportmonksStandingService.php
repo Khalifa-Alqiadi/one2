@@ -57,10 +57,12 @@ class SportmonksStandingService
             foreach ($normalized as $row) {
                 Standing::updateOrCreate(
                     [
+                        'id'             => $row['id'],
                         'season_id'      => $row['season_id'],
                         'stage_id'       => $row['stage_id'],
                         'round_id'       => $row['round_id'],
                         'participant_id' => $row['participant_id'],
+                        'group_name'     => $row['group_name'],
                         'sportmonks_standing_id' => $row['sportmonks_standing_id'],
                     ],
                     $row
@@ -250,6 +252,7 @@ class SportmonksStandingService
         );
 
         return [
+            'id'                    => data_get($row, 'id'),
             'league_id'              => data_get($row, 'league_id'),
             'season_id'              => $seasonId,
             'stage_id'               => data_get($row, 'stage_id'),
