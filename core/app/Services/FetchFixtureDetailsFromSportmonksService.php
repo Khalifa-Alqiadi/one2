@@ -497,7 +497,7 @@ class FetchFixtureDetailsFromSportmonksService
             'away_score'             => data_get($data, 'score.away'),
             'venue_id'               => data_get($data, 'venue_id', data_get($data, 'venue.id')),
             'minute'                 => data_get($data, 'minute'),
-            'is_finished'            => $isFinished ? 1 : 0,
+            'is_finished'            => $data['state_code'] == 'FT' ? 1 : 0,
         ]);
 
         if ($advanceStructure && !$wasFinished && $isFinished) {
