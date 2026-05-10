@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Standing extends Model
 {
+    public $incrementing = false;
     protected $fillable = [
         'id',
         'league_id',
