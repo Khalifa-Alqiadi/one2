@@ -91,16 +91,6 @@ class LiveMatchesService
         $isTimeLive = $this->isFixtureTimeLive(data_get($match, 'starting_at'), $isFinished);
 
         $isLive = $isLive || $isTimeLive;
-        // return [
-        //     'id' => (int) data_get($match, 'id'),
-        //     'home_score' => is_numeric($homeScore) ? (int) $homeScore : null,
-        //     'away_score' => is_numeric($awayScore) ? (int) $awayScore : null,
-        //     'minute' => $minute,
-        //     'state_code' => $stateCode,
-        //     'state_name' => $stateName,
-        //     'is_live' => $isLive && !$isFinished,
-        //     'is_finished' => $isFinished,
-        // ];
         $status = 'NS';
         if ($isFinished) $status = 'FT';
         elseif ($this->isHalfTimeState($stateCode, $stateName)) $status = 'HT';
