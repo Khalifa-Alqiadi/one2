@@ -126,22 +126,18 @@ class LivescoresController extends Controller
                 && (($liveData['state_code'] ?? '') === 'FT');
 
             if ($isFinishedLive) {
-                // \App\Models\Fixture::where('id', $id)->update([
-                //     'home_score'    => $liveData['home_score'],
-                //     'away_score'    => $liveData['away_score'],
-                //     'ft_home_score' => $liveData['home_score'],
-                //     'ft_away_score' => $liveData['away_score'],
-                //     'is_finished'   => 1,
-                //     'state_code'    => $liveData['state_code'] ?? 'FT',
-                //     'state_name'    => $liveData['state_name'] ?? 'Finished',
-                //     'minute'        => null,
-                // ]);
+                \App\Models\Fixture::where('id', $id)->update([
+                    'home_score'    => $liveData['home_score'],
+                    'away_score'    => $liveData['away_score'],
+                    'ft_home_score' => $liveData['home_score'],
+                    'ft_away_score' => $liveData['away_score'],
+                    'is_finished'   => $liveData['is_finished'],
+                    'state_code'    => $liveData['state_code'] ?? 'FT',
+                    'state_name'    => $liveData['state_name'] ?? 'Finished',
+                    'minute'        => null,
+                ]);
 
-                $data = $this->fetchFixtureDetailsFromSportmonks->fetchFixtureDetailsFromSportmonks($fx->id, $token, $locale);
 
-                if ($data) {
-                    $this->fetchFixtureDetailsFromSportmonks->persistFixtureDetails($fx, $data);
-                }
 
                 Cache::forget($cacheKey);
             }

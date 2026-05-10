@@ -27,7 +27,7 @@
         @include('frontEnd.homepage.ads-top')
         @include('frontEnd.homepage.teams')
         @include('frontEnd.homepage.matches')
-        {{-- @include('frontEnd.homepage.one2-tv') --}}
+        @include('frontEnd.homepage.one2-tv')
         @include('frontEnd.homepage.viewed')
 
         @if($Topic->topicBlocks->where("status",1)->count() >0)
