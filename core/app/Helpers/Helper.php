@@ -1433,11 +1433,29 @@ class Helper
             return null;
         }
 
-        return [
-            'id' => $videoId,
-            'url' => "https://img.youtube.com/vi/{$videoId}/hqdefault.jpg",
-            'webp' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.webp"
+        // 2. Define resolutions from highest to lowest
+        $resolutions = [
+            'maxresdefault', // 1280x720 (Best)
+            'sddefault',     // 640x480
+            'hqdefault',     // 480x360
         ];
+
+        // 3. Fallback logic: check if the high-res version actually exists
+        foreach ($resolutions as $res) {
+            $thumbnailUrl = "https://img.youtube.com/vi/{$videoId}/{$res}.jpg";
+
+            // Check status (200 OK), otherwise YouTube returns a placeholder or 404
+            $response = Http::head($thumbnailUrl);
+            if ($response->successful()) {
+                return [
+                    'id' => $videoId,
+                    'url' => $thumbnailUrl,
+                    'webp' => "https://i.ytimg.com/vi/{$videoId}/{$res}.webp"
+                ];
+            }
+        }
+
+        return null;
     }
 
     public static function oembed(string $url): ?array

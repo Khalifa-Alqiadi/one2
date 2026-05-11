@@ -85,7 +85,7 @@
                 {{-- <a href="{{ $topic_link_url }}"> --}}
                     <div class="image-container position-relative">
                         @if($Topic->photo_file !="")
-                            <img class="card-img-top" loading="lazy" width="100%" height="100%"
+                            <img loading="lazy" width="100%" height="100%"
                                  src="{{ route("fileView",["path" =>'topics/'.$Topic->photo_file ]) }}?w=450&h=450"
                                  alt="{{ $title }}"/>
                         {{-- @else

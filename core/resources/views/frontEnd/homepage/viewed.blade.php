@@ -24,7 +24,7 @@
                         <div class="mostv-big">
                             <div class="image">
                                 @if ($item->photo_file != '')
-                                    <img class="card-img-top"
+                                    <img
                                         src="{{ route('fileView', ['path' => 'topics/' . $item->photo_file]) }}?w=450&h=450"
                                         width="100%" height="100%" alt="{{ $title }}" loading="lazy" />
                                 @else
@@ -36,7 +36,7 @@
                                         $url = Helper::getThumbnail($item->video_file);
                                         $img_url = $url['url'] ?? $url['webp'];
                                         ?>
-                                        <img class="card-img-top" src="{{ $img_url }}" alt="{{ $title }}"
+                                        <img  src="{{ $img_url }}" alt="{{ $title }}"
                                             loading="lazy" />
                                     @else
                                         <div class="bg-secondary w-100 rounded-top h-200px"></div>
@@ -75,7 +75,7 @@
                         @if ($i > 1 && $i <= 5)
                             <div class="mv-card-sm">
                                 @if ($item->photo_file != '')
-                                    <img class="card-img-top"
+                                    <img
                                         src="{{ route('fileView', ['path' => 'topics/' . $item->photo_file]) }}?w=450&h=450"
                                         width="100%" height="100%" alt="{{ $title }}" loading="lazy" />
                                 @else
@@ -87,7 +87,7 @@
                                         $url = Helper::getThumbnail($item->video_file);
                                         $img_url = $url['url'] ?? $url['webp'];
                                         ?>
-                                        <img class="card-img-top" src="{{ $img_url }}" alt="{{ $title }}"
+                                        <img  src="{{ $img_url }}" alt="{{ $title }}"
                                             loading="lazy" />
                                     @else
                                         <div class="bg-secondary w-100 rounded-top h-200px"></div>

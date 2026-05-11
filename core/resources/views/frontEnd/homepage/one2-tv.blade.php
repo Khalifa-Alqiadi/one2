@@ -60,7 +60,7 @@
                     <div class="col-md-3">
                         <a href="{{ $url }}" class="one2tv__flank h-100">
                             @if ($img)
-                                <img src="{{ $img }}" alt="{{ $flankRight->$title_var }}">
+                                <img src="{{ $img }}" loading="lazy" alt="{{ $flankRight->$title_var }}">
                             @else
                                 <div class="one2tv__img-empty"></div>
                             @endif
@@ -91,7 +91,7 @@
                     <div class="col-md-6">
                         <a href="{{ $url }}" class="one2tv__hero">
                             @if ($img)
-                                <img src="{{ $img }}" alt="{{ $heroTopic->$title_var }}">
+                                <img src="{{ $img }}" loading="lazy" alt="{{ $heroTopic->$title_var }}">
                             @else
                                 <div class="one2tv__img-empty"></div>
                             @endif
@@ -125,7 +125,7 @@
                     <div class="col-md-3">
                         <a href="{{ $url }}" class="one2tv__flank h-100">
                             @if ($img)
-                                <img src="{{ $img }}" alt="{{ $flankLeft->$title_var }}">
+                                <img src="{{ $img }}" loading="lazy" alt="{{ $flankLeft->$title_var }}">
                             @else
                                 <div class="one2tv__img-empty"></div>
                             @endif
