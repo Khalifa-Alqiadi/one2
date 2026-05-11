@@ -16,14 +16,14 @@
                             @if($Topic->video_type ==1)
                                     <?php
                                     $url = Helper::getThumbnail($Topic->video_file);
-                                    $img_url = $url['url'] ?? $url['webp'];  
+                                    $img_url = $url['url'] ?? $url['webp'];
                                     // if(@$TopicBlock->css_classes == "slider-swiper-rails"){
                                     //     $url = Helper::getThumbnail($Topic->video_file);
-                                    //     $img_url = $url['url'] ?? $url['webp'];    
+                                    //     $img_url = $url['url'] ?? $url['webp'];
                                     // }else {
                                     //     $Youtube_id = Helper::Get_youtube_video_id($Topic->video_file);
                                     //     $img_url = "http://img.youtube.com/vi/".$Youtube_id."/0.jpg";
-                                    // }                                    
+                                    // }
                                     ?>
                                 <img class="card-img-top" src="{{ $img_url }}"
                                      alt="{{ $title }}" loading="lazy"/>
@@ -32,7 +32,7 @@
                                     class="bg-secondary w-100 rounded-top h-200px"></div>
                             @endif
                         @endif
-                       
+
                     </div>
                 </a>
             @elseif($Topic->webmasterSection->type==3 && $Topic->audio_file!="")
@@ -88,7 +88,7 @@
                             <img class="card-img-top" loading="lazy" width="100%" height="100%"
                                  src="{{ route("fileView",["path" =>'topics/'.$Topic->photo_file ]) }}?w=450&h=450"
                                  alt="{{ $title }}"/>
-                        @else
+                        {{-- @else
                             @foreach(@$Topic->webmasterSection->customFields->where("type", 8) as $TopicPhotoCustomField)
                                 @if($TopicPhotoCustomField->lang_code == "all" || $TopicPhotoCustomField->lang_code == @Helper::currentLanguage()->code)
                                     @foreach(@$Topic->fields->where("field_id", $TopicPhotoCustomField->id) as $Photo)
@@ -103,7 +103,7 @@
                                     @endforeach
                                     @break
                                 @endif
-                            @endforeach
+                            @endforeach --}}
                         @endif
                     </div>
                 {{-- </a> --}}
@@ -122,8 +122,8 @@
                         @endif
                         {{ $title }}
                     </a>
-                </h4>  
-                              
+                </h4>
+
                 {{--Additional Feilds--}}
                 {{-- @include("frontEnd.topic.fields",["cols"=>12,"Fields"=>@$Topic->webmasterSection->customFields->where("in_listing",true)])
 

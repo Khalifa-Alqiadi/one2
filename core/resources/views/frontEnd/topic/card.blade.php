@@ -85,7 +85,7 @@
                             <img class="card-img-top" loading="lazy" width="100%" height="100%"
                                  src="{{ route("fileView",["path" =>'topics/'.$Topic->photo_file ]) }}?w=450&h=450"
                                  alt="{{ $title }}"/>
-                        @else
+                        {{-- @else
                             @foreach(@$Topic->webmasterSection->customFields->where("type", 8) as $TopicPhotoCustomField)
                                 @if($TopicPhotoCustomField->lang_code == "all" || $TopicPhotoCustomField->lang_code == @Helper::currentLanguage()->code)
                                     @foreach(@$Topic->fields->where("field_id", $TopicPhotoCustomField->id) as $Photo)
@@ -100,7 +100,7 @@
                                     @endforeach
                                     @break
                                 @endif
-                            @endforeach
+                            @endforeach --}}
                         @endif
                     </div>
                 {{-- </a> --}}
@@ -117,8 +117,8 @@
                     @if(@$Topic->webmasterSection->id == 8)
                         <i class="fa-solid fa-arrow-right"></i>
                     @endif
-                </h4>  
-                              
+                </h4>
+
                 {{--Additional Feilds--}}
                 {{-- @include("frontEnd.topic.fields",["cols"=>12,"Fields"=>@$Topic->webmasterSection->customFields->where("in_listing",true)])
 
