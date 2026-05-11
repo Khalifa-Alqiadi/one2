@@ -1050,12 +1050,8 @@ class Helper
     static function Topics($SectionId, $CatIds = "", $limit = 12, $random = 0, $custom_order = 0)
     {
         try {
-            $Topics = Topic::where("status", 1)->where("webmaster_id", $SectionId)->where(function ($query) {
-                $query->where([
-                    ['expire_date', '>=', date("Y-m-d")],
-                    ['expire_date', '<>', null]
-                ])->orWhere('expire_date', null);
-            });
+            $Topics = Topic::with('webmasterSection')
+                ->where("status", 1)->where("webmaster_id", $SectionId);
             if ($CatIds == "" || $CatIds == "0") {
                 $CatIds = [];
             } else {
