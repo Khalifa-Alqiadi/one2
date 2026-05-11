@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="{{ @Helper::currentLanguage()->code }}" lang="{{ @Helper::currentLanguage()->code }}" dir="{{ @Helper::currentLanguage()->direction }}">
+<html class="{{ @Helper::currentLanguage()->code }}" lang="{{ @Helper::currentLanguage()->code }}">
 
 <head>
     <!-- ======= Meta & CSS ======= -->
@@ -16,7 +16,7 @@
     {!! Helper::GeneralSiteSettings("js") !!}
 </head>
 
-<body class="dir-{{ @Helper::currentLanguage()->direction }} lang-{{ @Helper::currentLanguage()->code }} {{ (!Helper::GeneralSiteSettings("style_change") && Helper::GeneralSiteSettings("style_type"))?"dark":"" }}">
+<body class="lang-{{ @Helper::currentLanguage()->code }} {{ (!Helper::GeneralSiteSettings("style_change") && Helper::GeneralSiteSettings("style_type"))?"dark":"" }}">
 
 @if(!@$HideHeader)
 <!-- ======= Top Bar ======= -->

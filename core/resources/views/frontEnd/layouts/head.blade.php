@@ -8,6 +8,46 @@
     content="{{ @$PageKeywords != '' ? @$PageKeywords : Helper::GeneralSiteSettings('site_keywords_' . @Helper::currentLanguage()->code) }}" />
 <meta name="author" content="{{ URL::to('') }}" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{{-- في <head> مباشرة — قبل أي CSS --}}
+@if (@Helper::currentLanguage()->direction == 'rtl')
+    <style>
+        html {
+            direction: rtl;
+        }
+
+        body {
+            direction: rtl;
+        }
+    </style>
+@endif
+
+{{-- Critical CSS inline مباشرة في الـ head --}}
+<style>
+    /* Font fallback بنفس أبعاد Tajawal/Roboto لمنع layout shift */
+    @font-face {
+        font-family: 'Tajawal';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: local('Tajawal');
+    }
+
+    /* Critical above-the-fold styles */
+    body {
+        font-family: 'Tajawal', 'Arial', sans-serif;
+        margin: 0;
+    }
+
+    h1, h2, h3 {
+        font-family: 'Tajawal', 'Arial', sans-serif;
+    }
+
+    /* تحديد حجم الـ LCP element مسبقاً */
+    .d-flex.align-items-center {
+        display: flex;
+        align-items: center;
+    }
+</style>
 
 @if (!request()->hasCookie('user_timezone'))
     <script>

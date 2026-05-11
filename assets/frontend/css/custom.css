@@ -53,6 +53,13 @@
 
 
 /* ── Utilities ─────────────────────────────── */
+/* امنع الأيقونات من إزاحة المحتوى */
+.bi {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+}
 .page-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -2094,6 +2101,7 @@
 
 .teams-home .js-teams-swiper {
     overflow: visible;
+    min-height: 200px;
 }
 
 .teams-home .teams-home__team-card {
@@ -2333,6 +2341,7 @@
 
 .matches-home2 .swiper {
     padding: 40px 0;
+    min-height: 462px;
 }
 
 .matches-home2 .card {

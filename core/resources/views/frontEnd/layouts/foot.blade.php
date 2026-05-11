@@ -11,7 +11,7 @@
 <script
     src="{{ URL::asset('assets/frontend/vendor/glightbox/js/glightbox.min.js') }}?v={{ Helper::system_version() }}" defer></script>
 <script
-    src="{{ URL::asset('assets/frontend/vendor/swiper/swiper-bundle.min.js') }}?v={{ Helper::system_version() }}" defer></script>
+    src="{{ URL::asset('assets/frontend/vendor/swiper/swiper-bundle.min.js') }}?v={{ Helper::system_version() }}"></script>
 <script
     src="{{ URL::asset('assets/frontend/vendor/owl-carousel/owl.carousel.min.js') }}?v={{ Helper::system_version() }}" defer></script>
 
