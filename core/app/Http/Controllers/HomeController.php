@@ -90,7 +90,8 @@ class HomeController extends Controller
             // Custom landing page for the homepage
             if (Helper::GeneralWebmasterSettings("homepage_type") && Helper::GeneralWebmasterSettings("landing_page_id") > 0) {
                 $LandingPage = Topic::with([
-                    'topicBlocks'
+                    'topicBlocks',
+                    'webmasterSection'
                 ])
                     ->where("status", 1)->where("id",
                     Helper::GeneralWebmasterSettings("landing_page_id"))->first();
