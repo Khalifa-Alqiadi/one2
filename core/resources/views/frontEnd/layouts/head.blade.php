@@ -143,7 +143,7 @@
 {{-- App CSS - Non-blocking --}}
 <link rel="preload" href="{{ URL::asset('assets/frontend/css/style.css') }}?v=2" as="style"
     onload="this.onload=null;this.rel='stylesheet'" />
-<link rel="preload" href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=94" as="style"
+<link rel="preload" href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=95" as="style"
     onload="this.onload=null;this.rel='stylesheet'" />
 <link rel="preload" href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=26" as="style"
     onload="this.onload=null;this.rel='stylesheet'" />
@@ -156,7 +156,7 @@
 {{-- App CSS Noscript Fallback --}}
 <noscript>
     <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v=2" rel="stylesheet" />
-    <link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=94" rel="stylesheet" />
+    <link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=95" rel="stylesheet" />
     <link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=26" rel="stylesheet" />
     @if (@Helper::currentLanguage()->direction == 'rtl')
         <link href="{{ URL::asset('assets/frontend/css/rtl.css') }}?v=19" rel="stylesheet" />

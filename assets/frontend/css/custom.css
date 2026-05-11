@@ -552,6 +552,14 @@
     overflow: hidden;
 }
 
+.slider-swiper-rails .swiper{
+    min-height: 500px;
+}
+
+.slider-swiper-square .swiper{
+    min-height: 390px;
+}
+
 .slider-swiper-home .swiper,
 .slider-swiper-square .swiper,
 .slider-swiper-rails .swiper {
