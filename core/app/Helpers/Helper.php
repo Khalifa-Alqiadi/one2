@@ -1058,10 +1058,13 @@ class Helper
                 $CatIds = explode(",", $CatIds);
             }
             if (count($CatIds) > 0) {
-                $Topics = $Topics->whereIn(
-                    "id",
-                    TopicCategory::whereIn('section_id', $CatIds)->pluck("topic_id")->toarray()
-                );
+                // $Topics = $Topics->whereIn(
+                //     "id",
+                //     TopicCategory::whereIn('section_id', $CatIds)->pluck("topic_id")->toarray()
+                // );
+                $Topics = $Topics->whereHas('topicCategories', function($q) use($CatIds){
+                    $q->whereIn('section_id', $CatIds);
+                });
             }
             if ($random) {
                 $Topics = $Topics->inRandomOrder();
