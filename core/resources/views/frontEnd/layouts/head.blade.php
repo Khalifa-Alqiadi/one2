@@ -17,6 +17,12 @@
     </script>
 @endif
 <link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/bootstrap/css/bootstrap.min.css') }}?v={{ Helper::system_version() }}"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+</noscript>
 <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v=2" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=94" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=26" rel="stylesheet"/>
@@ -42,6 +48,10 @@
 
 
 @if( @Helper::currentLanguage()->direction=="rtl")
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400&display=swap" rel="stylesheet">
+</noscript>
 <link href="{{ URL::asset('assets/frontend/css/rtl.css') }}?v=19" rel="stylesheet"/>
 @endif
 
