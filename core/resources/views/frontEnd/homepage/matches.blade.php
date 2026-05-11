@@ -1,6 +1,7 @@
 @php($matches = Helper::getMatchHome(6))
 @php($name_var = 'name_' . @Helper::currentLanguage()->code)
 @php($locale = @Helper::currentLanguage()->code)
+@php($timezone = Helper::getUserTimezone() ?: 'UTC')
 @if (count($matches) > 0)
     <section class="matches matches-home matches-home2 py-5">
         <div class="container">
@@ -17,11 +18,11 @@
             <div class="row mt-3">
                 <div class="col-md-8">
                     <?php
-                    $yesterday = now(Helper::getUserTimezone() ?: 'UTC')
+                    $yesterday = now($timezone)
                         ->subDay()
                         ->toDateString();
-                    $today = now(Helper::getUserTimezone() ?: 'UTC')->toDateString();
-                    $tomorrow = now(Helper::getUserTimezone() ?: 'UTC')
+                    $today = now($timezone)->toDateString();
+                    $tomorrow = now($timezone)
                         ->addDay()
                         ->toDateString();
                     ?>
@@ -41,7 +42,7 @@
                     </div>
                     <div class="items-matches">
                         <div id="matches-container">
-                            @include('frontEnd.homepage.swiper-home', ['matches' => $matches])
+                            @include('frontEnd.homepage.swiper-home', ['matches' => $matches, 'timezone' => $timezone])
                         </div>
                     </div>
                 </div>

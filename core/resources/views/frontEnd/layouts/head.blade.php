@@ -3,27 +3,42 @@
 <meta name="description" content="{{(@$PageDescription !="")? @$PageDescription:Helper::GeneralSiteSettings("site_desc_" . @Helper::currentLanguage()->code)}}"/>
 <meta name="keywords" content="{{(@$PageKeywords !="")? @$PageKeywords:Helper::GeneralSiteSettings("site_keywords_" . @Helper::currentLanguage()->code)}}"/>
 <meta name="author" content="{{ URL::to('') }}"/>
-<?php if (!request()->hasCookie('user_timezone')) {
-        Helper::detectAndStoreUserTimezone();
-    }
-?>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/all.min.css') }}?v={{ Helper::system_version() }}"  rel="stylesheet" media/>
-<link href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/font-awesome.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet" media/>
-<link href="{{ URL::asset('assets/frontend/vendor/animate.css/animate.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
-<link href="{{ URL::asset('assets/frontend/vendor/bootstrap/css/bootstrap.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet"/>
-<link href="{{ URL::asset('assets/frontend/vendor/bootstrap-icons/bootstrap-icons.css') }}?v={{ Helper::system_version() }}" media rel="stylesheet"/>
-
-<link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/glightbox/css/glightbox.min.css') }}?v={{ Helper::system_version() }}">
-<link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/swiper/swiper-bundle.min.css') }}?v={{ Helper::system_version() }}">
-
-<link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.carousel.min.css') }}?v={{ Helper::system_version() }}">
-<link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.theme.default.min.css') }}?v={{ Helper::system_version() }}">
-
+@if(!request()->hasCookie('user_timezone'))
+    <script>
+        (function () {
+            try {
+                var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                if (timezone) {
+                    document.cookie = 'user_timezone=' + encodeURIComponent(timezone) + ';path=/;max-age=2592000;SameSite=Lax';
+                }
+            } catch (e) {}
+        })();
+    </script>
+@endif
+<link rel="stylesheet" href="{{ URL::asset('assets/frontend/vendor/bootstrap/css/bootstrap.min.css') }}?v={{ Helper::system_version() }}"/>
 <link href="{{ URL::asset('assets/frontend/css/style.css') }}?v=2" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/frontend/css/custom.css') }}?v=94" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/frontend/css/matches.css') }}?v=26" rel="stylesheet"/>
+
+<link rel="preload" href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/all.min.css') }}?v={{ Helper::system_version() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/font-awesome.min.css') }}?v={{ Helper::system_version() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="{{ URL::asset('assets/frontend/vendor/animate.css/animate.min.css') }}?v={{ Helper::system_version() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="{{ URL::asset('assets/frontend/vendor/bootstrap-icons/bootstrap-icons.css') }}?v={{ Helper::system_version() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="{{ URL::asset('assets/frontend/vendor/glightbox/css/glightbox.min.css') }}?v={{ Helper::system_version() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="{{ URL::asset('assets/frontend/vendor/swiper/swiper-bundle.min.css') }}?v={{ Helper::system_version() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.carousel.min.css') }}?v={{ Helper::system_version() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<link rel="preload" href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.theme.default.min.css') }}?v={{ Helper::system_version() }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript>
+    <link href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/all.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/font-awesome.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/frontend/vendor/animate.css/animate.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/frontend/vendor/bootstrap-icons/bootstrap-icons.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/frontend/vendor/glightbox/css/glightbox.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/frontend/vendor/swiper/swiper-bundle.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.carousel.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
+    <link href="{{ URL::asset('assets/frontend/vendor/owl-carousel/assets/owl.theme.default.min.css') }}?v={{ Helper::system_version() }}" rel="stylesheet">
+</noscript>
 
 
 @if( @Helper::currentLanguage()->direction=="rtl")

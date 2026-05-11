@@ -13,7 +13,7 @@
 <script
     src="{{ URL::asset('assets/frontend/vendor/swiper/swiper-bundle.min.js') }}?v={{ Helper::system_version() }}"></script>
 <script
-    src="{{ URL::asset('assets/frontend/vendor/owl-carousel/owl.carousel.js') }}?v={{ Helper::system_version() }}"></script>
+    src="{{ URL::asset('assets/frontend/vendor/owl-carousel/owl.carousel.min.js') }}?v={{ Helper::system_version() }}"></script>
 
 <!-- Template Main JS File -->
 <script src="{{ URL::asset('assets/frontend/js/main.js') }}?v={{ Helper::system_version() }}"></script>
@@ -73,4 +73,3 @@ if (@$PageTitle == "") {
 ?>
 @include("frontEnd.layouts.cookie")
 {!! Helper::SaveVisitorInfo($PageTitle) !!}
-

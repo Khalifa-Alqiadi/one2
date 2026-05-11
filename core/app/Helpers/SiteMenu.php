@@ -9,7 +9,7 @@ class SiteMenu
 {
     static function List($GroupId)
     {
-        $MenuLinks = Menu::with('subMenus')
+        $MenuLinks = Menu::with('subMenus.subMenus.subMenus')
             ->where('father_id', $GroupId)
             ->where('status', 1)->orderby('row_no', 'asc')->get();
         return SiteMenu::ParseLinks($MenuLinks);

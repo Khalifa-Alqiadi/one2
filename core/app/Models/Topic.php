@@ -76,6 +76,16 @@ class Topic extends Model implements Feedable
     public function category($TopicID)
     {
         $Category = null;
+        if ($this->relationLoaded('categories')) {
+            $TopicCategory = $this->categories->first();
+            if (empty($TopicCategory)) {
+                return null;
+            }
+
+            return $TopicCategory->relationLoaded('section')
+                ? $TopicCategory->section
+                : Section::find($TopicCategory->section_id);
+        }
         $TopicCategory = TopicCategory::where('topic_id', $TopicID)->first();
         if (!empty($TopicCategory)) {
             $Category = Section::find($TopicCategory->section_id);

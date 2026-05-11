@@ -101,7 +101,7 @@ class Helper
     static function BannersList($BannersSettingsId)
     {
         $Banners = Cache::remember('_Loader_BannersList', 60 * 24, function () {
-            return Banner::where('status', 1)->orderby('row_no', 'asc')->get();
+            return Banner::with('webmasterBanner')->where('status', 1)->orderby('row_no', 'asc')->get();
         });
         return $Banners->where('section_id', $BannersSettingsId);
     }
@@ -1047,10 +1047,20 @@ class Helper
         })->find($id);
     }
 
-    static function Topics($SectionId, $CatIds = "", $limit = 12, $random = 0, $custom_order = 0)
+    static function Topics($SectionId, $CatIds = "", $limit = 12, $random = 0, $custom_order = 0, $with = null)
     {
         try {
-            $Topics = Topic::with('webmasterSection')
+            $with = $with ?? [
+                'webmasterSection.customFields',
+                'photos',
+                'fields',
+                'categories.section',
+                'topicCategories.section',
+                'attachFiles',
+                'maps',
+            ];
+
+            $Topics = Topic::with($with)
                 ->where("status", 1)->where("webmaster_id", $SectionId);
             if ($CatIds == "" || $CatIds == "0") {
                 $CatIds = [];
@@ -1423,29 +1433,11 @@ class Helper
             return null;
         }
 
-        // 2. Define resolutions from highest to lowest
-        $resolutions = [
-            'maxresdefault', // 1280x720 (Best)
-            'sddefault',     // 640x480
-            'hqdefault',     // 480x360
+        return [
+            'id' => $videoId,
+            'url' => "https://img.youtube.com/vi/{$videoId}/hqdefault.jpg",
+            'webp' => "https://i.ytimg.com/vi/{$videoId}/hqdefault.webp"
         ];
-
-        // 3. Fallback logic: check if the high-res version actually exists
-        foreach ($resolutions as $res) {
-            $thumbnailUrl = "https://img.youtube.com/vi/{$videoId}/{$res}.jpg";
-
-            // Check status (200 OK), otherwise YouTube returns a placeholder or 404
-            $response = Http::head($thumbnailUrl);
-            if ($response->successful()) {
-                return [
-                    'id' => $videoId,
-                    'url' => $thumbnailUrl,
-                    'webp' => "https://i.ytimg.com/vi/{$videoId}/{$res}.webp"
-                ];
-            }
-        }
-
-        return null;
     }
 
     public static function oembed(string $url): ?array
@@ -1661,25 +1653,8 @@ class Helper
             return $existing;
         }
 
-        $ip = request()->ip();
-
-        // لو local أو private IP
-        if (in_array($ip, ['127.0.0.1', '::1']) || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE) === false) {
-            $tz = 'Asia/Aden';
-            Cookie::queue('user_timezone', $tz, 60 * 24 * 30);
-            return $tz;
-        }
-
-        try {
-            $response = Http::timeout(5)->get("http://ip-api.com/json/{$ip}");
-            $json = $response->json();
-
-            $tz = data_get($json, 'timezone');
-
-            if (empty($tz) || !in_array($tz, timezone_identifiers_list(), true)) {
-                $tz = 'Asia/Aden';
-            }
-        } catch (\Throwable $e) {
+        $tz = config('app.timezone') ?: 'Asia/Aden';
+        if (!in_array($tz, timezone_identifiers_list(), true)) {
             $tz = 'Asia/Aden';
         }
 
@@ -1703,7 +1678,9 @@ class Helper
             return $tz;
         }
 
-        return self::detectAndStoreUserTimezone();
+        $fallback = config('app.timezone') ?: 'Asia/Aden';
+
+        return self::isValidTimezone($fallback) ? $fallback : 'Asia/Aden';
     }
 
     static function getTeame($id)

@@ -103,7 +103,7 @@ class HomeController extends Controller
             // default homepage
             $HomeTopic = [];
             if (Helper::GeneralWebmasterSettings("home_content4_section_id") > 0) {
-                $HomeTopic = Topic::where("status", 1)->where("id",
+                $HomeTopic = Topic::with('form')->where("status", 1)->where("id",
                     Helper::GeneralWebmasterSettings("home_content4_section_id"))->first();
             }
             return view("frontEnd.home", ["page_type" => "home", "Popup" => $Popup, "Topic" => $HomeTopic]);
@@ -1395,34 +1395,62 @@ class HomeController extends Controller
 
     private function topics_count_per_category($webmaster_id = 0): array
     {
-        $CategoriesList = Section::where('webmaster_id', '=', $webmaster_id)->where('status',
-            1)->orderby('webmaster_id', 'asc')->orderby('row_no', 'asc')->get();
+        $CategoriesList = Section::where('webmaster_id', '=', $webmaster_id)
+            ->where('status', 1)
+            ->orderby('webmaster_id', 'asc')
+            ->orderby('row_no', 'asc')
+            ->get(['id', 'father_id']);
+
+        if ($CategoriesList->isEmpty()) {
+            return [];
+        }
+
+        $childrenByParent = $CategoriesList->groupBy('father_id');
+        $allCategoryIds = $CategoriesList->pluck('id')->all();
+        $topicCategories = TopicCategory::whereIn('section_id', $allCategoryIds)
+            ->get(['section_id', 'topic_id'])
+            ->groupBy('section_id');
+
+        $allTopicIds = $topicCategories
+            ->flatten(1)
+            ->pluck('topic_id')
+            ->unique()
+            ->values();
+
+        $validTopicIds = Topic::where("status", 1)
+            ->where("webmaster_id", $webmaster_id)
+            ->where(function ($query) {
+                $query->where([
+                    ['expire_date', '>=', date("Y-m-d")], ['expire_date', '<>', null]
+                ])->orWhere('expire_date', null);
+            })
+            ->whereIn('id', $allTopicIds)
+            ->pluck('id')
+            ->flip();
+
+        $descendantIds = function ($categoryId) use (&$descendantIds, $childrenByParent) {
+            $ids = [$categoryId];
+            foreach ($childrenByParent->get($categoryId, collect()) as $child) {
+                $ids = array_merge($ids, $descendantIds($child->id));
+            }
+            return $ids;
+        };
 
         $TopicsCountPerCat = [];
-        if (count($CategoriesList) > 0) {
-            foreach ($CategoriesList as $CAT) {
-                $cat_ids = [];
-                $cat_ids[] = $CAT->id;
-                $SubCategories = Section::where("status", 1)->where("father_id", $CAT->id)->pluck("id")->toarray();
-                foreach ($SubCategories as $SubCategory) {
-                    $cat_ids[] = $SubCategory;
-                    $SubCategories2 = Section::where("status", 1)->where("father_id",
-                        $SubCategory)->pluck("id")->toarray();
-                    foreach ($SubCategories2 as $SubCategory2) {
-                        $cat_ids[] = $SubCategory2;
-                    }
-                }
-                $category_topics = TopicCategory::whereIn('section_id', $cat_ids)->pluck("topic_id")->toarray();
+        foreach ($CategoriesList as $CAT) {
+            $catIds = $descendantIds($CAT->id);
+            $topicIds = collect($catIds)
+                ->flatMap(function ($sectionId) use ($topicCategories) {
+                    return $topicCategories->get($sectionId, collect())->pluck('topic_id');
+                })
+                ->unique()
+                ->filter(function ($topicId) use ($validTopicIds) {
+                    return $validTopicIds->has($topicId);
+                });
 
-                $TopicsCount = Topic::where("status", 1)->where("webmaster_id", $webmaster_id)->where(function ($query
-                ) {
-                    $query->where([
-                        ['expire_date', '>=', date("Y-m-d")], ['expire_date', '<>', null]
-                    ])->orWhere('expire_date', null);
-                })->whereIn('id', $category_topics)->orderby('row_no', 'asc')->count();
-                $TopicsCountPerCat[$CAT->id] = $TopicsCount;
-            }
+            $TopicsCountPerCat[$CAT->id] = $topicIds->count();
         }
+
         return $TopicsCountPerCat;
     }
 

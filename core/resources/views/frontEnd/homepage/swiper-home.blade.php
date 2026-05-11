@@ -1,5 +1,6 @@
 @php
     $name_var = $name_var ?? 'name_' . @Helper::currentLanguage()->code;
+    $timezone = $timezone ?? Helper::getUserTimezone();
     $matchesCount = is_countable($matches) ? count($matches) : 0;
 @endphp
 
@@ -12,7 +13,6 @@
         @foreach ($matches as $match)
             <?php
             $isFinished = (bool) $match->is_finished;
-            $timezone = Helper::getUserTimezone();
             $isTimeLive = false;
             if (!$isFinished && $match->starting_at) {
                 try {

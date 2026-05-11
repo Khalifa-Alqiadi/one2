@@ -1,6 +1,12 @@
 <?php
 $FAQLimit = 10; // 0 = all
-$FAQs = Helper::Topics(Helper::GeneralWebmasterSettings("home_content7_section_id"), 0, $FAQLimit, 1);
+$FAQs = Helper::Topics(Helper::GeneralWebmasterSettings("home_content7_section_id"), 0, $FAQLimit, 1, 0, [
+    'webmasterSection.customFields',
+    'fields',
+    'categories.section',
+    'attachFiles',
+    'maps',
+]);
 $half = round(count($FAQs)/2);
 $FAQs1 = @$FAQs->slice(0,$half);
 $FAQs2 = @$FAQs->slice($half,$half);

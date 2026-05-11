@@ -1,6 +1,10 @@
 <?php
 $StaffLimit = 6; // 0 = all
-$Staff = Helper::Topics(Helper::GeneralWebmasterSettings("home_content5_section_id"), 0, $StaffLimit, 0);
+$Staff = Helper::Topics(Helper::GeneralWebmasterSettings("home_content5_section_id"), 0, $StaffLimit, 0, 0, [
+    'webmasterSection.customFields',
+    'fields',
+    'categories.section',
+]);
 ?>
 @if(count($Staff)>0)
     <section id="staff" class="staff">

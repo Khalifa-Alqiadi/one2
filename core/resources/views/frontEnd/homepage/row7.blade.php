@@ -1,6 +1,8 @@
 <?php
 $HomePartnersLimit = 0; ; // 0 = all
-$HomePartners = Helper::Topics(Helper::GeneralWebmasterSettings("home_content3_section_id"), 0, $HomePartnersLimit, 1);
+$HomePartners = Helper::Topics(Helper::GeneralWebmasterSettings("home_content3_section_id"), 0, $HomePartnersLimit, 1, 0, [
+    'fields',
+]);
 ?>
 @if(count($HomePartners)>0)
     <section id="partners" class="partners section-bg">

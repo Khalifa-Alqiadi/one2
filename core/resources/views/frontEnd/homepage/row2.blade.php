@@ -1,6 +1,9 @@
 <?php
 $HomeTopicsLimit = 12; // 0 = all
-$HomeTopics = Helper::Topics(Helper::GeneralWebmasterSettings("home_content1_section_id"), 0, $HomeTopicsLimit);
+$HomeTopics = Helper::Topics(Helper::GeneralWebmasterSettings("home_content1_section_id"), 0, $HomeTopicsLimit, 0, 0, [
+    'webmasterSection',
+    'photos',
+]);
 $require_mp3_player = 0;
 ?>
 @if(count($HomeTopics)>0)

@@ -1,6 +1,8 @@
 <?php
 $HomePhotosLimit = 12; ; // 0 = all
-$HomePhotos = Helper::Topics(Helper::GeneralWebmasterSettings("home_content2_section_id"), 0, $HomePhotosLimit, 1);
+$HomePhotos = Helper::Topics(Helper::GeneralWebmasterSettings("home_content2_section_id"), 0, $HomePhotosLimit, 1, 0, [
+    'photos',
+]);
 ?>
 @if(count($HomePhotos)>0)
     <section id="gallery" class="gallery">
@@ -64,4 +66,3 @@ $HomePhotos = Helper::Topics(Helper::GeneralWebmasterSettings("home_content2_sec
         </div>
     </section>
 @endif
-
