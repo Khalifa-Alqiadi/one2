@@ -89,7 +89,10 @@ class HomeController extends Controller
 
             // Custom landing page for the homepage
             if (Helper::GeneralWebmasterSettings("homepage_type") && Helper::GeneralWebmasterSettings("landing_page_id") > 0) {
-                $LandingPage = Topic::where("status", 1)->where("id",
+                $LandingPage = Topic::with([
+                    'topicBlocks'
+                ])
+                    ->where("status", 1)->where("id",
                     Helper::GeneralWebmasterSettings("landing_page_id"))->first();
                 if (!empty($LandingPage)) {
                     return $this->post_page($lang, $LandingPage);
@@ -555,8 +558,9 @@ class HomeController extends Controller
                 $Topic->save();
 
                 // categories list
-                $CategoriesList = Section::where('webmaster_id', '=', $WebmasterSection->id)->where('father_id', '=',
-                    '0')->where('status', 1)->orderby('webmaster_id', 'asc')->orderby('row_no', 'asc')->get();
+                $CategoriesList = [];
+                    // Section::where('webmaster_id', '=', $WebmasterSection->id)->where('father_id', '=',
+                    // '0')->where('status', 1)->orderby('webmaster_id', 'asc')->orderby('row_no', 'asc')->get();
 
                 $Category = [];
                 $TopicCategory = TopicCategory::where('topic_id', $Topic->id)->first();
@@ -572,11 +576,7 @@ class HomeController extends Controller
 
                 // most viewed topics list
                 $MostViewedTopics = Topic::where("status", 1)->where("webmaster_id",
-                    $WebmasterSection->id)->where(function ($query) {
-                    $query->where([
-                        ['expire_date', '>=', date("Y-m-d")], ['expire_date', '<>', null]
-                    ])->orWhere('expire_date', null);
-                });
+                    $WebmasterSection->id);
 
                 // filter by category
                 if (!empty($Category)) {

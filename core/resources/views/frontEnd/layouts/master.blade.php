@@ -36,7 +36,7 @@
 @if(!@$HideFooter)
 @include('frontEnd.layouts.footer')
 @endif
-@include('frontEnd.layouts.mobile-menu')
+{{-- @include('frontEnd.layouts.mobile-menu') --}}
 @if(Helper::GeneralSiteSettings("style_preload"))
     <div id="preloader"></div>
 @endif

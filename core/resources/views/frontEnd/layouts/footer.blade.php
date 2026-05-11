@@ -67,16 +67,6 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
                                                             {{ @$SubLink->title }}
                                                         </a>
                                                     </li>
-                                                    @if (@$SubLink->sub)
-                                                        @foreach ($SubLink->sub as $SubLink2)
-                                                            <li><a class="nav-link" href="{{ @$SubLink2->url }}"
-                                                                    target="{{ @$SubLink2->target }}">
-                                                                    &nbsp;&nbsp; {!! @Helper::currentLanguage()->direction == 'rtl' ? '&#8617;' : '&#8618;' !!}
-                                                                    {!! @$SubLink2->icon ? "<i class='" . @$SubLink2->icon . "'></i> " : '' !!}
-                                                                    {{ @$SubLink2->title }}</a>
-                                                            </li>
-                                                        @endforeach
-                                                    @endif
                                                 @endforeach
                                             </ul>
                                         @endif
@@ -95,15 +85,6 @@ if (!Helper::GeneralSiteSettings('style_subscribe')) {
                                                     {{ @$MenuLink->title }}
                                                 </a>
                                             </li>
-                                            @if (@$MenuLink->sub)
-                                                @foreach ($MenuLink->sub as $SubLink)
-                                                    <li><a class="nav-link" href="{{ @$SubLink->url }}"
-                                                            target="{{ @$SubLink->target }}">
-                                                            &nbsp;&nbsp; {!! @Helper::currentLanguage()->direction == 'rtl' ? '&#8617;' : '&#8618;' !!}
-                                                            {!! @$SubLink->icon ? "<i class='" . @$SubLink->icon . "'></i> " : '' !!} {{ @$SubLink->title }}</a>
-                                                    </li>
-                                                @endforeach
-                                            @endif
                                         @endforeach
                                     </ul>
                                 </div>

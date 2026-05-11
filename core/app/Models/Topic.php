@@ -69,6 +69,10 @@ class Topic extends Model implements Feedable
     {
         return $this->hasMany('App\Models\TopicCategory');
     }
+    public function topicCategories()
+    {
+        return $this->belongsTo('App\Models\TopicCategory','id', 'topic_id');
+    }
     public function category($TopicID)
     {
         $Category = null;

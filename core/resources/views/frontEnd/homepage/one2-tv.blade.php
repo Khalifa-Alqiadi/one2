@@ -26,8 +26,8 @@
         $getCat = function ($topic) use ($name_var, $title_var) {
             return $topic->league
                 ? $topic->league->$name_var
-                : ($topic->category($topic->id)
-                    ? $topic->category($topic->id)->$title_var
+                : ($topic->topicCategories
+                    ? $topic->topicCategories->section->$title_var
                     : $topic->webmasterSection->$title_var);
         };
     @endphp

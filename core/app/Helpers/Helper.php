@@ -821,7 +821,7 @@ class Helper
                     $topic_slug = Str::slug($Topic->$title_var, '-');
                 }
                 $WebmasterSection_slug = "NULL";
-                $WebmasterSection = $Topic->WebmasterSection;
+                $WebmasterSection = $Topic->webmasterSection;
 
                 if ($Topic->webmaster_id == 1 || @$WebmasterSection->type == 10) {
                     if ($lang != config('smartend.default_language')) {
@@ -844,10 +844,10 @@ class Helper
                 }
 
                 $Category = [];
-                $TopicCategory = TopicCategory::where('topic_id', $Topic->id)->first();
-                if (!empty($TopicCategory)) {
-                    $Category = Section::find($TopicCategory->section_id);
-                }
+                // $TopicCategory = TopicCategory::where('topic_id', $Topic->id)->first();
+                // if (!empty($TopicCategory)) {
+                //     $Category = Section::find($TopicCategory->section_id);
+                // }
 
                 if (!empty($Category)) {
                     if ($Category->{'seo_url_slug_' . $lang} != "") {
@@ -1612,7 +1612,7 @@ class Helper
 
     static function getMatchHome($limit = 4)
     {
-        $matches = Fixture::with('homeTeam', 'awayTeam', 'league')->where('is_home', 1)->limit($limit)
+        $matches = Fixture::with(['homeTeam', 'awayTeam', 'league'])->where('is_home', 1)->limit($limit)
             ->orderBy('starting_at', 'desc')
             ->get();
         return $matches;
@@ -1780,7 +1780,7 @@ class Helper
     static function leagueTeamMatches($leagueId, $teamId)
     {
         $matches = \App\Models\Fixture::query()
-            ->with(['homeTeam:id,name_ar,name_en', 'awayTeam:id,name_ar,name_en'])
+            ->with(['homeTeam:id,name_ar,name_en', 'awayTeam:id,name_ar,name_en', 'league:id,name_ar,name_en,image_path'])
             ->where('league_id', $leagueId)
             ->where(function ($q) use ($teamId) {
                 $q->where('home_team_id', $teamId)
@@ -1809,7 +1809,9 @@ class Helper
             'match',
             'team',
             'league',
-            'WebmasterSection'
+            'webmasterSection',
+            'topicCategories',
+            'topicCategories.section'
          )
             ->where('status', 1)
             ->whereNotIn('webmaster_id', [1,17])
@@ -1824,7 +1826,9 @@ class Helper
             'match',
             'team',
             'league',
-            'WebmasterSection'
+            'webmasterSection',
+            'topicCategories',
+            'topicCategories.section'
          )
             ->where('status', 1)
             ->whereNotIn('webmaster_id', [1,17])

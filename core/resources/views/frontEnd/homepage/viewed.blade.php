@@ -48,8 +48,8 @@
                                 <span class="gold-badge mb-2">
                                     @if ($item->league)
                                         {{ $item->league->$name_var }}
-                                    @elseif($item->category($item->id))
-                                        {{ $item->category($item->id)->$title_var }}
+                                    @elseif($item->topicCategories)
+                                        {{ $item->topicCategories->section->$title_var }}
                                     @else
                                         {{ $item->webmasterSection->$title_var }}
                                     @endif
@@ -98,8 +98,8 @@
                                      <span class="gold-badge mb-2">
                                         @if ($item->league)
                                             {{ $item->league->$name_var }}
-                                        @elseif($item->category($item->id))
-                                            {{ $item->category($item->id)->$title_var }}
+                                        @elseif($item->topicCategories)
+                                            {{ $item->topicCategories->section->$title_var }}
                                         @else
                                             {{ $item->webmasterSection->$title_var }}
                                         @endif
@@ -129,8 +129,8 @@
                         <div class="ms-item"><span class="ms-badge gold-badge">
                                 @if ($item->league)
                                     {{ $item->league->$name_var }}
-                                @elseif($item->category($item->id))
-                                    {{ $item->category($item->id)->$title_var }}
+                                @elseif($item->topicCategories)
+                                    {{ $item->topicCategories->section->$title_var }}
                                 @else
                                     {{ $item->webmasterSection->$title_var }}
                                 @endif
