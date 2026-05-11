@@ -40,7 +40,7 @@ class Helper
 {
     static function system_version()
     {
-        return 3;
+        return Helper::GeneralWebmasterSettings("version");
     }
 
     static function GeneralWebmasterSettings($var)
