@@ -5,18 +5,18 @@
     var page_dir = "{{ @Helper::currentLanguage()->direction }}";
 </script>
 <!-- Vendor JS Files -->
-<script src="{{ URL::asset('assets/frontend/js/jquery.min.js') }}?v={{ Helper::system_version() }}"></script>
+<script src="{{ URL::asset('assets/frontend/js/jquery.min.js') }}?v={{ Helper::system_version() }}" defer></script>
 <script
-    src="{{ URL::asset('assets/frontend/vendor/bootstrap/js/bootstrap.bundle.min.js') }}?v={{ Helper::system_version() }}"></script>
+    src="{{ URL::asset('assets/frontend/vendor/bootstrap/js/bootstrap.bundle.min.js') }}?v={{ Helper::system_version() }}" defer></script>
 <script
-    src="{{ URL::asset('assets/frontend/vendor/glightbox/js/glightbox.min.js') }}?v={{ Helper::system_version() }}"></script>
+    src="{{ URL::asset('assets/frontend/vendor/glightbox/js/glightbox.min.js') }}?v={{ Helper::system_version() }}" defer></script>
 <script
-    src="{{ URL::asset('assets/frontend/vendor/swiper/swiper-bundle.min.js') }}?v={{ Helper::system_version() }}"></script>
+    src="{{ URL::asset('assets/frontend/vendor/swiper/swiper-bundle.min.js') }}?v={{ Helper::system_version() }}" defer></script>
 <script
-    src="{{ URL::asset('assets/frontend/vendor/owl-carousel/owl.carousel.min.js') }}?v={{ Helper::system_version() }}"></script>
+    src="{{ URL::asset('assets/frontend/vendor/owl-carousel/owl.carousel.min.js') }}?v={{ Helper::system_version() }}" defer></script>
 
 <!-- Template Main JS File -->
-<script src="{{ URL::asset('assets/frontend/js/main.js') }}?v={{ Helper::system_version() }}"></script>
+<script src="{{ URL::asset('assets/frontend/js/main.js') }}?v={{ Helper::system_version() }}" defer></script>
 
 {{--ajax subscribe to news letter--}}
 @if(Helper::GeneralSiteSettings("style_subscribe"))
