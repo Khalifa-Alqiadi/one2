@@ -49,15 +49,15 @@ if (@$TopicBlockContents->module_id) {
                                     $title = $HomePartner->$title_var2;
                                 }
                                 $URL = "";
-                                if (count($HomePartner->fields) > 0) {
-                                    foreach ($HomePartner->fields as $t_field) {
-                                        if ($t_field->field_value != "") {
-                                            if (@filter_var($t_field->field_value, FILTER_VALIDATE_URL)) {
-                                                $URL = $t_field->field_value;
-                                            }
-                                        }
-                                    }
-                                }
+                                // if (count($HomePartner->fields) > 0) {
+                                //     foreach ($HomePartner->fields as $t_field) {
+                                //         if ($t_field->field_value != "") {
+                                //             if (@filter_var($t_field->field_value, FILTER_VALIDATE_URL)) {
+                                //                 $URL = $t_field->field_value;
+                                //             }
+                                //         }
+                                //     }
+                                // }
                                 ?>
                             <div class="col mb-1">
                                 <div class="thumbnail">
@@ -80,7 +80,7 @@ if (@$TopicBlockContents->module_id) {
                             </div>
                         @endforeach
                     </div>
-                </div>                
+                </div>
                 {{-- <div class="swiper-pagination"></div> --}}
             </div>
 
