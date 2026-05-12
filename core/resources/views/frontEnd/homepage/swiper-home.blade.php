@@ -50,8 +50,8 @@
                                     <div class="d-flex flex-column align-items-center">
                                         @if ($match->homeTeam->image_path)
                                             <div class="image d-flex align-items-center justify-content-center">
-                                                <img src="{{ $match->homeTeam->image_path }}" style="height:30px"
-                                                    alt="">
+                                                <img src="{{ $match->homeTeam->image_path }}" style="height:30px" loading="lazy"
+                                                    alt="{{ $match->homeTeam->$name_var }}">
                                             </div>
                                         @endif
                                         <span class="mt-2 text-center">{{ $match->homeTeam->$name_var }}</span>
@@ -95,8 +95,8 @@
                                     <div class="d-flex flex-column align-items-center">
                                         @if ($match->awayTeam->image_path)
                                             <div class="image d-flex align-items-center justify-content-center">
-                                                <img src="{{ $match->awayTeam->image_path }}" style="height:30px"
-                                                    alt="">
+                                                <img src="{{ $match->awayTeam->image_path }}" style="height:30px" loading="lazy"
+                                                    alt="{{ $match->awayTeam->$name_var }}">
                                             </div>
                                         @endif
                                         <span class="mt-2 text-center">{{ $match->awayTeam->$name_var }}</span>

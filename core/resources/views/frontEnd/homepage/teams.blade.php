@@ -31,7 +31,7 @@
                     <div class="teams-home__panel-bg"></div>
                     <div
                         class="section-title d-flex justify-content-between align-items-center mb-4 section-title-with-line p-0">
-                        <h2 class="d-flex align-items-center gap-4 w-100">
+                        <h2 class=" gap-4 w-100" style="display: flex;align-items: center;">
                             <img src="{{ URL::to('uploads/settings/major_competitions.svg') }}" alt="{{ __('frontend.major_competitions') }}">
                             {{ __('frontend.major_competitions') }}
                         </h2>
@@ -92,7 +92,7 @@
                                         <a href="{{ route('league.rounds', ['id' => $league->id]) }}"
                                             class="teams-home__team-card">
                                             <span class="teams-home__team-logo">
-                                                <img src="{{ $league->image_path }}" alt="{{ $leagueName }}">
+                                                <img src="{{ $league->image_path }}" alt="{{ $leagueName }}" loading="lazy">
                                             </span>
                                             <span class="teams-home__team-name">{{ $leagueName }}</span>
                                         </a>
@@ -115,7 +115,7 @@
 
                         <div
                             class="section-title d-flex justify-content-between align-items-center mb-4 section-title-with-line p-0">
-                            <h2 class="d-flex align-items-center gap-4 w-100">
+                            <h2 class=" gap-4 w-100" style="display: flex;align-items: center;">
                                 <img src="{{ URL::to('uploads/settings/major_competitions.svg') }}" alt="{{ __('frontend.major_national_teams') }}">
                                 {{ __('frontend.major_national_teams') }}
                             </h2>
@@ -177,7 +177,7 @@
                                             <a href="{{ route('team.details', ['id' => $team->id]) }}"
                                                 class="teams-home__team-card">
                                                 <span class="teams-home__team-logo">
-                                                    <img src="{{ $team->image_path }}" alt="{{ $teamName }}">
+                                                    <img src="{{ $team->image_path }}" alt="{{ $teamName }}" loading="lazy">
                                                 </span>
                                                 <span class="teams-home__team-name">{{ $teamName }}</span>
                                             </a>

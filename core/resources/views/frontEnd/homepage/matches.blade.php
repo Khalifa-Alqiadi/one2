@@ -7,7 +7,7 @@
         <div class="container">
             <div
                 class="section-title d-flex justify-content-between align-items-center mb-0 section-title-with-line p-0">
-                <h2 class="d-flex align-items-center gap-4 ">
+                <h2 class="gap-4 " style="display: flex;align-items: center;">
                     <img src="{{ URL::to('uploads/settings/league1.svg') }}" alt="">
                     {{ __('frontend.matches') }}
                 </h2>
@@ -51,7 +51,7 @@
                         <div class="results-panel">
                             <div class="rp-hdr d-flex align-items-center justify-content-center">
                                 <span class="rp-icon">
-                                    <img src="{{URL::to('uploads/settings/chart.svg')}}" alt="">
+                                    <img src="{{URL::to('uploads/settings/chart.svg')}}" alt="" loading="lazy">
                                 </span>
                                 <span class="rp-title">اخر النتائج</span>
                             </div>
@@ -61,7 +61,7 @@
                                     @foreach ($lastMatches as $match)
                                         <div class="match-row-item">
                                             <div class="mri-league d-flex align-items-center justify-content-center">
-                                                <img src="{{ $match->league->image_path }}" >
+                                                <img src="{{ $match->league->image_path }}" loading="lazy">
                                                 {{ $match->league->$name_var }}
                                             </div>
                                             <div class="mri-body">
