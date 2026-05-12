@@ -8,12 +8,12 @@ $i = 0;
             @foreach($MenuLinks as $MenuLink)
                 @if($i == 3)
                     <a href="{{ Helper::homeURL() }}" class="one-two-header__brand" aria-label="One Two home">
-                        <img src="{{ route("fileView",["path" =>'settings/'.Helper::GeneralSiteSettings("style_logo_" . @Helper::currentLanguage()->code) ]) }}" alt="One Two">
+                        <img src="{{ route("fileView",["path" =>'settings/'.Helper::GeneralSiteSettings("style_logo_" . @Helper::currentLanguage()->code) ]) }}" alt="One Two" loading="lazy">
                     </a>
                 @endif
                 @php $i++; @endphp
                 <a href="{{ @$MenuLink->url }}" class="one-two-header__item {{ \App\Helpers\SiteMenu::ActiveLink(url()->current(),@$MenuLink,@$WebmasterSection) }}" target="{{ @$MenuLink->target }}" aria-label="{{ @$MenuLink->title }}">
-                    <img src="{{URL::to('uploads/settings/'.@$MenuLink->id . '.svg')}}" alt="{{ @$MenuLink->title }}">
+                    <img src="{{URL::to('uploads/settings/'.@$MenuLink->id . '.svg')}}" alt="{{ @$MenuLink->title }}" loading="lazy">
                     <span class="visually-hidden">{{ @$MenuLink->title }}</span>
                 </a>
             @endforeach
