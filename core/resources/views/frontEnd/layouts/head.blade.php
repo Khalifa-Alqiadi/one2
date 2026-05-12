@@ -32,10 +32,19 @@
         src: local('Tajawal');
     }
 
+    body.lang-ar, body.dir-rtl {
+        direction: rtl;
+        text-align: right;
+    }
+
     /* Critical above-the-fold styles */
     body {
         font-family: 'Tajawal', 'Arial', sans-serif;
         margin: 0;
+    }
+
+    #main.fixed-top-margin {
+        margin-top: 68px; /* غيّر الرقم حسب ارتفاع navbar عندك */
     }
 
     h1, h2, h3 {
@@ -47,6 +56,8 @@
         display: flex;
         align-items: center;
     }
+
+
 </style>
 
 @if (!request()->hasCookie('user_timezone'))
@@ -65,7 +76,7 @@
 
 {{-- Google Fonts Preconnect --}}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" href="https://fonts.gstatic.com" crossorigin />
 
 {{-- Google Fonts - Non-blocking --}}
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400&display=swap" as="style"
