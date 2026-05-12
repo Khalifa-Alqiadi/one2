@@ -102,7 +102,7 @@
     href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/all.min.css') }}?v={{ Helper::system_version() }}"
     as="style" onload="this.onload=null;this.rel='stylesheet'">
 <link rel="preload"
-    href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/font-awesome.min.css') }}?v={{ Helper::system_version() }}"
+    href="{{ URL::asset('assets/frontend/vendor/fontawesome/css/font-awesome.min.css') }}?v=2"
     as="style" onload="this.onload=null;this.rel='stylesheet'">
 <link rel="preload"
     href="{{ URL::asset('assets/frontend/vendor/animate.css/animate.min.css') }}?v={{ Helper::system_version() }}"
