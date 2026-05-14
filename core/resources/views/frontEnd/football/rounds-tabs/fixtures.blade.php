@@ -7,6 +7,14 @@
     $stage     = $pageItem['stage'] ?? null;
     $round     = $pageItem['round'] ?? null;
     $name_var  = 'name_' . ($locale ?? 'ar');
+
+    // استخراج المجموعات الفريدة من مباريات الصفحة الحالية
+    $pageGroups = collect($fixtures)
+        ->map(fn($m) => $m->relationLoaded('group') ? $m->group : null)
+        ->filter()
+        ->unique('id')
+        ->sortBy('sort_order')
+        ->values();
 @endphp
 <div class="gx-fixtures-grid">
 
@@ -29,8 +37,26 @@
                 </div>
             </div>
         </div>
-        <div class="matches matches-home">
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+
+        {{-- فلتر المجموعات: يظهر فقط إذا وُجدت مجموعة واحدة على الأقل --}}
+        @if ($pageGroups->count() > 0)
+            <div class="col-md-12 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="muted mb-0" for="gx-group-select">{{ __('backend.group') }}</label>
+                    <select id="gx-group-select" class="gx-group-select">
+                        <option value="all">{{ __('backend.all') }}</option>
+                        @foreach ($pageGroups as $g)
+                            <option value="{{ $g->id }}">
+                                {{ $g->$name_var ?: 'Group ' . $g->id }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        @endif
+
+        <div class="matches matches-home w-100">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3" id="gx-fixtures-row">
                 @foreach ($fixtures as $match)
                     <?php
                     $isFinished = (bool) $match->is_finished;
@@ -51,8 +77,9 @@
                     $minute = is_numeric($match->minute) ? (int) $match->minute : null;
                     $matchGroup = $match->relationLoaded('group') ? $match->group : null;
                     $groupLabel = $matchGroup ? ($matchGroup->$name_var ?: null) : null;
+                    $groupId    = $matchGroup ? $matchGroup->id : 0;
                     ?>
-                    <div class="col mb-3">
+                    <div class="col mb-3 gx-fixture-col" data-group-id="{{ $groupId }}">
                         <div class="card bg-transparent h-100 gx-fixture-card {{ $isTimeLive ? 'active' : '' }}"
                             id="fixture-{{ $match->id }}" data-live="{{ $isTimeLive ? 1 : 0 }}">
                             <div
@@ -176,9 +203,52 @@
             border: 1px solid rgba(159, 209, 255, .2);
             white-space: nowrap;
         }
+
+        .gx-group-select {
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(159, 209, 255, .25);
+            border-radius: 6px;
+            color: #9fd1ff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 10px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .gx-group-select option {
+            background: #1a1f2e;
+            color: #ddd;
+        }
+
+        .gx-group-select:focus {
+            border-color: rgba(159, 209, 255, .6);
+        }
+
+        .gx-fixture-col.gx-hidden {
+            display: none;
+        }
     </style>
 @endpush
 
 @push('after-scripts')
     @include('frontEnd.layouts.match')
+
+    <script>
+        (function () {
+            var sel = document.getElementById('gx-group-select');
+            if (!sel) return;
+
+            sel.addEventListener('change', function () {
+                var group = this.value;
+                document.querySelectorAll('#gx-fixtures-row .gx-fixture-col').forEach(function (col) {
+                    if (group === 'all' || col.getAttribute('data-group-id') === group) {
+                        col.classList.remove('gx-hidden');
+                    } else {
+                        col.classList.add('gx-hidden');
+                    }
+                });
+            });
+        })();
+    </script>
 @endpush
