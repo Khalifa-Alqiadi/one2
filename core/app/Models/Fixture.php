@@ -11,6 +11,8 @@ class Fixture extends Model
         'league_id',
         'season_id',
         'round_id',
+        'stage_id',
+        'group_id',
         'venue_id',
         'home_team_id',
         'away_team_id',
@@ -78,5 +80,14 @@ class Fixture extends Model
         return $this->belongsTo(Round::class, 'round_id', 'id');
     }
 
+    public function stage()
+    {
+        return $this->belongsTo(Stage::class, 'stage_id', 'id');
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class, 'group_id', 'id');
+    }
 
 }

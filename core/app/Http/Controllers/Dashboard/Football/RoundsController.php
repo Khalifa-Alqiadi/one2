@@ -217,6 +217,7 @@ class RoundsController extends Controller
         $season_id = $request->input('season_id');
         $find_date = $request->input('date');
         $find_status = $request->input('status');
+        $find_group_id = $request->input('group_id');
 
         if (!$season_id) {
             $season_id = Season::where('is_current', 1)
@@ -243,6 +244,9 @@ class RoundsController extends Controller
             } elseif ($find_status === 'finished') {
                 $matchesQuery = $matchesQuery->where('is_finished', 1);
             }
+        }
+        if($find_group_id){
+            $matchesQuery = $matchesQuery->where('group_id', (int) $find_group_id);
         }
 
         // أعمدة datatable حسب ترتيبها في JS
@@ -413,10 +417,13 @@ class RoundsController extends Controller
         // 1) stages
         $this->syncStagesAPI($league, $seasonId, $token, $locale);
 
-        // 2) rounds التقليدية (مرحلة الدوري)
+        // 2) groups (دور المجموعات - إن وجدت)
+        $this->syncGroupsBySeasonAPI($league, $seasonId, $token);
+
+        // 3) rounds التقليدية (مرحلة الدوري)
         $this->syncRoundsBySeasonAPI($league, $seasonId, $token, $locale);
 
-        // 3) fixtures الموسم كله (يشمل playoff + R16 + QF + SF + Final)
+        // 4) fixtures الموسم كله (يشمل playoff + R16 + QF + SF + Final)
         $savedFixtures = $this->syncFixturesBySeasonAPI($league, $seasonId, $token, $locale);
 
         return redirect()
@@ -458,6 +465,66 @@ class RoundsController extends Controller
                         'ending_at'   => data_get($stage, 'ending_at'),
                     ]
                 );
+            }
+
+            $hasMore = (bool) data_get($json, 'pagination.has_more', false);
+            $page++;
+        } while ($hasMore);
+    }
+
+    private function syncGroupsBySeasonAPI($league, int $seasonId, string $token): void
+    {
+        $page = 1;
+
+        do {
+            // SportMonks V3: groups مربوطة بـ stage، نجلبها عبر الـ fixtures مع include=group
+            // أو عبر stages مع include=groups
+            $url = "https://api.sportmonks.com/v3/football/stages/seasons/{$seasonId}"
+                . "?api_token={$token}"
+                . "&locale=ar"
+                . "&include=groups"
+                . "&page={$page}";
+
+            $res  = $this->apiClient->curlGet($url);
+            $json = data_get($res, 'json', []);
+
+            // الـ endpoint غير موجود أو فارغ
+            if (data_get($json, 'message') || !is_array(data_get($json, 'data'))) {
+                return;
+            }
+
+            $stages = collect(data_get($json, 'data', []))
+                ->filter(fn($s) => (int) data_get($s, 'league_id', 0) === (int) $league->id)
+                ->values();
+
+            foreach ($stages as $stage) {
+                $stageId = (int) data_get($stage, 'id');
+                $groupsRaw = data_get($stage, 'groups', []);
+
+                if (!is_array($groupsRaw) || empty($groupsRaw)) {
+                    continue;
+                }
+
+                foreach ($groupsRaw as $group) {
+                    $groupId = (int) data_get($group, 'id', 0);
+                    if ($groupId <= 0) continue;
+
+                    \App\Models\Group::updateOrCreate(
+                        ['id' => $groupId],
+                        [
+                            'league_id'   => (int) $league->id,
+                            'season_id'   => $seasonId,
+                            'stage_id'    => $stageId ?: null,
+                            'name_ar'     => data_get($group, 'name'),
+                            'name_en'     => data_get($group, 'name'),
+                            'sort_order'  => data_get($group, 'sort_order'),
+                            'finished'    => (bool) data_get($group, 'finished', false),
+                            'is_current'  => (bool) data_get($group, 'is_current', false),
+                            'starting_at' => data_get($group, 'starting_at'),
+                            'ending_at'   => data_get($group, 'ending_at'),
+                        ]
+                    );
+                }
             }
 
             $hasMore = (bool) data_get($json, 'pagination.has_more', false);
@@ -523,6 +590,7 @@ class RoundsController extends Controller
                     'season_id'     => (int) data_get($match, 'season_id'),
                     'round_id'      => data_get($match, 'round_id') ? (int) data_get($match, 'round_id') : null,
                     'stage_id'      => data_get($match, 'stage_id') ? (int) data_get($match, 'stage_id') : null,
+                    'group_id'      => data_get($match, 'group_id') ? (int) data_get($match, 'group_id') : null,
 
                     'home_team_id'  => $homeId ? (int)$homeId : null,
                     'away_team_id'  => $awayId ? (int)$awayId : null,
@@ -531,7 +599,7 @@ class RoundsController extends Controller
 
                     'state_id'      => $stateId ?: null,
                     'state_name'    => $stateName ?: null,
-                    'state_code'    => $stateCode ?: null, // ✅ صار يتعبّى
+                    'state_code'    => $stateCode ?: null,
 
                     'home_score'    => is_numeric($homeScore) ? (int)$homeScore : null,
                     'away_score'    => is_numeric($awayScore) ? (int)$awayScore : null,
@@ -540,7 +608,6 @@ class RoundsController extends Controller
                     'ft_home_score' => $ftHome,
                     'ft_away_score' => $ftAway,
 
-                    // ✅ الدقيقة تخزن فقط لو Live (اختياري)
                     'minute'        => $minute !== null ? (int)$minute : null,
                 ]
             );
@@ -618,6 +685,7 @@ class RoundsController extends Controller
                         'season_id'     => (int) data_get($match, 'season_id'),
                         'round_id'      => data_get($match, 'round_id') ? (int) data_get($match, 'round_id') : null,
                         'stage_id'      => data_get($match, 'stage_id') ? (int) data_get($match, 'stage_id') : null,
+                        'group_id'      => data_get($match, 'group_id') ? (int) data_get($match, 'group_id') : null,
 
                         'home_team_id'  => $homeId ? (int) $homeId : null,
                         'away_team_id'  => $awayId ? (int) $awayId : null,

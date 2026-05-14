@@ -1,11 +1,12 @@
 @php
-    $locale = $locale ?? 'ar';
+    $locale   = $locale ?? 'ar';
     $pageItem = $paginatedPages->first();
     $pageTitle = $pageItem['title'] ?? '-';
-    $fixtures = $pageItem['fixtures'] ?? collect();
-    $pageType = $pageItem['type'] ?? 'round';
-    $stage = $pageItem['stage'] ?? null;
-    $round = $pageItem['round'] ?? null;
+    $fixtures  = $pageItem['fixtures'] ?? collect();
+    $pageType  = $pageItem['type'] ?? 'round';
+    $stage     = $pageItem['stage'] ?? null;
+    $round     = $pageItem['round'] ?? null;
+    $name_var  = 'name_' . ($locale ?? 'ar');
 @endphp
 <div class="gx-fixtures-grid">
 
@@ -48,6 +49,8 @@
                     $timeLabel = $dt ? $dt->format('H:i') : '';
 
                     $minute = is_numeric($match->minute) ? (int) $match->minute : null;
+                    $matchGroup = $match->relationLoaded('group') ? $match->group : null;
+                    $groupLabel = $matchGroup ? ($matchGroup->$name_var ?: null) : null;
                     ?>
                     <div class="col mb-3">
                         <div class="card bg-transparent h-100 gx-fixture-card {{ $isTimeLive ? 'active' : '' }}"
@@ -60,6 +63,10 @@
                                         {{ $minute }}
                                     @endif
                                 </span>
+
+                                @if ($groupLabel)
+                                    <span class="gx-group-badge">{{ $groupLabel }}</span>
+                                @endif
                             </div>
                             <div class="box-match row ">
                                 <div class="col-4">
@@ -145,7 +152,6 @@
             </div>
         </div>
 
-        {{-- @endforeach --}}
     </div>
 
     <div class="row">
@@ -158,7 +164,18 @@
 
 @push('after-styles')
     <style>
-
+        .gx-group-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .08);
+            font-size: 11px;
+            font-weight: 700;
+            color: #9fd1ff;
+            border: 1px solid rgba(159, 209, 255, .2);
+            white-space: nowrap;
+        }
     </style>
 @endpush
 
