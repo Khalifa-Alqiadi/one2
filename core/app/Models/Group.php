@@ -5,11 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Group;
 
-class Stage extends Model
+class Group extends Model
 {
-    protected $table = 'stages';
+    protected $table = 'groups';
 
     public $incrementing = false;
 
@@ -19,16 +18,14 @@ class Stage extends Model
         'id',
         'league_id',
         'season_id',
-        'type_id',
+        'stage_id',
         'name_ar',
         'name_en',
-        'type_name',
         'sort_order',
         'finished',
         'is_current',
         'starting_at',
         'ending_at',
-        'payload',
     ];
 
     protected $casts = [
@@ -36,7 +33,6 @@ class Stage extends Model
         'is_current'  => 'boolean',
         'starting_at' => 'datetime',
         'ending_at'   => 'datetime',
-        'payload'     => 'array',
     ];
 
     public function league(): BelongsTo
@@ -49,18 +45,13 @@ class Stage extends Model
         return $this->belongsTo(Season::class, 'season_id');
     }
 
-    public function rounds(): HasMany
+    public function stage(): BelongsTo
     {
-        return $this->hasMany(Round::class,'stage_id');
+        return $this->belongsTo(Stage::class, 'stage_id');
     }
 
-    public function fixtures()
+    public function fixtures(): HasMany
     {
-        return $this->hasMany(Fixture::class, 'stage_id');
-    }
-
-    public function groups(): HasMany
-    {
-        return $this->hasMany(Group::class, 'stage_id');
+        return $this->hasMany(Fixture::class, 'group_id');
     }
 }

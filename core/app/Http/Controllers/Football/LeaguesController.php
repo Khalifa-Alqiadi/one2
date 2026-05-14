@@ -80,55 +80,48 @@ class LeaguesController extends Controller
         $pages = collect();
         $name_var = 'name_' . Helper::currentLanguage()->code;
         foreach ($stages as $stage) {
-            $stageName = mb_strtolower((string) ($stage->name ?? ''));
-            if (count($stage->rounds) > 0) {
-
-                // اعتبر هذه المرحلة الأساسية لو عندها عدة جولات
+            if ($stage->rounds->isNotEmpty()) {
                 $isLeaguePhase = $stage->rounds->count() > 1;
 
                 if ($isLeaguePhase) {
                     $roundsCount = $stage->rounds->count();
                     foreach ($stage->rounds as $round) {
                         $fixtures = $round->fixtures
-                            ->sortByDesc(fn($fixture) => $fixture->starting_at?->timestamp ?? 0)
-                            ->values();
+                            ->pipe(fn($c) => $this->sortFixtures($c));
 
                         $pages->push([
-                            'type' => 'round',
-                            'title' => __('frontend.matchday_progress', [
+                            'type'     => 'round',
+                            'title'    => __('frontend.matchday_progress', [
                                 'current' => $round->name,
-                                'total' => $roundsCount,
+                                'total'   => $roundsCount,
                             ]),
-                            'stage' => $stage,
-                            'round' => $round,
+                            'stage'    => $stage,
+                            'round'    => $round,
                             'fixtures' => $fixtures,
                         ]);
                     }
                 } else {
-                    // المراحل الإقصائية كصفحة واحدة
-                    $fixtures = $stage->rounds
-                        ->flatMap(fn($round) => $round->fixtures)
-                        ->sortByDesc('starting_at')
-                        ->values();
+                    $fixtures = $this->sortFixtures(
+                        $stage->rounds->flatMap(fn($round) => $round->fixtures)
+                    );
 
                     $pages->push([
-                        'type' => 'stage',
-                        'title' => $stage->$name_var ?: ('Stage ' . $stage->id),
-                        'stage' => $stage,
-                        'round' => null,
+                        'type'     => 'stage',
+                        'title'    => $stage->$name_var ?: ('Stage ' . $stage->id),
+                        'stage'    => $stage,
+                        'round'    => null,
                         'fixtures' => $fixtures,
                     ]);
                 }
             } else {
-                $fixtures = $stage->fixtures
-                    ->sortByDesc(fn($fixture) => $fixture->starting_at?->timestamp ?? 0)
-                    ->values();
+                // مباريات مرتبطة بالـ stage مباشرة (تشمل مباريات المجموعات)
+                $fixtures = $this->sortFixtures($stage->fixtures);
 
                 $pages->push([
-                    'type' => 'stage',
-                    'title' => $stage->$name_var ?: ('Stage ' . $stage->id),
-                    'stage' => $stage,
-                    'round' => null,
+                    'type'     => 'stage',
+                    'title'    => $stage->$name_var ?: ('Stage ' . $stage->id),
+                    'stage'    => $stage,
+                    'round'    => null,
                     'fixtures' => $fixtures,
                 ]);
             }
@@ -247,7 +240,7 @@ class LeaguesController extends Controller
                         ->with([
                             'fixtures' => function ($fx) use ($seasonId) {
                                 $fx->when($seasonId > 0, fn($fixtures) => $fixtures->where('season_id', $seasonId))
-                                    ->with(['homeTeam', 'awayTeam'])
+                                    ->with(['homeTeam', 'awayTeam', 'group'])
                                     ->orderBy('starting_at', 'desc')
                                     ->orderBy('id', 'desc');
                             },
@@ -257,7 +250,7 @@ class LeaguesController extends Controller
                 },
                 'fixtures' => function ($fx) use ($seasonId) {
                     $fx->when($seasonId > 0, fn($fixtures) => $fixtures->where('season_id', $seasonId))
-                        ->with(['homeTeam', 'awayTeam'])
+                        ->with(['homeTeam', 'awayTeam', 'group'])
                         ->orderBy('starting_at', 'desc')
                         ->orderBy('id', 'desc');
                 },
@@ -324,10 +317,28 @@ class LeaguesController extends Controller
 
     private function sortFixtures($fixtures)
     {
+        $now = now()->timestamp;
+
         return collect($fixtures)
             ->filter()
             ->unique('id')
-            ->sortByDesc(fn($fixture) => $this->fixtureTimestamp($fixture) ?? 0)
+            ->sortBy(function ($fixture) use ($now) {
+                $ts         = $this->fixtureTimestamp($fixture) ?? 0;
+                $isFinished = (bool) ($fixture->is_finished ?? false);
+
+                if ($isFinished) {
+                    // منتهية → في الآخر، مرتبة تصاعدياً بالوقت
+                    return 2_000_000_000 + $ts;
+                }
+
+                if ($ts >= $now) {
+                    // قادمة → الأوائل، تصاعدي
+                    return $ts;
+                }
+
+                // مباشرة أو بدأت → بعد القادمة وقبل المنتهية
+                return 1_000_000_000 + $ts;
+            })
             ->values();
     }
 
@@ -380,7 +391,9 @@ class LeaguesController extends Controller
 
     private function pageHasCurrentFlag(array $page): bool
     {
-        return (bool) data_get($page, 'round.is_current') || (bool) data_get($page, 'stage.is_current');
+        return (bool) data_get($page, 'round.is_current')
+            || (bool) data_get($page, 'stage.is_current')
+            || (bool) data_get($page, 'group.is_current');
     }
 
     private function fixtureLooksLive($fixture): bool
@@ -503,8 +516,7 @@ class LeaguesController extends Controller
                     $roundsCount = $stage->rounds->count();
                     foreach ($stage->rounds as $round) {
                         $fixtures = $round->fixtures
-                            ->sortByDesc(fn($fixture) => $fixture->starting_at?->timestamp ?? 0)
-                            ->values();
+                            ->pipe(fn($c) => $this->sortFixtures($c));
 
                         $pages->push([
                             'type' => 'round',

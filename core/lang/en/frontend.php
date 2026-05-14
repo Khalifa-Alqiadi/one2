@@ -189,5 +189,6 @@ return [
     'home' => 'Home',
     'leagues' => 'Leagues',
     'downloadOn' => 'Download On',
+    'group' => 'Group',
 ];
 ?>

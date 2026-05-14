@@ -104,11 +104,20 @@
                                             ui-jp="select2" ui-options="{theme: 'bootstrap'}">
                                             <option value="">{{ __('backend.status') }} (
                                                 {{ __('backend.all') }} )</option>
-                                            <?php
-                                                $t_arrow = '&raquo;';
-                                            ?>
                                             @foreach (App\Enum\StatusMatchesEenum::cases() as $status)
                                                 <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-xs-6 m-b-5p">
+                                    <div class="form-group m-b-0">
+                                        <select name="group_id" id="find_group_id" class="form-control select2"
+                                            ui-jp="select2" ui-options="{theme: 'bootstrap'}">
+                                            <option value="">{{ __('backend.group') }} ( {{ __('backend.all') }} )</option>
+                                            @foreach (\App\Models\Group::where('league_id', $League->id)->orderBy('sort_order')->get() as $g)
+                                                @php $gName = 'name_' . \App\Helpers\Helper::currentLanguage()->code; @endphp
+                                                <option value="{{ $g->id }}">{{ $g->$gName ?: $g->id }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -225,6 +234,7 @@
                         d.date = $('#find_date').val();
                         d.season_id = $('#find_season_id').val();
                         d.status = $('#find_status').val();
+                        d.group_id = $('#find_group_id').val();
                         // لو بتضيف فلتر لاحقًا:
                         // d.q = $('#q').val();
                         // d.status = $('#status').val();

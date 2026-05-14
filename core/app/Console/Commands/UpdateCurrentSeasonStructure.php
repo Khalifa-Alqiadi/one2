@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Fixture;
+use App\Models\Group;
 use App\Models\League;
 use App\Models\Round;
 use App\Models\Season;
@@ -68,6 +69,7 @@ class UpdateCurrentSeasonStructure extends Command
 
         $totals = [
             'stages' => 0,
+            'groups' => 0,
             'rounds' => 0,
             'fixtures' => 0,
             'failed' => 0,
@@ -94,11 +96,12 @@ class UpdateCurrentSeasonStructure extends Command
             }
 
             $totals['stages'] += $result['stages'];
+            $totals['groups'] += $result['groups'];
             $totals['rounds'] += $result['rounds'];
             $totals['fixtures'] += $result['fixtures'];
 
             $this->info(
-                "Season {$seasonId}: stages {$result['stages']}, rounds {$result['rounds']}, fixtures {$result['fixtures']}"
+                "Season {$seasonId}: stages {$result['stages']}, groups {$result['groups']}, rounds {$result['rounds']}, fixtures {$result['fixtures']}"
             );
 
             if ($this->hasReachedApiBudget()) {
@@ -109,7 +112,7 @@ class UpdateCurrentSeasonStructure extends Command
 
         $this->newLine();
         $this->info(
-            "Finished. Stages: {$totals['stages']}, Rounds: {$totals['rounds']}, Fixtures: {$totals['fixtures']}, Failed seasons: {$totals['failed']}, API requests: {$this->apiRequests}"
+            "Finished. Stages: {$totals['stages']}, Groups: {$totals['groups']}, Rounds: {$totals['rounds']}, Fixtures: {$totals['fixtures']}, Failed seasons: {$totals['failed']}, API requests: {$this->apiRequests}"
         );
 
         return $totals['failed'] > 0 ? self::FAILURE : self::SUCCESS;
@@ -185,8 +188,9 @@ class UpdateCurrentSeasonStructure extends Command
     private function syncSeason(int $seasonId, ?int $leagueId, LiveMatchesService $liveMatches): array
     {
         return [
-            'stages' => $this->syncStages($seasonId, $leagueId),
-            'rounds' => $this->syncRounds($seasonId, $leagueId),
+            'stages'   => $this->syncStages($seasonId, $leagueId),
+            'groups'   => $this->syncGroups($seasonId, $leagueId),
+            'rounds'   => $this->syncRounds($seasonId, $leagueId),
             'fixtures' => $this->syncFixtures($seasonId, $leagueId, $liveMatches),
         ];
     }
@@ -215,6 +219,62 @@ class UpdateCurrentSeasonStructure extends Command
             }
 
             $hasMore = (bool) data_get($json, 'pagination.has_more', false);
+            $page++;
+        } while ($hasMore);
+
+        return $saved;
+    }
+
+    private function syncGroups(int $seasonId, ?int $leagueId): int
+    {
+        $page = 1;
+        $saved = 0;
+
+        do {
+            $arJson = $this->sportmonksGet("groups/seasons/{$seasonId}", [
+                'locale'   => 'ar',
+                'per_page' => $this->perPage,
+                'page'     => $page,
+            ]);
+
+            $enJson = $this->sportmonksGet("groups/seasons/{$seasonId}", [
+                'locale'   => 'en',
+                'per_page' => $this->perPage,
+                'page'     => $page,
+            ]);
+
+            $enMap = collect(data_get($enJson, 'data', []))->keyBy('id');
+
+            $groups = collect(data_get($arJson, 'data', []))
+                ->filter(fn ($g) => is_array($g) && $this->belongsToLeague($g, $leagueId))
+                ->values();
+
+            foreach ($groups as $group) {
+                $groupId = (int) data_get($group, 'id', 0);
+                if ($groupId <= 0) continue;
+
+                $enGroup = $enMap->get($groupId, []);
+
+                Group::query()->updateOrCreate(
+                    ['id' => $groupId],
+                    [
+                        'league_id'   => (int) data_get($group, 'league_id'),
+                        'season_id'   => (int) data_get($group, 'season_id'),
+                        'stage_id'    => data_get($group, 'stage_id') ? (int) data_get($group, 'stage_id') : null,
+                        'name_ar'     => data_get($group, 'name'),
+                        'name_en'     => data_get($enGroup, 'name'),
+                        'sort_order'  => data_get($group, 'sort_order'),
+                        'finished'    => (bool) data_get($group, 'finished', false),
+                        'is_current'  => (bool) data_get($group, 'is_current', false),
+                        'starting_at' => data_get($group, 'starting_at'),
+                        'ending_at'   => data_get($group, 'ending_at'),
+                    ]
+                );
+
+                $saved++;
+            }
+
+            $hasMore = (bool) data_get($arJson, 'pagination.has_more', false);
             $page++;
         } while ($hasMore);
 
@@ -392,8 +452,9 @@ class UpdateCurrentSeasonStructure extends Command
             [
                 'league_id' => (int) data_get($match, 'league_id'),
                 'season_id' => (int) data_get($match, 'season_id'),
-                'round_id' => data_get($match, 'round_id') ? (int) data_get($match, 'round_id') : null,
-                'stage_id' => data_get($match, 'stage_id') ? (int) data_get($match, 'stage_id') : null,
+                'round_id'  => data_get($match, 'round_id') ? (int) data_get($match, 'round_id') : null,
+                'stage_id'  => data_get($match, 'stage_id') ? (int) data_get($match, 'stage_id') : null,
+                'group_id'  => data_get($match, 'group_id') ? (int) data_get($match, 'group_id') : null,
                 'venue_id' => data_get($match, 'venue_id')
                     ? (int) data_get($match, 'venue_id')
                     : (data_get($match, 'venue.id') ? (int) data_get($match, 'venue.id') : null),
