@@ -130,6 +130,81 @@ class UpdateRoundsAndFixturesService
         } while ($hasMore);
     }
 
+    public function syncGroupsBySeasonAPI($league, int $seasonId, string $token): void
+    {
+        $page = 1;
+
+        do {
+            // نجلب الـ stages مع include=groups للحصول على المجموعات
+            $arUrl = "https://api.sportmonks.com/v3/football/stages/seasons/{$seasonId}"
+                . "?api_token={$token}"
+                . "&locale=ar"
+                . "&include=groups"
+                . "&page={$page}";
+
+            $enUrl = "https://api.sportmonks.com/v3/football/stages/seasons/{$seasonId}"
+                . "?api_token={$token}"
+                . "&locale=en"
+                . "&include=groups"
+                . "&page={$page}";
+
+            $arRes  = $this->apiClient->curlGet($arUrl);
+            $enRes  = $this->apiClient->curlGet($enUrl);
+
+            $arJson = data_get($arRes, 'json', []);
+            $enJson = data_get($enRes, 'json', []);
+
+            if (data_get($arJson, 'message') || !is_array(data_get($arJson, 'data'))) {
+                return;
+            }
+
+            // بناء خريطة الأسماء الإنجليزية للمجموعات
+            $enGroupsMap = [];
+            foreach (data_get($enJson, 'data', []) as $enStage) {
+                foreach (data_get($enStage, 'groups', []) as $enGroup) {
+                    $enGroupsMap[(int) data_get($enGroup, 'id')] = data_get($enGroup, 'name');
+                }
+            }
+
+            $stages = collect(data_get($arJson, 'data', []))
+                ->filter(fn($s) => (int) data_get($s, 'league_id', 0) === (int) $league->id)
+                ->values();
+
+            foreach ($stages as $stage) {
+                $stageId   = (int) data_get($stage, 'id');
+                $groupsRaw = data_get($stage, 'groups', []);
+
+                if (!is_array($groupsRaw) || empty($groupsRaw)) {
+                    continue;
+                }
+
+                foreach ($groupsRaw as $group) {
+                    $groupId = (int) data_get($group, 'id', 0);
+                    if ($groupId <= 0) continue;
+
+                    \App\Models\Group::updateOrCreate(
+                        ['id' => $groupId],
+                        [
+                            'league_id'   => (int) $league->id,
+                            'season_id'   => $seasonId,
+                            'stage_id'    => $stageId ?: null,
+                            'name_ar'     => data_get($group, 'name'),
+                            'name_en'     => $enGroupsMap[$groupId] ?? data_get($group, 'name'),
+                            'sort_order'  => data_get($group, 'sort_order'),
+                            'finished'    => (bool) data_get($group, 'finished', false),
+                            'is_current'  => (bool) data_get($group, 'is_current', false),
+                            'starting_at' => data_get($group, 'starting_at'),
+                            'ending_at'   => data_get($group, 'ending_at'),
+                        ]
+                    );
+                }
+            }
+
+            $hasMore = (bool) data_get($arJson, 'pagination.has_more', false);
+            $page++;
+        } while ($hasMore);
+    }
+
     public function matchesAPI($fixtures, $token, $locale)
     {
         foreach ($fixtures as $fx) {
@@ -188,6 +263,7 @@ class UpdateRoundsAndFixturesService
                     'season_id'     => (int) data_get($match, 'season_id'),
                     'round_id'      => data_get($match, 'round_id') ? (int) data_get($match, 'round_id') : null,
                     'stage_id'      => data_get($match, 'stage_id') ? (int) data_get($match, 'stage_id') : null,
+                    'group_id'      => data_get($match, 'group_id') ? (int) data_get($match, 'group_id') : null,
 
                     'home_team_id'  => $homeId ? (int)$homeId : null,
                     'away_team_id'  => $awayId ? (int)$awayId : null,
@@ -196,7 +272,7 @@ class UpdateRoundsAndFixturesService
 
                     'state_id'      => $stateId ?: null,
                     'state_name'    => $stateName ?: null,
-                    'state_code'    => $stateCode ?: null, // ✅ صار يتعبّى
+                    'state_code'    => $stateCode ?: null,
 
                     'home_score'    => is_numeric($homeScore) ? (int)$homeScore : null,
                     'away_score'    => is_numeric($awayScore) ? (int)$awayScore : null,
@@ -205,7 +281,6 @@ class UpdateRoundsAndFixturesService
                     'ft_home_score' => $ftHome,
                     'ft_away_score' => $ftAway,
 
-                    // ✅ الدقيقة تخزن فقط لو Live (اختياري)
                     'minute'        => $minute !== null ? (int)$minute : null,
                 ]
             );
