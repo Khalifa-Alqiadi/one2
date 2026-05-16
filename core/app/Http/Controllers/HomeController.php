@@ -55,7 +55,9 @@ class HomeController extends Controller
         $this->website_status();
 
         // check language code
-        $languages_codes = Language::where("status", 1)->pluck("code")->toarray();
+        $languages_codes = Cache::remember('active_language_codes', 60 * 24, function () {
+            return Language::where("status", 1)->pluck("code")->toArray();
+        });
         if (in_array(strtolower($part1), $languages_codes)) {
             // part1 is lang
             $lang = strtolower($part1);
@@ -81,20 +83,19 @@ class HomeController extends Controller
             // home page
             $Popup = [];
             if (Helper::GeneralWebmasterSettings("popups_status")) {
-                $Popup = Popup::where("show_in", 1)->where("status", 1)->first();
-                if (empty($Popup)) {
-                    $Popup = Popup::where("show_in", 0)->where("status", 1)->first();
-                }
+                $Popup = Cache::remember('home_popup', 10 * 60, function () {
+                    $p = Popup::where("show_in", 1)->where("status", 1)->first();
+                    return $p ?: Popup::where("show_in", 0)->where("status", 1)->first();
+                });
             }
 
             // Custom landing page for the homepage
             if (Helper::GeneralWebmasterSettings("homepage_type") && Helper::GeneralWebmasterSettings("landing_page_id") > 0) {
-                $LandingPage = Topic::with([
-                    'topicBlocks',
-                    'webmasterSection'
-                ])
-                    ->where("status", 1)->where("id",
-                    Helper::GeneralWebmasterSettings("landing_page_id"))->first();
+                $landingId  = (int) Helper::GeneralWebmasterSettings("landing_page_id");
+                $LandingPage = Cache::remember("landing_page_{$landingId}", 30 * 60, function () use ($landingId) {
+                    return Topic::with(['topicBlocks', 'webmasterSection'])
+                        ->where("status", 1)->where("id", $landingId)->first();
+                });
                 if (!empty($LandingPage)) {
                     return $this->post_page($lang, $LandingPage);
                 }
@@ -102,11 +103,23 @@ class HomeController extends Controller
 
             // default homepage
             $HomeTopic = [];
-            if (Helper::GeneralWebmasterSettings("home_content4_section_id") > 0) {
-                $HomeTopic = Topic::with('form')->where("status", 1)->where("id",
-                    Helper::GeneralWebmasterSettings("home_content4_section_id"))->first();
+            $heroId = (int) Helper::GeneralWebmasterSettings("home_content4_section_id");
+            if ($heroId > 0) {
+                $HomeTopic = Cache::remember("home_hero_topic_{$heroId}", 30 * 60, function () use ($heroId) {
+                    return Topic::with('form')->where("status", 1)->where("id", $heroId)->first();
+                });
             }
-            return view("frontEnd.home", ["page_type" => "home", "Popup" => $Popup, "Topic" => $HomeTopic]);
+
+            $meta_tags = $this->get_meta_tags(!empty($HomeTopic) ? $HomeTopic : null, $lang);
+
+            return view("frontEnd.home", [
+                "page_type"       => "home",
+                "Popup"           => $Popup,
+                "Topic"           => $HomeTopic,
+                "PageTitle"       => $meta_tags['title'],
+                "PageDescription" => $meta_tags['desc'],
+                "PageKeywords"    => $meta_tags['keywords'],
+            ]);
         }
 
         $WebmasterSection = WebmasterSection::where('status', 1)->where("seo_url_slug_".$lang, $part1)->first();
@@ -1343,31 +1356,32 @@ class HomeController extends Controller
         return redirect()->route("frontendRoute", ["part1" => $lang]);
     }
 
-    private function get_meta_tags($Record = [], $lang = ""): array
+    private function get_meta_tags($Record = null, $lang = ""): array
     {
         try {
+            $PageTitle = $PageDescription = $PageKeywords = "";
             if ($lang == "") {
                 $lang = @Helper::currentLanguage()->code;
             }
-            if (!empty($Record)) {
-                $PageTitle = $Record->{"seo_title_".$lang};
-                $PageDescription = $Record->{"seo_description_".$lang};
-                $PageKeywords = $Record->{"seo_keywords_".$lang};
-                if ($PageTitle == "") {
-                    $PageTitle = @$Record->{"title_".$lang};
+            if (!empty($Record) && is_object($Record)) {
+                $PageTitle       = (string) ($Record->{"seo_title_".$lang} ?? "");
+                $PageDescription = (string) ($Record->{"seo_description_".$lang} ?? "");
+                $PageKeywords    = (string) ($Record->{"seo_keywords_".$lang} ?? "");
+                if ($PageTitle === "") {
+                    $PageTitle = (string) ($Record->{"title_".$lang} ?? "");
                 }
-                if ($PageDescription == "" && @$Record->{"details_".$lang} != "") {
-                    $PageDescription = mb_substr(strip_tags(@$Record->{"details_".$lang}), 0, 250);
+                if ($PageDescription === "" && !empty($Record->{"details_".$lang})) {
+                    $PageDescription = mb_substr(strip_tags($Record->{"details_".$lang}), 0, 250);
                 }
             }
-            if ($PageTitle == "") {
-                $PageTitle = Helper::GeneralSiteSettings("title_".$lang);
+            if ($PageTitle === "") {
+                $PageTitle = (string) Helper::GeneralSiteSettings("site_title_".$lang);
             }
-            if ($PageDescription == "") {
-                $PageDescription = Helper::GeneralSiteSettings("site_desc_".$lang);
+            if ($PageDescription === "") {
+                $PageDescription = (string) Helper::GeneralSiteSettings("site_desc_".$lang);
             }
-            if ($PageKeywords == "") {
-                $PageKeywords = Helper::GeneralSiteSettings("site_keywords_".$lang);
+            if ($PageKeywords === "") {
+                $PageKeywords = (string) Helper::GeneralSiteSettings("site_keywords_".$lang);
             }
         } catch (\Exception $e) {
             $PageTitle = "";

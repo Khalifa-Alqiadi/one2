@@ -1,5 +1,26 @@
 @extends('frontEnd.layouts.master')
 
+@if(request()->path() === '/' || request()->path() === '')
+@push('before-styles')
+@php
+    $ld_lang  = (string) @Helper::currentLanguage()->code;
+    $ld_json  = json_encode([
+        '@context'       => 'https://schema.org',
+        '@type'          => 'WebSite',
+        'name'           => (string) Helper::GeneralSiteSettings('site_title_' . $ld_lang),
+        'url'            => url('/'),
+        'description'    => (string) Helper::GeneralSiteSettings('site_desc_' . $ld_lang),
+        'potentialAction' => [
+            '@type'       => 'SearchAction',
+            'target'      => url('/') . '?search_word={search_term_string}',
+            'query-input' => 'required name=search_term_string',
+        ],
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+@endphp
+<script type="application/ld+json">{!! $ld_json !!}</script>
+@endpush
+@endif
+
 @section('content')
     <?php
     $custom_css_code = @$WebmasterSection->css_code;

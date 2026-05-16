@@ -1,5 +1,27 @@
 @extends('frontEnd.layouts.master')
 
+@push('before-styles')
+@php
+    $lang_code = @Helper::currentLanguage()->code;
+    $site_name = Helper::GeneralSiteSettings('site_title_' . $lang_code);
+    $site_desc = Helper::GeneralSiteSettings('site_desc_' . $lang_code);
+@endphp
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "{{ $site_name }}",
+    "url": "{{ url('/') }}",
+    "description": "{{ $site_desc }}",
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ url('/') }}?search_word={search_term_string}",
+        "query-input": "required name=search_term_string"
+    }
+}
+</script>
+@endpush
+
 @section('content')
     <div class="home-page">
         <?php

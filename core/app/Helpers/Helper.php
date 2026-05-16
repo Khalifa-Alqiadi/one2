@@ -574,10 +574,17 @@ class Helper
 
     static function currentLanguage()
     {
+        static $staticCache = [];
+
         $locale = App::getLocale();
         if (session('locale', '') != "") {
             $locale = Session('locale');
         }
+
+        if (isset($staticCache[$locale])) {
+            return $staticCache[$locale];
+        }
+
         $_Loader_Languages = Cache::remember('_Loader_Languages', 60 * 24, function () {
             return Language::all();
         });
@@ -585,8 +592,12 @@ class Helper
             return $item->code == $locale;
         });
         if (empty($Language)) {
-            $Language = Language::where("code", config('smartend.default_language'))->first();
+            $Language = $_Loader_Languages->first(function ($item) {
+                return $item->code == config('smartend.default_language');
+            });
         }
+
+        $staticCache[$locale] = $Language;
         return $Language;
     }
 
@@ -799,12 +810,14 @@ class Helper
             }
             $title_var = "title_" . $lang;
             if (empty($Topic)) {
-                $Topic = Topic::find($id);
+                $Topic = Topic::with(['webmasterSection'])->find($id);
             }
             if (!empty($Topic)) {
 
                 // for home if it is a landing page
-                if (Helper::GeneralWebmasterSettings("homepage_type") == 1 && @$Topic->id == Helper::GeneralWebmasterSettings("landing_page_id")) {
+                $homepageType   = Helper::GeneralWebmasterSettings("homepage_type");
+                $landingPageId  = Helper::GeneralWebmasterSettings("landing_page_id");
+                if ($homepageType == 1 && @$Topic->id == $landingPageId) {
                     if ($lang != config('smartend.default_language')) {
                         return url($lang);
                     } else {
@@ -1060,49 +1073,59 @@ class Helper
                 'maps',
             ];
 
-            $Topics = Topic::with($with)
-                ->where("status", 1)->where("webmaster_id", $SectionId);
             if ($CatIds == "" || $CatIds == "0") {
                 $CatIds = [];
             } else {
                 $CatIds = explode(",", $CatIds);
             }
-            if (count($CatIds) > 0) {
-                // $Topics = $Topics->whereIn(
-                //     "id",
-                //     TopicCategory::whereIn('section_id', $CatIds)->pluck("topic_id")->toarray()
-                // );
-                $Topics = $Topics->whereHas('topicCategories', function($q) use($CatIds){
-                    $q->whereIn('section_id', $CatIds);
-                });
-            }
-            if ($random) {
-                $Topics = $Topics->inRandomOrder();
-            } elseif ($custom_order > 0) {
-                switch ($custom_order) {
-                    case 4:
-                        $Topics = $Topics->inRandomOrder();
-                        break;
-                    case 3:
-                        $Topics = $Topics->orderby('date', "asc")->orderby('id', "asc");
-                        break;
-                    case 2:
-                        $Topics = $Topics->orderby('date', "desc")->orderby('id', "desc");
-                        break;
-                    case 1:
-                        $Topics = $Topics->orderby('featured', 'desc')->orderby('date', "desc")->orderby('id', "desc");
-                        break;
+
+            $isRandom = $random || $custom_order === 4;
+
+            // Cache deterministic queries 30 min, random queries 5 min
+            $ttl      = $isRandom ? 300 : 1800;
+            $withKey  = is_array($with) ? implode(',', $with) : 'default';
+            $cacheKey = 'topics_' . md5($SectionId . '|' . implode(',', $CatIds) . '|' . $limit . '|' . $random . '|' . $custom_order . '|' . $withKey);
+
+            $Topics = Cache::remember($cacheKey, $ttl, function () use ($SectionId, $CatIds, $limit, $random, $custom_order, $with) {
+                $query = Topic::with($with)
+                    ->where("status", 1)->where("webmaster_id", $SectionId);
+
+                if (count($CatIds) > 0) {
+                    $query = $query->whereHas('topicCategories', function ($q) use ($CatIds) {
+                        $q->whereIn('section_id', $CatIds);
+                    });
                 }
-            } else {
-                $Topics = $Topics->orderby('featured', 'desc')->orderby(
-                    'date',
-                    config('smartend.frontend_topics_order')
-                )->orderby('id', config('smartend.frontend_topics_order'));
-            }
-            if ($limit > 0) {
-                $Topics = $Topics->limit($limit);
-            }
-            $Topics = $Topics->get();
+
+                if ($random) {
+                    $query = $query->inRandomOrder();
+                } elseif ($custom_order > 0) {
+                    switch ($custom_order) {
+                        case 4:
+                            $query = $query->inRandomOrder();
+                            break;
+                        case 3:
+                            $query = $query->orderby('date', "asc")->orderby('id', "asc");
+                            break;
+                        case 2:
+                            $query = $query->orderby('date', "desc")->orderby('id', "desc");
+                            break;
+                        case 1:
+                            $query = $query->orderby('featured', 'desc')->orderby('date', "desc")->orderby('id', "desc");
+                            break;
+                    }
+                } else {
+                    $query = $query->orderby('featured', 'desc')->orderby(
+                        'date',
+                        config('smartend.frontend_topics_order')
+                    )->orderby('id', config('smartend.frontend_topics_order'));
+                }
+
+                if ($limit > 0) {
+                    $query = $query->limit($limit);
+                }
+
+                return $query->get();
+            });
         } catch (\Exception $e) {
             $Topics = [];
         }
@@ -1621,10 +1644,13 @@ class Helper
 
     static function getMatchHome($limit = 4)
     {
-        $matches = Fixture::with(['homeTeam', 'awayTeam', 'league'])->where('is_home', 1)->limit($limit)
-            ->orderBy('starting_at', 'desc')
-            ->get();
-        return $matches;
+        return Cache::remember('home_matches_' . $limit, 3 * 60, function () use ($limit) {
+            return Fixture::with(['homeTeam', 'awayTeam', 'league'])
+                ->where('is_home', 1)
+                ->limit($limit)
+                ->orderBy('starting_at', 'desc')
+                ->get();
+        });
     }
 
 
@@ -1707,9 +1733,9 @@ class Helper
     }
 
     static function isHomeLeagues(){
-        return League::with('matches')->where('is_home', 1)
-            ->where('status', 1)
-            ->get();
+        return Cache::remember('home_leagues', 60 * 60, function () {
+            return League::with('matches')->where('is_home', 1)->where('status', 1)->get();
+        });
     }
     static function matchesLeague($league_id, $limit = 3){
         return Fixture::with(['homeTeam', 'awayTeam'])
@@ -1724,24 +1750,23 @@ class Helper
     }
 
     static function majorCompetitions($limit = 0){
-        $leagues = League::where('major_competitions', 1)
-            ->where('status', 1);
-        if($limit > 0){
-            $leagues = $leagues->limit($limit);
-        }
-
-        $leagues = $leagues->orderBy('row_no', 'asc')->get();
-        return $leagues;
+        return Cache::remember('major_competitions_' . $limit, 60 * 60, function () use ($limit) {
+            $leagues = League::where('major_competitions', 1)->where('status', 1);
+            if ($limit > 0) {
+                $leagues = $leagues->limit($limit);
+            }
+            return $leagues->orderBy('row_no', 'asc')->get();
+        });
     }
-    static function majorNationalTeams($limit = 0){
-        $teams = Team::where('major_national_teams', 1)
-            ->where('status', 1);
-        if($limit > 0){
-            $teams = $teams->limit($limit);
-        }
 
-        $teams = $teams->orderBy('row_no', 'asc')->get();
-        return $teams;
+    static function majorNationalTeams($limit = 0){
+        return Cache::remember('major_national_teams_' . $limit, 60 * 60, function () use ($limit) {
+            $teams = Team::where('major_national_teams', 1)->where('status', 1);
+            if ($limit > 0) {
+                $teams = $teams->limit($limit);
+            }
+            return $teams->orderBy('row_no', 'asc')->get();
+        });
     }
 
     static function currentSeason()
@@ -1788,48 +1813,48 @@ class Helper
 
     static function lastResults($limit = 3)
     {
-        $matches = \App\Models\Fixture::query()
-            ->with(['homeTeam:id,name_ar,name_en,image_path', 'awayTeam:id,name_ar,name_en,image_path', 'league:id,name_ar,name_en,image_path', 'round:id,name'])
-            ->where('is_finished', true)
-            ->orderByDesc('starting_at')
-            ->limit($limit)
-            ->get();
-
-        return $matches;
+        return Cache::remember('last_results_' . $limit, 3 * 60, function () use ($limit) {
+            return \App\Models\Fixture::query()
+                ->with(['homeTeam:id,name_ar,name_en,image_path', 'awayTeam:id,name_ar,name_en,image_path', 'league:id,name_ar,name_en,image_path', 'round:id,name'])
+                ->where('is_finished', true)
+                ->orderByDesc('starting_at')
+                ->limit($limit)
+                ->get();
+        });
     }
 
-    static function moreView($limit =5){
-        $topics = Topic::with(
-            'match',
-            'team',
-            'league',
-            'webmasterSection',
-            'topicCategories',
-            'topicCategories.section'
-         )
-            ->where('status', 1)
-            ->whereNotIn('webmaster_id', [1,17])
-            ->orderByDesc('visits')
-            ->limit($limit)
-            ->get();
-        return $topics;
+    static function moreView($limit = 5)
+    {
+        return Cache::remember('more_viewed_' . $limit, 15 * 60, function () use ($limit) {
+            return Topic::with([
+                'match', 'team', 'league',
+                'webmasterSection',
+                'topicCategories',
+                'topicCategories.section',
+            ])
+                ->where('status', 1)
+                ->whereNotIn('webmaster_id', [1, 17])
+                ->orderByDesc('visits')
+                ->limit($limit)
+                ->get();
+        });
     }
 
-    static function getFeaturedTopic($limit = 6){
-        $topics = Topic::with(
-            'match',
-            'team',
-            'league',
-            'webmasterSection',
-            'topicCategories',
-            'topicCategories.section'
-         )
-            ->where('status', 1)
-            ->whereNotIn('webmaster_id', [1,17])
-            ->orderby('featured', 'desc')->orderby('date', "desc")->orderby('id', "desc")
-            ->limit($limit)
-            ->get();
-        return $topics;
+    static function getFeaturedTopic($limit = 6)
+    {
+        return Cache::remember('featured_topics_' . $limit, 10 * 60, function () use ($limit) {
+            return Topic::with([
+                'match', 'team', 'league',
+                'webmasterSection',
+                'topicCategories',
+                'topicCategories.section',
+            ])
+                ->where('status', 1)
+                ->whereNotIn('webmaster_id', [1, 17])
+                ->orderby('featured', 'desc')->orderby('date', 'desc')->orderby('id', 'desc')
+                ->limit($limit)
+                ->get();
+        });
     }
 
 }

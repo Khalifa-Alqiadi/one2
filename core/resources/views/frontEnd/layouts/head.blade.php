@@ -244,7 +244,7 @@
 @endif
 
 <meta property='og:title'
-    content='{{ @$PageTitle }} {{ @$PageTitle == '' ? Helper::GeneralSiteSettings('site_title_' . @Helper::currentLanguage()->code) : '' }}' />
+    content='{{ (@$PageTitle != "") ? @$PageTitle : Helper::GeneralSiteSettings("site_title_" . @Helper::currentLanguage()->code) }}' />
 @if (@$Topic->photo_file != '')
     <meta property='og:image' content='{{ route('fileView', ['path' => 'topics/' . @$Topic->photo_file]) }}' />
 @elseif(Helper::GeneralSiteSettings('style_apple') != '')
